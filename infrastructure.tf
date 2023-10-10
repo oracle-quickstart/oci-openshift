@@ -22,11 +22,11 @@ variable master_memory {
     type = number
 }
 variable master_boot_size {
-    default = 100
+    default = 500
     type = number
 }
 variable master_boot_volume_vpus_per_gb {
-    default = 20
+    default = 60
     type = number
 }
 variable worker_count {
