@@ -88,19 +88,16 @@ variable "public_cidr" {
 variable "image_bucket_name" {
   type        = string
   description = "Bucket name of the image"
-  default     = ""
  }
 
  variable "image_name" {
   type        = string
   description = "Image name"
-  default     = ""
  }
 
  variable "image_bucket_namespace" {
   type        = string
   description = "Bucket namespace"
-  default     = ""
  }
 
 
