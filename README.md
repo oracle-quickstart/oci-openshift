@@ -1,6 +1,6 @@
 # Terraform Deployed Resources for OpenShift on OCI
 
-This Terraform code provisions resources for an OpenShift cluster running on Oracle Cloud Infrastructure (OCI).
+This Terraform code is specifically designed for the Development Preview of OpenShift 4.14 at Oracle Cloud Infrastructure (OCI). It provisions resources for an OpenShift cluster running on Oracle Cloud Infrastructure.
 
 ## Resources Created:
 

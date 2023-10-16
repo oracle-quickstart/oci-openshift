@@ -1,4 +1,4 @@
-These files are used in the 6th step: "Custom manifests", of provisioning an OpenShift cluster in RedHat's Hybrid Cloud Console / OpenShift UX.
+These manifest files are specifically designed for the Development Preview of OpenShift 4.14 at Oracle Cloud Infrastructure (OCI). They are used in the 6th step: "Custom manifests", of provisioning an OpenShift cluster in RedHat's Hybrid Cloud Console / OpenShift UX. 
 
 The "oci_ccm_config" output of the RMS stack job (used to create the OCI cluster for OpenShift) should be appended into oci-ccm-04-cloud-controller-manager-config.yaml.
 
