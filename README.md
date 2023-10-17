@@ -2,6 +2,10 @@
 
 This Terraform code is specifically designed for the Development Preview of OpenShift 4.14 at Oracle Cloud Infrastructure (OCI). It provisions resources for an OpenShift cluster running on Oracle Cloud Infrastructure.
 
+See the following articles for installation instructions:
+- Agent-based Installer: https://access.redhat.com/node/7038262
+- Assisted Installer: https://access.redhat.com/articles/7039183
+
 ## Resources Created:
 
 - **Availability Domain**: First availability domain for the compartment.
