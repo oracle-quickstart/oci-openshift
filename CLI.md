@@ -8,20 +8,26 @@ Guide for creating an openshift cluster on OCI using preferably the command line
 # Oracle Config
 # https://cloud.oracle.com
 export OCI_CLI_REGION="us-sanjose-1"
+echo $OCI_CLI_REGION
+
 # https://cloud.oracle.com/identity/compartment
 # https://cloud.oracle.com/tenancy
-#  TENANCY_ID="..."=$()
+#  TENANCY_ID=
 export TENANCY_ID
-echo 
-export NAMESPACE=$(oci os ns get | jq -r '.data')
+echo $TENANCY_ID
 
+export NAMESPACE=$(oci os ns get | jq -r '.data')
+echo $NAMESPACE
 
 # Red Hat Config
 # https://console.redhat.com/openshift/token/show
 export AI_OFFLINETOKEN
-echo $PULL_SECRET > openshift_pull.json
+echo $AI_OFFLINETOKEN
 
-export CLUSTER_NAME="ocpocidemo"
+export PULL_SECRET
+echo $PULL_SECRET | tee openshift_pull.json
+
+export CLUSTER_NAME="ocpoci$RANDOM"
 export BASE_DOMAIN="splat-oci.devcluster.openshift.com"
 export MANIFESTS_DIR="user-manifests"
 
@@ -29,7 +35,7 @@ export MANIFESTS_DIR="user-manifests"
 
 # Prepare the OCI account
 
-## Create Compartment
+## Create Compartment (if needed)
 
 ```
 oci iam compartment create \

@@ -127,7 +127,7 @@ resource oci_identity_tag_namespace openshift_tags {
   compartment_id = var.compartment
   description    = "Used for track openshift related resources and policies"
   is_retired     = "false"
-  name           = "openshift"
+  name           = "${var.cluster_name}-openshift"
 }
 
 resource oci_identity_tag openshift_instance_role {
