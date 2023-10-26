@@ -123,7 +123,7 @@ resource oci_identity_tag_namespace openshift_tags {
   compartment_id = var.compartment_ocid
   description    = "Used for track openshift related resources and policies"
   is_retired     = "false"
-  name           = "${var.cluster_name}-openshift"
+  name           = "openshift-${var.cluster_name}"
 }
 
 resource oci_identity_tag openshift_instance_role {
@@ -549,7 +549,7 @@ resource "oci_network_load_balancer_listener" "openshift_cluster_infra-mcs" {
 resource "oci_identity_dynamic_group" "openshift_master_nodes" {
     compartment_id = var.tenancy_ocid
     description    = "OpenShift master nodes" 
-    matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.${var.cluster_name}-openshift.instance-role.value='master'}"
+    matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='master'}"
     name           = "${var.cluster_name}_master_nodes"
 }
 
@@ -569,7 +569,7 @@ resource "oci_identity_policy" "openshift_master_nodes" {
 resource "oci_identity_dynamic_group" "openshift_worker_nodes" {
   compartment_id = var.tenancy_ocid
   description    = "OpenShift worker nodes"
-  matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.${var.cluster_name}-openshift.instance-role.value='worker'}"
+  matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='worker'}"
   name           = "${var.cluster_name}_worker_nodes"
 }
 
@@ -654,7 +654,7 @@ resource oci_core_instance_configuration master_node_config {
         subnet_id = oci_core_subnet.private.id
       }
       defined_tags = {
-        "${var.cluster_name}-openshift.instance-role" = "master"
+        "openshift-${var.cluster_name}.instance-role" = "master"
       }
       shape = var.master_shape
       shape_config {
@@ -725,7 +725,7 @@ resource oci_core_instance_configuration worker_node_config {
         subnet_id = oci_core_subnet.private.id
       }
       defined_tags = {
-        "${var.cluster_name}-openshift.instance-role" = "worker"
+        "openshift-${var.cluster_name}.instance-role" = "worker"
       }
       shape = var.worker_shape
       shape_config {
