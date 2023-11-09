@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: oci-cloud-controller-manager
+  namespace: oci-cloud-controller-manager
+stringData:
+  cloud-provider.yaml: |
+    auth:
+      region: $OCI_CLI_REGION
+      useInstancePrincipals: true
+      compartment: $COMPARTMENT_ID
+    vcn: $OCP_VCN_ID
+    loadBalancer:
+      subnet1: $OCP_SUBNET_ID
+      securityListManagementMode: None
+    rateLimiter:
+      rateLimitQPSRead: 20.0
+      rateLimitBucketRead: 5
+      rateLimitQPSWrite: 20.0
+      rateLimitBucketWrite: 5
