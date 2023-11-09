@@ -1,1 +1,7 @@
 .idea/
+.envrc
+cluster_name.txt
+openshift_pull.json
+*.json
+*.iso
+*.zip

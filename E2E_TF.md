@@ -54,7 +54,7 @@ mkdir -p "$MANIFESTS_DIR"
 ```
 
 ```
-aicli create cluster "$CLUSTER_NAME" -P openshift_version="$OCP_VERSION" -P base_dns_domain="$BASE_DOMAIN" 
+aicli create cluster "$CLUSTER_NAME" -P openshift_version="$OCP_VERSION" -P base_dns_domain="$BASE_DOMAIN" -P platform=oci 
 ```
 
 ## Download installer image
@@ -81,7 +81,10 @@ echo $COMPARTMENT_NAME
 ## Create Bucket (if needed)
 ```
 export IMAGE_BUCKET_NAME="$CLUSTER_NAME"
+echo $IMAGE_BUCKET_NAME
+
 export IMAGE_COMPARTMENT_ID="$COMPARTMENT_ID"
+echo $IMAGE_COMPARTMENT_ID
 
 oci os bucket create \
     --name "$IMAGE_BUCKET_NAME" \
