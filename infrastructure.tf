@@ -771,11 +771,11 @@ resource oci_core_instance_pool worker_nodes {
   ]
 }
 
-output "open_shift_ln_private_addr" {
+output "open_shift_lb_private_addr" {
   value = local.lb_private_addr
 }
 
-output "open_shift_ln_public_addr" {
+output "open_shift_lb_public_addr" {
   value = local.lb_public_addr
 }
 
