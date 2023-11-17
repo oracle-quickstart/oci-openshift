@@ -210,20 +210,6 @@ stringData:
       rateLimitQPSWrite: 20.0
       rateLimitBucketWrite: 5
 
-useInstancePrincipals: true
-compartment: ocid1.compartment.oc1..aaaaaaaaaam5elq6eyp4gwistwu7pri2nrjga4qif344ys2psgjqc6v26zhq
-vcn: ocid1.vcn.oc1.us-sanjose-1.amaaaaaa2bh44ryaocyty5wwfw3jqoi4bh7bcnqjremdgqagsb2ncdjoj5vq
-loadBalancer:
-  subnet1: ocid1.subnet.oc1.us-sanjose-1.aaaaaaaazqtgzwevxuogoz27mdheoxjsaaljs4vvf52zqytpugqtezlw744q
-  securityListManagementMode: Frontend
-  securityLists:
-    ocid1.subnet.oc1.us-sanjose-1.aaaaaaaazqtgzwevxuogoz27mdheoxjsaaljs4vvf52zqytpugqtezlw744q: ocid1.securitylist.oc1.us-sanjose-1.aaaaaaaaia4ogzw35sa5xeq7pjthbgfgbwixkjttwvzevpb3moev77akqnua
-rateLimiter:
-  rateLimitQPSRead: 20.0
-  rateLimitBucketRead: 5
-  rateLimitQPSWrite: 20.0
-  rateLimitBucketWrite: 5
-
 
 ---
 
