@@ -210,7 +210,6 @@ stringData:
       rateLimitQPSWrite: 20.0
       rateLimitBucketWrite: 5
 
-
 ---
 
 # oci-ccm-05-daemon-set.yaml
