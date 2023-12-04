@@ -102,6 +102,12 @@ variable "openshift_image_source_uri" {
   description = "The OCI Object Storage URL for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a pre-authenticated requests (PAR) uri, and paste the uri to this block. For more detail regarding Object storage and PAR, please visit https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/objectstorageoverview.htm and https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/usingpreauthenticatedrequests.htm ."
 }
 
+variable "enable_private_dns" {
+  type        = bool
+  description = "If the switch is enabled, a private DNS zone will be created, and users should edit the /etc/hosts file for resolution. Otherwise, a public DNS zone will be created based on the given domain."
+  default     = false
+}
+
 #Provider
 provider oci {
 	region = var.home_region
@@ -576,8 +582,8 @@ resource "oci_identity_dynamic_group" "openshift_worker_nodes" {
 resource oci_dns_zone openshift {
   compartment_id = var.compartment_ocid
   name           = var.zone_dns
-  scope          = "PRIVATE"
-  view_id        = data.oci_dns_resolver.dns_resolver.default_view_id
+  scope          = var.enable_private_dns ? "PRIVATE" : null
+  view_id        = var.enable_private_dns ? data.oci_dns_resolver.dns_resolver.default_view_id : null
   zone_type      = "PRIMARY"
   depends_on     = [oci_core_subnet.private]
 }
@@ -586,7 +592,7 @@ resource oci_dns_rrset openshift_api {
   domain = "api.${var.cluster_name}.${var.zone_dns}"
   items {
     domain = "api.${var.cluster_name}.${var.zone_dns}"
-    rdata  = local.lb_private_addr
+    rdata  = var.enable_private_dns ? local.lb_private_addr : local.lb_public_addr
     rtype  = "A"
     ttl    = "30"
   }
@@ -598,7 +604,7 @@ resource oci_dns_rrset openshift_apps {
   domain = "*.apps.${var.cluster_name}.${var.zone_dns}"
   items {
     domain = "*.apps.${var.cluster_name}.${var.zone_dns}"
-    rdata  = local.lb_private_addr
+    rdata  = var.enable_private_dns ? local.lb_private_addr : local.lb_public_addr
     rtype  = "A"
     ttl    = "30"
   }
@@ -610,7 +616,7 @@ resource oci_dns_rrset openshift_api_int {
   domain = "api-int.${var.cluster_name}.${var.zone_dns}"
   items {
     domain = "api-int.${var.cluster_name}.${var.zone_dns}"
-    rdata  = local.lb_private_addr
+    rdata  = var.enable_private_dns ? local.lb_private_addr : local.lb_public_addr
     rtype  = "A"
     ttl    = "30"
   }
