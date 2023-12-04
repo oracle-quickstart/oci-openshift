@@ -104,7 +104,7 @@ variable "openshift_image_source_uri" {
 
 variable "enable_private_dns" {
   type        = bool
-  description = ""
+  description = "If the switch is enabled, a private DNS zone will be created, and users should edit the /etc/hosts file for resolution. Otherwise, a public DNS zone will be created based on the given domain."
   default     = false
 }
 
