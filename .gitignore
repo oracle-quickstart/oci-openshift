@@ -5,3 +5,4 @@ openshift_pull.json
 *.json
 *.iso
 *.zip
+.DS_Store
