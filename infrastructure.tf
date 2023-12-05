@@ -1,8 +1,6 @@
-## Default region
-variable home_region { 
-    type = string
-    description = "The region identifier of the home region where the tenancy's IAM and compartment resources are defined. For more detail regarding region identifiers, please visit https://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm . "
-}
+## Infra Region or Default Region of the Current RMS Stack
+variable "region" {}
+
 variable zone_dns {
     type        = string
     description = "The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation."
@@ -108,9 +106,38 @@ variable "enable_private_dns" {
   default     = false
 }
 
-#Provider
+# Reginal Infrastructure Terraform Provider
 provider oci {
-	region = var.home_region
+	region = var.region
+}
+
+data "oci_identity_tenancy" "tenancy" {
+  tenancy_id = var.tenancy_ocid
+}
+
+data oci_identity_region_subscriptions region_subscriptions {
+  tenancy_id = var.tenancy_ocid
+  filter {
+    name   = "region_name"
+    values = [var.region]
+  }
+}
+data oci_identity_regions regions {}
+
+
+locals {
+  region_map = {
+    for r in data.oci_identity_regions.regions.regions :
+    r.key => r.name
+  }
+
+  home_region = lookup(local.region_map, data.oci_identity_tenancy.tenancy.home_region_key)
+}
+
+# Home Region Terraform Provider 
+provider oci {
+	alias  = "home"
+  region = local.home_region
 }
 
 locals {
@@ -130,6 +157,7 @@ resource oci_identity_tag_namespace openshift_tags {
   description    = "Used for track openshift related resources and policies"
   is_retired     = "false"
   name           = "openshift-${var.cluster_name}"
+  provider       = oci.home
 }
 
 resource oci_identity_tag openshift_instance_role {
@@ -145,6 +173,7 @@ resource oci_identity_tag openshift_instance_role {
       "worker",
     ]
   }
+  provider         = oci.home
 }
 
 data "oci_core_compute_global_image_capability_schemas" "image_capability_schemas" {
@@ -557,6 +586,7 @@ resource "oci_identity_dynamic_group" "openshift_master_nodes" {
     description    = "OpenShift master nodes" 
     matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='master'}"
     name           = "${var.cluster_name}_master_nodes"
+    provider       = oci.home
 }
 
 resource "oci_identity_policy" "openshift_master_nodes" {
@@ -570,6 +600,7 @@ resource "oci_identity_policy" "openshift_master_nodes" {
         "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to use virtual-network-family in compartment id ${var.compartment_ocid}",
         "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage load-balancers in compartment id ${var.compartment_ocid}",
     ]
+    provider       = oci.home
 }
 
 resource "oci_identity_dynamic_group" "openshift_worker_nodes" {
@@ -577,6 +608,7 @@ resource "oci_identity_dynamic_group" "openshift_worker_nodes" {
   description    = "OpenShift worker nodes"
   matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='worker'}"
   name           = "${var.cluster_name}_worker_nodes"
+  provider       = oci.home
 }
 
 resource oci_dns_zone openshift {
