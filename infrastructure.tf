@@ -1,14 +1,5 @@
-## Home region
-variable home_region { 
-    type = string
-    description = "The region identifier of the home region where the tenancy's IAM and compartment resources are defined. For more detail regarding region identifiers, please visit https://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm . "
-}
-
-## Infra Region
-variable infrastructure_region {
-    type = string 
-    description = "The region identifier of the region where the networking and computing resources are defined. For more detail regarding region identifiers, please visit https://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm . "
-}
+## Infra Region or Default Region of the Current RMS Stack
+variable "infrastructure_region" {}
 
 variable zone_dns {
     type        = string
@@ -120,10 +111,29 @@ provider oci {
 	region = var.infrastructure_region
 }
 
+data oci_identity_region_subscriptions region_subscriptions {
+  tenancy_id = var.tenancy_ocid
+  filter {
+    name   = "region_name"
+    values = [var.infrastructure_region]
+  }
+}
+data oci_identity_regions regions {}
+
+
+locals {
+  region_map = {
+    for r in data.oci_identity_regions.regions.regions :
+    r.key => r.name
+  }
+
+  home_region = lookup(local.region_map, data.oci_identity_tenancy.tenancy.home_region_key)
+}
+
 # Home Region Terraform Provider 
 provider oci {
 	alias  = "home"
-  region = var.home_region
+  region = local.home_region
 }
 
 locals {
