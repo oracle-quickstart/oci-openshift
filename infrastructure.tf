@@ -1,5 +1,5 @@
 ## Infra Region or Default Region of the Current RMS Stack
-variable "infrastructure_region" {}
+variable "region" {}
 
 variable zone_dns {
     type        = string
@@ -108,14 +108,14 @@ variable "enable_private_dns" {
 
 # Reginal Infrastructure Terraform Provider
 provider oci {
-	region = var.infrastructure_region
+	region = var.region
 }
 
 data oci_identity_region_subscriptions region_subscriptions {
   tenancy_id = var.tenancy_ocid
   filter {
     name   = "region_name"
-    values = [var.infrastructure_region]
+    values = [var.region]
   }
 }
 data oci_identity_regions regions {}
