@@ -32,12 +32,12 @@ variable master_boot_size {
 variable master_boot_volume_vpus_per_gb {
     default     = 90
     type        = number
-    description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each master node. The default value is 60. "
+    description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each master node. The default value is 90. "
 }
 variable worker_count {
     default     = 4
     type        = number
-    description = "The number of worker nodes in the cluster. The default value is 3. "
+    description = "The number of worker nodes in the cluster. The default value is 4. "
 }
 variable worker_shape {
     default     = "VM.Standard.E4.Flex"
@@ -51,7 +51,7 @@ variable worker_ocpu {
 variable worker_boot_volume_vpus_per_gb {
     default     = 30
     type        = number
-    description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each worker node. The default value is 20. "
+    description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each worker node. The default value is 30. "
 }
 variable worker_memory {
     default     = 16
@@ -130,9 +130,9 @@ data oci_identity_region_subscriptions region_subscriptions {
     values = [var.region]
   }
 }
+
 data oci_identity_regions regions {}
- 
- 
+
 locals {
   region_map = {
     for r in data.oci_identity_regions.regions.regions :
