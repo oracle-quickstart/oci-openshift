@@ -54,5 +54,7 @@ See the following articles for installation instructions:
 - **Compute Configurations**:
     - Master Instance Configuration
     - Worker Instance Configuration
-- **Compute Pools**: Pools of master and worker nodes.
+- **Compute Pools**: 
+    - master nodes
+    - worker nodes
 
