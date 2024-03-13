@@ -37,13 +37,20 @@ See the following articles for installation instructions:
         - Load balancers NSG
         - Cluster control plane NSG
         - Compute nodes NSG
-- **Network Load Balancer (NLB)**
+- **Application Load Balancers**:
+    - Internal
+        - serves "api-int"
+    - External
+        - serves "api" and "*.apps"
 - **OCI Identity Resources**:
     - Dynamic groups
     - Policies
 - **DNS Resources**:
     - oci_dns_zone
-    - oci_dns_rrset (Two entries)
+    - oci_dns_rrset (Three entries)
+        - api
+        - api-int
+        - *.apps
 - **Compute Configurations**:
     - Master Instance Configuration
     - Worker Instance Configuration
