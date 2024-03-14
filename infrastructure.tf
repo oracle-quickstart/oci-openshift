@@ -403,26 +403,13 @@ resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_3"
   source                    = local.anywhere
   tcp_options {
     destination_port_range {
-      min = 22623
-      max = 22623
-    }
-  }
-}
-
-resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_4" {
-  network_security_group_id = oci_core_network_security_group.cluster_lb_nsg.id
-  protocol                  = "6"
-  direction                 = "INGRESS"
-  source                    = local.anywhere
-  tcp_options {
-    destination_port_range {
       min = 80
       max = 80
     }
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_5" {
+resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_4" {
   network_security_group_id = oci_core_network_security_group.cluster_lb_nsg.id
   protocol                  = "6"
   direction                 = "INGRESS"
@@ -435,24 +422,11 @@ resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_5"
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_6" {
+resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_5" {
   network_security_group_id = oci_core_network_security_group.cluster_lb_nsg.id
   protocol                  = local.all_protocols
   direction                 = "INGRESS"
   source                    = var.vcn_cidr
-}
-
-resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_7" {
-  network_security_group_id = oci_core_network_security_group.cluster_lb_nsg.id
-  protocol                  = "6"
-  direction                 = "INGRESS"
-  source                    = local.anywhere
-  tcp_options {
-    destination_port_range {
-      min = 22624
-      max = 22624
-    }
-  }
 }
 
 resource "oci_core_network_security_group" "cluster_controlplane_nsg" {
@@ -473,20 +447,6 @@ resource "oci_core_network_security_group_security_rule" "cluster_controlplane_n
   protocol                  = local.all_protocols
   direction                 = "INGRESS"
   source                    = var.vcn_cidr
-}
-
-# new nsg rule for api 
-resource "oci_core_network_security_group_security_rule" "cluster_controlplane_nsg_3" {
-  network_security_group_id = oci_core_network_security_group.cluster_controlplane_nsg.id
-  protocol                  = "6"
-  direction                 = "INGRESS"
-  source                    = local.anywhere
-  tcp_options {
-    destination_port_range {
-      min = 6443
-      max = 6443
-    }
-  }
 }
 
 resource "oci_core_network_security_group" "cluster_compute_nsg" {
