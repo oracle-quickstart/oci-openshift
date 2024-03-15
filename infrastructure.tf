@@ -152,7 +152,7 @@ locals {
   all_protocols                   = "all"
   anywhere                        = "0.0.0.0/0"
   create_openshift_instance_pools = true
-  pool_formatter_id = join("", ["$", "{launchCount}"])
+  pool_formatter_id               = join("", ["$", "{launchCount}"])
 }
 
 data "oci_identity_availability_domain" "availability_domain" {
@@ -784,10 +784,10 @@ resource "oci_core_instance_configuration" "master_node_config" {
 }
 
 resource "oci_core_instance_pool" "master_nodes" {
-  count                     = local.create_openshift_instance_pools ? 1 : 0
-  compartment_id            = var.compartment_ocid
-  display_name              = "${var.cluster_name}-master"
-  instance_configuration_id = oci_core_instance_configuration.master_node_config[0].id
+  count                           = local.create_openshift_instance_pools ? 1 : 0
+  compartment_id                  = var.compartment_ocid
+  display_name                    = "${var.cluster_name}-master"
+  instance_configuration_id       = oci_core_instance_configuration.master_node_config[0].id
   instance_display_name_formatter = "${var.cluster_name}-master-${local.pool_formatter_id}"
   instance_hostname_formatter     = "${var.cluster_name}-master-${local.pool_formatter_id}"
   load_balancers {
@@ -864,10 +864,10 @@ resource "oci_core_instance_configuration" "worker_node_config" {
 }
 
 resource "oci_core_instance_pool" "worker_nodes" {
-  count                     = local.create_openshift_instance_pools ? 1 : 0
-  compartment_id            = var.compartment_ocid
-  display_name              = "${var.cluster_name}-worker"
-  instance_configuration_id = oci_core_instance_configuration.worker_node_config[0].id
+  count                           = local.create_openshift_instance_pools ? 1 : 0
+  compartment_id                  = var.compartment_ocid
+  display_name                    = "${var.cluster_name}-worker"
+  instance_configuration_id       = oci_core_instance_configuration.worker_node_config[0].id
   instance_display_name_formatter = "${var.cluster_name}-worker-${local.pool_formatter_id}"
   instance_hostname_formatter     = "${var.cluster_name}-worker-${local.pool_formatter_id}"
   load_balancers {
