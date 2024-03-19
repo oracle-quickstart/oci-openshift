@@ -37,7 +37,7 @@ variable "master_boot_volume_vpus_per_gb" {
 variable "worker_count" {
   default     = 3
   type        = number
-  description = "The number of worker nodes in the cluster. The default value is 4. "
+  description = "The number of worker nodes in the cluster. The default value is 3. "
 }
 variable "worker_shape" {
   default     = "VM.Standard.E4.Flex"
