@@ -1,10 +1,16 @@
 # Terraform Deployed Resources for OpenShift on OCI
 
-This Terraform code is specifically designed for the Development Preview of OpenShift 4.14 at Oracle Cloud Infrastructure (OCI). It provisions resources for an OpenShift cluster running on Oracle Cloud Infrastructure.
+This Terraform code is specifically designed for the OpenShift on Oracle Cloud Infrastructure (OCI). It provisions resources for an OpenShift cluster running on Oracle Cloud Infrastructure.
 
-See the following articles for installation instructions:
-- Agent-based Installer: https://access.redhat.com/node/7038262
-- Assisted Installer: https://access.redhat.com/articles/7039183
+See the following for installation instructions:
+
+**OpenShift 4.14 on Oracle Cloud Infrastructure (OCI) [Technology Preview]**
+- Connected deployments using Assisted Installer: https://docs.openshift.com/container-platform/4.14/installing/installing_oci/installing-oci-assisted-installer.html
+- Disconnected or air gapped deployments using Agent-based Installer: https://docs.openshift.com/container-platform/4.14/installing/installing_oci/installing-oci-agent-based-installer.html
+
+**OpenShift 4.15 on Oracle Cloud Infrastructure (OCI) [Technology Preview]**
+- Connected deployments using Assisted Installer: https://docs.openshift.com/container-platform/4.15/installing/installing_oci/installing-oci-assisted-installer.html
+- Disconnected or air gapped deployments using Agent-based Installer: https://docs.openshift.com/container-platform/4.15/installing/installing_oci/installing-oci-agent-based-installer.html
 
 ## Resources Created:
 
