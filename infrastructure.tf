@@ -1,97 +1,105 @@
 ## Infra Region or Default Region of the Current RMS Stack
 variable "region" {}
 
-variable zone_dns {
-    type        = string
-    description = "The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation."
+variable "zone_dns" {
+  type        = string
+  description = "The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation."
 }
-variable master_count {
-    default     = 3
-    type        = number
-    description = "The number of master nodes in the cluster. The default value is 3. "
+variable "master_count" {
+  default     = 3
+  type        = number
+  description = "The number of master nodes in the cluster. The default value is 3. "
 }
-variable master_shape {
-    default     = "VM.Standard.E4.Flex" 
-    description = "Compute shape of the master nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm ."
+variable "master_shape" {
+  default     = "VM.Standard.E4.Flex"
+  description = "Compute shape of the master nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm ."
 }
-variable master_ocpu {
-    default     = 4
-    type        = number
-    description = "The number of OCPUs available for the shape of each master node. The default value is 4. "
+variable "master_ocpu" {
+  default     = 4
+  type        = number
+  description = "The number of OCPUs available for the shape of each master node. The default value is 4. "
 }
-variable master_memory {
-    default     = 16
-    type        = number
-    description = "The amount of memory available for the shape of each master node, in gigabytes. The default value is 16. "
+variable "master_memory" {
+  default     = 16
+  type        = number
+  description = "The amount of memory available for the shape of each master node, in gigabytes. The default value is 16. "
 }
-variable master_boot_size {
-    default     = 500
-    type        = number
-    description = "The size of the boot volume of each master node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 500 GB. "
+variable "master_boot_size" {
+  default     = 1024
+  type        = number
+  description = "The size of the boot volume of each master node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 1024 GB. "
 }
-variable master_boot_volume_vpus_per_gb {
-    default     = 60
-    type        = number
-    description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each master node. The default value is 60. "
+variable "master_boot_volume_vpus_per_gb" {
+  default     = 90
+  type        = number
+  description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each master node. The default value is 90. "
 }
-variable worker_count {
-    default     = 3
-    type        = number
-    description = "The number of worker nodes in the cluster. The default value is 3. "
+variable "worker_count" {
+  default     = 3
+  type        = number
+  description = "The number of worker nodes in the cluster. The default value is 3. "
 }
-variable worker_shape {
-    default     = "VM.Standard.E4.Flex" 
-    description = "Compute shape of the worker nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm "
+variable "worker_shape" {
+  default     = "VM.Standard.E4.Flex"
+  description = "Compute shape of the worker nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm "
 }
-variable worker_ocpu {
-    default     = 4
-    type        = number
-    description = "The number of OCPUs available for the shape of each worker node. The default value is 4. "
+variable "worker_ocpu" {
+  default     = 4
+  type        = number
+  description = "The number of OCPUs available for the shape of each worker node. The default value is 4. "
 }
-variable worker_boot_volume_vpus_per_gb {
-    default     = 20
-    type        = number
-    description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each worker node. The default value is 20. "
+variable "worker_boot_volume_vpus_per_gb" {
+  default     = 30
+  type        = number
+  description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each worker node. The default value is 30. "
 }
-variable worker_memory {
-    default     = 16
-    type        = number
-    description = "The amount of memory available for the shape of each worker node, in gigabytes. The default value is 16."
+variable "worker_memory" {
+  default     = 16
+  type        = number
+  description = "The amount of memory available for the shape of each worker node, in gigabytes. The default value is 16."
 }
-variable worker_boot_size {
-    default     = 100
-    type        = number
-    description = "The size of the boot volume of each worker node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB."
-
+variable "worker_boot_size" {
+  default     = 100
+  type        = number
+  description = "The size of the boot volume of each worker node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB."
 }
-
+variable "load_balancer_shape_details_maximum_bandwidth_in_mbps" {
+  default     = 500
+  type        = number
+  description = "Bandwidth in Mbps that determines the maximum bandwidth (ingress plus egress) that the load balancer can achieve. The values must be between minimumBandwidthInMbps and 8000"
+}
+variable "load_balancer_shape_details_minimum_bandwidth_in_mbps" {
+  default     = 10
+  type        = number
+  description = " Bandwidth in Mbps that determines the total pre-provisioned bandwidth (ingress plus egress). The values must be between 10 and the maximumBandwidthInMbps"
+}
 variable "tenancy_ocid" {
-    type        = string
-    description = "The ocid of the current tenancy."
+  type        = string
+  description = "The ocid of the current tenancy."
 }
 
 ## Openshift infrastructure compartment
-variable compartment_ocid {
-    type        = string
-    description = "The ocid of the compartment where you wish to create the OpenShift cluster."
+variable "compartment_ocid" {
+  type        = string
+  description = "The ocid of the compartment where you wish to create the OpenShift cluster."
 }
 
 ## Openshift cluster name
-variable cluster_name {
-    type        = string
-    description = "The name of your OpenShift cluster. It should be the same as what was specified when creating the OpenShift ISO and it should be DNS compatible."
+variable "cluster_name" {
+  type        = string
+  description = "The name of your OpenShift cluster. It should be the same as what was specified when creating the OpenShift ISO and it should be DNS compatible."
 }
 
 variable "vcn_cidr" {
-  default = "10.0.0.0/16"
+  default     = "10.0.0.0/16"
   description = "The IPv4 CIDR blocks for the VCN of your OpenShift Cluster. The default value is 10.0.0.0/16. "
 }
 variable "private_cidr" {
-  default = "10.0.16.0/20"
+  default     = "10.0.16.0/20"
   description = "The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.16.0/20. "
 }
 variable "public_cidr" {
-  default = "10.0.0.0/20"
+  default     = "10.0.0.0/20"
   description = "The IPv4 CIDR blocks for the public subnet of your OpenShift Cluster. The default value is 10.0.0.0/20. "
 }
 
@@ -107,23 +115,23 @@ variable "enable_private_dns" {
 }
 
 # Reginal Infrastructure Terraform Provider
-provider oci {
-	region = var.region
+provider "oci" {
+  region = var.region
 }
 
 data "oci_identity_tenancy" "tenancy" {
   tenancy_id = var.tenancy_ocid
 }
 
-data oci_identity_region_subscriptions region_subscriptions {
+data "oci_identity_region_subscriptions" "region_subscriptions" {
   tenancy_id = var.tenancy_ocid
   filter {
     name   = "region_name"
     values = [var.region]
   }
 }
-data oci_identity_regions regions {}
 
+data "oci_identity_regions" "regions" {}
 
 locals {
   region_map = {
@@ -134,25 +142,26 @@ locals {
   home_region = lookup(local.region_map, data.oci_identity_tenancy.tenancy.home_region_key)
 }
 
-# Home Region Terraform Provider 
-provider oci {
-	alias  = "home"
+# Home Region Terraform Provider
+provider "oci" {
+  alias  = "home"
   region = local.home_region
 }
 
 locals {
-  all_protocols = "all"
-  anywhere      = "0.0.0.0/0"
+  all_protocols                   = "all"
+  anywhere                        = "0.0.0.0/0"
   create_openshift_instance_pools = true
+  pool_formatter_id               = join("", ["$", "{launchCount}"])
 }
 
-data oci_identity_availability_domain availability_domain {
+data "oci_identity_availability_domain" "availability_domain" {
   compartment_id = var.compartment_ocid
   ad_number      = "1"
 }
 
 ##Defined tag namespace. Use to mark instance roles and configure instance policy
-resource oci_identity_tag_namespace openshift_tags {
+resource "oci_identity_tag_namespace" "openshift_tags" {
   compartment_id = var.compartment_ocid
   description    = "Used for track openshift related resources and policies"
   is_retired     = "false"
@@ -160,7 +169,7 @@ resource oci_identity_tag_namespace openshift_tags {
   provider       = oci.home
 }
 
-resource oci_identity_tag openshift_instance_role {
+resource "oci_identity_tag" "openshift_instance_role" {
   description      = "Describe instance role inside OpenShift cluster"
   is_cost_tracking = "false"
   is_retired       = "false"
@@ -168,12 +177,12 @@ resource oci_identity_tag openshift_instance_role {
   tag_namespace_id = oci_identity_tag_namespace.openshift_tags.id
   validator {
     validator_type = "ENUM"
-    values         = [
+    values = [
       "master",
       "worker",
     ]
   }
-  provider         = oci.home
+  provider = oci.home
 }
 
 data "oci_core_compute_global_image_capability_schemas" "image_capability_schemas" {
@@ -181,8 +190,8 @@ data "oci_core_compute_global_image_capability_schemas" "image_capability_schema
 
 locals {
   global_image_capability_schemas = data.oci_core_compute_global_image_capability_schemas.image_capability_schemas.compute_global_image_capability_schemas
-  image_schema_data               = {
-    "Compute.Firmware" = "{\"values\": [\"BIOS\",\"UEFI_64\"],\"defaultValue\": \"UEFI_64\",\"descriptorType\": \"enumstring\",\"source\": \"IMAGE\"}"
+  image_schema_data = {
+    "Compute.Firmware" = "{\"values\": [\"UEFI_64\"],\"defaultValue\": \"UEFI_64\",\"descriptorType\": \"enumstring\",\"source\": \"IMAGE\"}"
   }
 }
 
@@ -194,8 +203,8 @@ resource "oci_core_image" "openshift_image" {
 
   image_source_details {
     source_type = "objectStorageUri"
-    source_uri = var.openshift_image_source_uri
-    
+    source_uri  = var.openshift_image_source_uri
+
     source_image_type = "QCOW2"
   }
 }
@@ -223,7 +232,7 @@ resource "oci_core_compute_image_capability_schema" "openshift_image_capability_
 }
 
 ##Define network
-resource oci_core_vcn openshift_vcn {
+resource "oci_core_vcn" "openshift_vcn" {
   cidr_blocks = [
     var.vcn_cidr,
   ]
@@ -271,9 +280,9 @@ resource "oci_core_route_table" "public_routes" {
   display_name   = "public"
 
   route_rules {
-        destination       = local.anywhere
-        destination_type  = "CIDR_BLOCK"
-        network_entity_id = oci_core_internet_gateway.internet_gateway.id
+    destination       = local.anywhere
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_internet_gateway.internet_gateway.id
   }
 }
 
@@ -283,14 +292,14 @@ resource "oci_core_route_table" "private_routes" {
   display_name   = "private"
 
   route_rules {
-        destination       = local.anywhere
-        destination_type  = "CIDR_BLOCK"
-        network_entity_id = oci_core_nat_gateway.nat_gateway.id
+    destination       = local.anywhere
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_nat_gateway.nat_gateway.id
   }
   route_rules {
-        destination       = data.oci_core_services.oci_services.services[0]["cidr_block"]
-        destination_type  = "SERVICE_CIDR_BLOCK"
-        network_entity_id = oci_core_service_gateway.service_gateway.id
+    destination       = data.oci_core_services.oci_services.services[0]["cidr_block"]
+    destination_type  = "SERVICE_CIDR_BLOCK"
+    network_entity_id = oci_core_service_gateway.service_gateway.id
   }
 }
 
@@ -300,8 +309,8 @@ resource "oci_core_security_list" "private" {
   vcn_id         = oci_core_vcn.openshift_vcn.id
 
   ingress_security_rules {
-        source   = var.vcn_cidr
-        protocol = local.all_protocols
+    source   = var.vcn_cidr
+    protocol = local.all_protocols
   }
   egress_security_rules {
     destination = local.anywhere
@@ -315,16 +324,16 @@ resource "oci_core_security_list" "public" {
   vcn_id         = oci_core_vcn.openshift_vcn.id
 
   ingress_security_rules {
-        source   = var.vcn_cidr
-        protocol = local.all_protocols
+    source   = var.vcn_cidr
+    protocol = local.all_protocols
   }
   ingress_security_rules {
-        source   = local.anywhere
-        protocol = "6"
-        tcp_options {
-            min = 22
-            max = 22
-        }
+    source   = local.anywhere
+    protocol = "6"
+    tcp_options {
+      min = 22
+      max = 22
+    }
   }
   egress_security_rules {
     destination = local.anywhere
@@ -395,26 +404,13 @@ resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_3"
   source                    = local.anywhere
   tcp_options {
     destination_port_range {
-      min = 22623
-      max = 22623
-    }
-  }
-}
-
-resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_4" {
-  network_security_group_id = oci_core_network_security_group.cluster_lb_nsg.id
-  protocol                  = "6"
-  direction                 = "INGRESS"
-  source                    = local.anywhere
-  tcp_options {
-    destination_port_range {
       min = 80
       max = 80
     }
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_5" {
+resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_4" {
   network_security_group_id = oci_core_network_security_group.cluster_lb_nsg.id
   protocol                  = "6"
   direction                 = "INGRESS"
@@ -427,7 +423,7 @@ resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_5"
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_6" {
+resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_5" {
   network_security_group_id = oci_core_network_security_group.cluster_lb_nsg.id
   protocol                  = local.all_protocols
   direction                 = "INGRESS"
@@ -474,133 +470,211 @@ resource "oci_core_network_security_group_security_rule" "cluster_compute_nsg_2"
   source                    = var.vcn_cidr
 }
 
-resource "oci_network_load_balancer_network_load_balancer" "openshift_lb" {
+resource "oci_load_balancer_load_balancer" "openshift_internal_lb" {
   compartment_id             = var.compartment_ocid
-  subnet_id                  = oci_core_subnet.public.id
-  display_name               = "openshift_lb"
+  display_name               = "${var.cluster_name}-openshift_internal_lb"
+  shape                      = "flexible"
+  subnet_ids                 = [oci_core_subnet.private.id]
+  is_private                 = true
+  network_security_group_ids = [oci_core_network_security_group.cluster_lb_nsg.id]
+
+  shape_details {
+    maximum_bandwidth_in_mbps = var.load_balancer_shape_details_maximum_bandwidth_in_mbps
+    minimum_bandwidth_in_mbps = var.load_balancer_shape_details_minimum_bandwidth_in_mbps
+  }
+}
+
+resource "oci_load_balancer_load_balancer" "openshift_external_lb" {
+  compartment_id             = var.compartment_ocid
+  display_name               = "${var.cluster_name}-openshift_external_lb"
+  shape                      = "flexible"
+  subnet_ids                 = [oci_core_subnet.public.id]
   is_private                 = false
   network_security_group_ids = [oci_core_network_security_group.cluster_lb_nsg.id]
+
+  shape_details {
+    maximum_bandwidth_in_mbps = var.load_balancer_shape_details_maximum_bandwidth_in_mbps
+    minimum_bandwidth_in_mbps = var.load_balancer_shape_details_minimum_bandwidth_in_mbps
+  }
 }
 
 locals {
   lb_private_addr = element([
-    for address in oci_network_load_balancer_network_load_balancer.openshift_lb.ip_addresses :address 
+    for address in oci_load_balancer_load_balancer.openshift_internal_lb.ip_address_details : address
     if address.is_public == false
-], 0).ip_address
+  ], 0).ip_address
   lb_public_addr = element([
-    for address in oci_network_load_balancer_network_load_balancer.openshift_lb.ip_addresses :address
+    for address in oci_load_balancer_load_balancer.openshift_external_lb.ip_address_details : address
     if address.is_public == true
   ], 0).ip_address
 }
 
-resource "oci_network_load_balancer_backend_set" "openshift_cluster_api_backend" {
-    health_checker {
-        protocol    = "HTTPS"
-        port        = 6443
-        return_code = 200
-        url_path    = "/readyz"
-    }
-    name                     = "openshift_cluster_api_backend"
-    network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-    policy                   = "FIVE_TUPLE"
-    is_preserve_source       = false
-    depends_on               = [oci_network_load_balancer_network_load_balancer.openshift_lb]
+resource "oci_load_balancer_backend_set" "openshift_cluster_api_backend_external" {
+  health_checker {
+    protocol          = "HTTP"
+    port              = 6080
+    return_code       = 200
+    url_path          = "/readyz"
+    interval_ms       = 10000
+    timeout_in_millis = 3000
+    retries           = 3
+  }
+  name             = "openshift_cluster_api_backend"
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
+  policy           = "LEAST_CONNECTIONS"
+  depends_on       = [oci_load_balancer_load_balancer.openshift_external_lb]
 }
 
-resource "oci_network_load_balancer_listener" "openshift_cluster_api" {
-    default_backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_api_backend.name
-    name                     = "openshift_cluster_api"
-    network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-    port                     = 6443
-    protocol                 = "TCP"
-    depends_on               = [oci_network_load_balancer_backend_set.openshift_cluster_api_backend]
+resource "oci_load_balancer_listener" "openshift_cluster_api_listener_external" {
+  default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_external.name
+  name                     = "openshift_cluster_api_listener"
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_external_lb.id
+  port                     = 6443
+  protocol                 = "TCP"
+  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_api_backend_external]
 }
 
-resource "oci_network_load_balancer_backend_set" "openshift_cluster_ingress_http_backend" {
-    health_checker {
-        protocol = "TCP"
-        port     = 80
-    }
-    name                     = "openshift_cluster_ingress_http_backend"
-    network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-    policy                   = "FIVE_TUPLE"
-    is_preserve_source       = false
-    depends_on               = [oci_network_load_balancer_listener.openshift_cluster_api]
+resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_http_backend" {
+  health_checker {
+    protocol          = "TCP"
+    port              = 80
+    interval_ms       = 10000
+    timeout_in_millis = 3000
+    retries           = 3
+  }
+  name             = "openshift_cluster_ingress_http"
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
+  policy           = "LEAST_CONNECTIONS"
+  depends_on       = [oci_load_balancer_load_balancer.openshift_external_lb]
 }
 
-resource "oci_network_load_balancer_listener" "openshift_cluster_ingress_http" {
-    default_backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_ingress_http_backend.name
-    name                     = "openshift_cluster_ingress_http"
-    network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-    port                     = 80
-    protocol                 = "TCP"
-    depends_on               = [oci_network_load_balancer_backend_set.openshift_cluster_ingress_http_backend]
+resource "oci_load_balancer_listener" "openshift_cluster_ingress_http" {
+  default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend.name
+  name                     = "openshift_cluster_ingress_http"
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_external_lb.id
+  port                     = 80
+  protocol                 = "TCP"
+  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend]
 }
 
-resource "oci_network_load_balancer_backend_set" "openshift_cluster_ingress_https_backend" {
-    health_checker {
-        protocol = "TCP"
-        port     = 443
-    }
-    name                     = "openshift_cluster_ingress_https_backend"
-    network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-    policy                   = "FIVE_TUPLE"
-    is_preserve_source       = false
-    depends_on               = [oci_network_load_balancer_listener.openshift_cluster_ingress_http]
+resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_https_backend" {
+  health_checker {
+    protocol          = "TCP"
+    port              = 443
+    interval_ms       = 10000
+    timeout_in_millis = 3000
+    retries           = 3
+  }
+  name             = "openshift_cluster_ingress_https"
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
+  policy           = "LEAST_CONNECTIONS"
+  depends_on       = [oci_load_balancer_load_balancer.openshift_external_lb]
 }
 
-resource "oci_network_load_balancer_listener" "openshift_cluster_ingress_https" {
-    default_backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_ingress_https_backend.name
-    name                     = "openshift_cluster_ingress_https"
-    network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-    port                     = 443
-    protocol                 = "TCP"
-    depends_on               = [oci_network_load_balancer_backend_set.openshift_cluster_ingress_https_backend]
+resource "oci_load_balancer_listener" "openshift_cluster_ingress_https" {
+  default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend.name
+  name                     = "openshift_cluster_ingress_https"
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_external_lb.id
+  port                     = 443
+  protocol                 = "TCP"
+  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend]
 }
 
-resource "oci_network_load_balancer_backend_set" "openshift_cluster_infra-mcs_backend" {
-    health_checker {
-        protocol    = "HTTPS"
-        port        = 22623
-        url_path    = "/healthz"
-        return_code = 200
-    }
-    name                     = "openshift_cluster_infra-mcs_backend"
-    network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-    policy                   = "FIVE_TUPLE"
-    is_preserve_source       = false
-    depends_on               = [oci_network_load_balancer_listener.openshift_cluster_ingress_https]
+resource "oci_load_balancer_backend_set" "openshift_cluster_api_backend_internal" {
+  health_checker {
+    protocol          = "HTTP"
+    port              = 6080
+    return_code       = 200
+    url_path          = "/readyz"
+    interval_ms       = 10000
+    timeout_in_millis = 3000
+    retries           = 3
+  }
+  name             = "openshift_cluster_api_backend"
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  policy           = "LEAST_CONNECTIONS"
+  depends_on       = [oci_load_balancer_load_balancer.openshift_internal_lb]
 }
 
-resource "oci_network_load_balancer_listener" "openshift_cluster_infra-mcs" {
-    default_backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_infra-mcs_backend.name
-    name                     = "openshift_cluster_infra-mcs"
-    network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-    port                     = 22623
-    protocol                 = "TCP"
-    depends_on               = [oci_network_load_balancer_backend_set.openshift_cluster_infra-mcs_backend]
+resource "oci_load_balancer_listener" "openshift_cluster_api_listener_internal" {
+  default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_internal.name
+  name                     = "openshift_cluster_api_listener"
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  port                     = 6443
+  protocol                 = "TCP"
+  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_api_backend_internal]
+}
+
+resource "oci_load_balancer_backend_set" "openshift_cluster_infra-mcs_backend" {
+  health_checker {
+    protocol          = "HTTP"
+    port              = 22624
+    return_code       = 200
+    url_path          = "/healthz"
+    interval_ms       = 10000
+    timeout_in_millis = 3000
+    retries           = 3
+  }
+  name             = "openshift_cluster_infra-mcs"
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  policy           = "LEAST_CONNECTIONS"
+  depends_on       = [oci_load_balancer_load_balancer.openshift_internal_lb]
+}
+
+resource "oci_load_balancer_listener" "openshift_cluster_infra-mcs" {
+  default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend.name
+  name                     = "openshift_cluster_infra-mcs"
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  port                     = 22623
+  protocol                 = "TCP"
+  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend]
+}
+
+resource "oci_load_balancer_backend_set" "openshift_cluster_infra-mcs_backend_2" {
+  health_checker {
+    protocol          = "HTTP"
+    port              = 22624
+    return_code       = 200
+    url_path          = "/healthz"
+    interval_ms       = 10000
+    timeout_in_millis = 3000
+    retries           = 3
+  }
+  name             = "openshift_cluster_infra-mcs_2"
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  policy           = "LEAST_CONNECTIONS"
+  depends_on       = [oci_load_balancer_load_balancer.openshift_internal_lb]
+}
+
+resource "oci_load_balancer_listener" "openshift_cluster_infra-mcs_2" {
+  default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2.name
+  name                     = "openshift_cluster_infra-mcs_2"
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  port                     = 22624
+  protocol                 = "TCP"
+  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2]
 }
 
 resource "oci_identity_dynamic_group" "openshift_master_nodes" {
-    compartment_id = var.tenancy_ocid
-    description    = "OpenShift master nodes" 
-    matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='master'}"
-    name           = "${var.cluster_name}_master_nodes"
-    provider       = oci.home
+  compartment_id = var.tenancy_ocid
+  description    = "OpenShift master nodes"
+  matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='master'}"
+  name           = "${var.cluster_name}_master_nodes"
+  provider       = oci.home
 }
 
 resource "oci_identity_policy" "openshift_master_nodes" {
-    compartment_id = var.tenancy_ocid
-    description    = "OpenShift master nodes instance principal"
-    name           = "${var.cluster_name}_master_nodes"
-    statements     = [
-        "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage volume-family in compartment id ${var.compartment_ocid}",
-        "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage instance-family in compartment id ${var.compartment_ocid}",
-        "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage security-lists in compartment id ${var.compartment_ocid}",
-        "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to use virtual-network-family in compartment id ${var.compartment_ocid}",
-        "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage load-balancers in compartment id ${var.compartment_ocid}",
-    ]
-    provider       = oci.home
+  compartment_id = var.compartment_ocid
+  description    = "OpenShift master nodes instance principal"
+  name           = "${var.cluster_name}_master_nodes"
+  statements = [
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage volume-family in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage instance-family in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage security-lists in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to use virtual-network-family in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage load-balancers in compartment id ${var.compartment_ocid}",
+  ]
+  provider = oci.home
 }
 
 resource "oci_identity_dynamic_group" "openshift_worker_nodes" {
@@ -611,7 +685,7 @@ resource "oci_identity_dynamic_group" "openshift_worker_nodes" {
   provider       = oci.home
 }
 
-resource oci_dns_zone openshift {
+resource "oci_dns_zone" "openshift" {
   compartment_id = var.compartment_ocid
   name           = var.zone_dns
   scope          = var.enable_private_dns ? "PRIVATE" : null
@@ -620,44 +694,44 @@ resource oci_dns_zone openshift {
   depends_on     = [oci_core_subnet.private]
 }
 
-resource oci_dns_rrset openshift_api {
+resource "oci_dns_rrset" "openshift_api" {
   domain = "api.${var.cluster_name}.${var.zone_dns}"
   items {
     domain = "api.${var.cluster_name}.${var.zone_dns}"
     rdata  = var.enable_private_dns ? local.lb_private_addr : local.lb_public_addr
     rtype  = "A"
-    ttl    = "30"
+    ttl    = "3600"
   }
   rtype           = "A"
   zone_name_or_id = oci_dns_zone.openshift.id
 }
 
-resource oci_dns_rrset openshift_apps {
+resource "oci_dns_rrset" "openshift_apps" {
   domain = "*.apps.${var.cluster_name}.${var.zone_dns}"
   items {
     domain = "*.apps.${var.cluster_name}.${var.zone_dns}"
     rdata  = var.enable_private_dns ? local.lb_private_addr : local.lb_public_addr
     rtype  = "A"
-    ttl    = "30"
+    ttl    = "3600"
   }
   rtype           = "A"
   zone_name_or_id = oci_dns_zone.openshift.id
 }
 
-resource oci_dns_rrset openshift_api_int {
+resource "oci_dns_rrset" "openshift_api_int" {
   domain = "api-int.${var.cluster_name}.${var.zone_dns}"
   items {
     domain = "api-int.${var.cluster_name}.${var.zone_dns}"
-    rdata  = var.enable_private_dns ? local.lb_private_addr : local.lb_public_addr
+    rdata  = local.lb_private_addr
     rtype  = "A"
-    ttl    = "30"
+    ttl    = "3600"
   }
   rtype           = "A"
   zone_name_or_id = oci_dns_zone.openshift.id
 }
 
 resource "time_sleep" "wait_180_seconds" {
-  depends_on = [oci_core_vcn.openshift_vcn]
+  depends_on      = [oci_core_vcn.openshift_vcn]
   create_duration = "180s"
 }
 
@@ -674,7 +748,7 @@ data "oci_dns_resolver" "dns_resolver" {
   scope       = "PRIVATE"
 }
 
-resource oci_core_instance_configuration master_node_config {
+resource "oci_core_instance_configuration" "master_node_config" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
   display_name   = "${var.cluster_name}-master"
@@ -686,7 +760,7 @@ resource oci_core_instance_configuration master_node_config {
       create_vnic_details {
         assign_private_dns_record = "true"
         assign_public_ip          = "false"
-        nsg_ids                   = [
+        nsg_ids = [
           oci_core_network_security_group.cluster_controlplane_nsg.id,
         ]
         subnet_id = oci_core_subnet.private.id
@@ -709,26 +783,34 @@ resource oci_core_instance_configuration master_node_config {
   }
 }
 
-resource oci_core_instance_pool master_nodes {
-  count                     = local.create_openshift_instance_pools ? 1 : 0
-  compartment_id            = var.compartment_ocid
-  display_name              = "${var.cluster_name}-master"
-  instance_configuration_id = oci_core_instance_configuration.master_node_config[0].id
+resource "oci_core_instance_pool" "master_nodes" {
+  count                           = local.create_openshift_instance_pools ? 1 : 0
+  compartment_id                  = var.compartment_ocid
+  display_name                    = "${var.cluster_name}-master"
+  instance_configuration_id       = oci_core_instance_configuration.master_node_config[0].id
+  instance_display_name_formatter = "${var.cluster_name}-master-${local.pool_formatter_id}"
+  instance_hostname_formatter     = "${var.cluster_name}-master-${local.pool_formatter_id}"
   load_balancers {
-    backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_api_backend.name
-    load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
+    backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_external.name
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
     port             = "6443"
     vnic_selection   = "PrimaryVnic"
   }
   load_balancers {
-    backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_infra-mcs_backend.name
-    load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
+    backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_internal.name
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+    port             = "6443"
+    vnic_selection   = "PrimaryVnic"
+  }
+  load_balancers {
+    backend_set_name = oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend.name
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
     port             = "22623"
     vnic_selection   = "PrimaryVnic"
   }
   load_balancers {
-    backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2.name
-    load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
+    backend_set_name = oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2.name
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
     port             = "22624"
     vnic_selection   = "PrimaryVnic"
   }
@@ -736,16 +818,17 @@ resource oci_core_instance_pool master_nodes {
     availability_domain = data.oci_identity_availability_domain.availability_domain.name
     primary_subnet_id   = oci_core_subnet.private.id
   }
-  size       = var.master_count
+  size = var.master_count
   depends_on = [
-    oci_network_load_balancer_backend_set.openshift_cluster_api_backend,
-    oci_network_load_balancer_backend_set.openshift_cluster_infra-mcs_backend,
-    oci_network_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2,
+    oci_load_balancer_backend_set.openshift_cluster_api_backend_external,
+    oci_load_balancer_backend_set.openshift_cluster_api_backend_internal,
+    oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend,
+    oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2,
     oci_core_instance_configuration.master_node_config,
   ]
 }
 
-resource oci_core_instance_configuration worker_node_config {
+resource "oci_core_instance_configuration" "worker_node_config" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
   display_name   = "${var.cluster_name}-worker"
@@ -757,7 +840,7 @@ resource oci_core_instance_configuration worker_node_config {
       create_vnic_details {
         assign_private_dns_record = "true"
         assign_public_ip          = "false"
-        nsg_ids                   = [
+        nsg_ids = [
           oci_core_network_security_group.cluster_compute_nsg.id,
         ]
         subnet_id = oci_core_subnet.private.id
@@ -780,20 +863,22 @@ resource oci_core_instance_configuration worker_node_config {
   }
 }
 
-resource oci_core_instance_pool worker_nodes {
-  count                     = local.create_openshift_instance_pools ? 1 : 0
-  compartment_id            = var.compartment_ocid
-  display_name              = "${var.cluster_name}-worker"
-  instance_configuration_id = oci_core_instance_configuration.worker_node_config[0].id
+resource "oci_core_instance_pool" "worker_nodes" {
+  count                           = local.create_openshift_instance_pools ? 1 : 0
+  compartment_id                  = var.compartment_ocid
+  display_name                    = "${var.cluster_name}-worker"
+  instance_configuration_id       = oci_core_instance_configuration.worker_node_config[0].id
+  instance_display_name_formatter = "${var.cluster_name}-worker-${local.pool_formatter_id}"
+  instance_hostname_formatter     = "${var.cluster_name}-worker-${local.pool_formatter_id}"
   load_balancers {
-    backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_ingress_https_backend.name
-    load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
+    backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend.name
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
     port             = "443"
     vnic_selection   = "PrimaryVnic"
   }
   load_balancers {
-    backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_ingress_http_backend.name
-    load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
+    backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend.name
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
     port             = "80"
     vnic_selection   = "PrimaryVnic"
   }
@@ -801,10 +886,10 @@ resource oci_core_instance_pool worker_nodes {
     availability_domain = data.oci_identity_availability_domain.availability_domain.name
     primary_subnet_id   = oci_core_subnet.private.id
   }
-  size       = var.worker_count
+  size = var.worker_count
   depends_on = [
-    oci_network_load_balancer_backend_set.openshift_cluster_ingress_https_backend,
-    oci_network_load_balancer_backend_set.openshift_cluster_ingress_http_backend,
+    oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend,
+    oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend,
     oci_core_instance_configuration.worker_node_config,
   ]
 }
@@ -833,41 +918,4 @@ rateLimiter:
   rateLimitQPSWrite: 20.0
   rateLimitBucketWrite: 5
   OCICCMCONFIG
-}
-
-resource "oci_network_load_balancer_backend_set" "openshift_cluster_infra-mcs_backend_2" {
-  health_checker {
-    protocol           = "TCP"
-    port               = 22624
-    interval_in_millis = 10000
-    timeout_in_millis  = 3000
-    retries            = 3
-  }
-  name                     = "openshift_cluster_infra-mcs_backend_2"
-  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-  policy                   = "FIVE_TUPLE"
-  is_preserve_source       = false
-  depends_on               = [oci_network_load_balancer_listener.openshift_cluster_infra-mcs]
-}
-
-resource "oci_network_load_balancer_listener" "openshift_cluster_infra-mcs_2" {
-  default_backend_set_name = oci_network_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2.name
-  name                     = "openshift_cluster_infra-mcs_2"
-  network_load_balancer_id = oci_network_load_balancer_network_load_balancer.openshift_lb.id
-  port                     = 22624
-  protocol                 = "TCP"
-  depends_on               = [oci_network_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2]
-}
-
-resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_7" {
-  network_security_group_id = oci_core_network_security_group.cluster_lb_nsg.id
-  protocol                  = "6"
-  direction                 = "INGRESS"
-  source                    = local.anywhere
-  tcp_options {
-    destination_port_range {
-      min = 22624
-      max = 22624
-    }
-  }
 }
