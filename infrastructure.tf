@@ -3,12 +3,7 @@ variable "region" {}
 
 variable "zone_dns" {
   type        = string
-  description = "The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation."
-
-  validation {
-    condition     = can(regex("^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$", var.zone_dns))
-    error_message = "The zone_dns value must be a valid hostname."
-  }
+  description = "The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation. The zone_dns value must be a valid hostname."
 }
 variable "master_count" {
   default     = 3
@@ -142,12 +137,7 @@ variable "compartment_ocid" {
 ## Openshift cluster name
 variable "cluster_name" {
   type        = string
-  description = "The name of your OpenShift cluster. It should be the same as what was specified when creating the OpenShift ISO and it should be DNS compatible."
-
-  validation {
-    condition     = can(regex("^((?!-)[a-z0-9-]{1,54}(?<!-))$", var.cluster_name))
-    error_message = "The cluster_name value must be 1-54 characters. It can use lowercase alphanumeric characters or hyphen (-), but must start and end with a lowercase letter or a number."
-  }
+  description = "The name of your OpenShift cluster. It should be the same as what was specified when creating the OpenShift ISO and it should be DNS compatible. The cluster_name value must be 1-54 characters. It can use lowercase alphanumeric characters or hyphen (-), but must start and end with a lowercase letter or a number."
 }
 
 variable "vcn_cidr" {
