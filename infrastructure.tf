@@ -6,7 +6,7 @@ variable "zone_dns" {
   description = "The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation."
 
   validation {
-    condition     = can(regex("^((?!-)[A-Za-z0-9-]{1, 63}(?<!-)\\.)+[A-Za-z]{2, 6}$", var.zone_dns))
+    condition     = can(regex("^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$", var.zone_dns))
     error_message = "The zone_dns value must be a valid hostname."
   }
 }
@@ -145,7 +145,7 @@ variable "cluster_name" {
   description = "The name of your OpenShift cluster. It should be the same as what was specified when creating the OpenShift ISO and it should be DNS compatible."
 
   validation {
-    condition     = can(regex("^((?!-)[a-z0-9-]{1, 54}(?<!-))$", var.cluster_name))
+    condition     = can(regex("^((?!-)[a-z0-9-]{1,54}(?<!-))$", var.cluster_name))
     error_message = "The cluster_name value must be 1-54 characters. It can use lowercase alphanumeric characters or hyphen (-), but must start and end with a lowercase letter or a number."
   }
 }
@@ -158,7 +158,7 @@ variable "vcn_dns_label" {
   default     = "openshiftvcn"
   description = "A DNS label for the VCN, used in conjunction with the VNIC's hostname and subnet's DNS label to form a fully qualified domain name (FQDN) for each VNIC within this subnet (for example, bminstance1.subnet123.vcn1.oraclevcn.com). Must be an alphanumeric string that begins with a letter"
   validation {
-    condition     = can(regex("^([a-z0-9]{1, 15})$", var.vcn_dns_label))
+    condition     = can(regex("^([a-z0-9]{1,15})$", var.vcn_dns_label))
     error_message = "The vcn_dns_label value must be 1-15 characters. It can use lowercase alphanumeric characters, but must start with a lowercase letter."
   }
 }
