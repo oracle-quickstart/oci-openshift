@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oci-fss-csi
+  namespace: oci-csi
+data:
+  mount: |-
+    #!/bin/sh
+    if [ -x /sbin/mount ]; then
+    chroot /host mount "$@"
+    elif [ -x /usr/local/sbin/mount ]; then
+    chroot /host mount "$@"
+    elif [ -x /usr/sbin/mount ]; then
+    chroot /host mount "$@"
+    elif [ -x /usr/local/bin/mount ]; then
+    chroot /host mount "$@"
+    else
+    chroot /host mount "$@"
+    fi
+  umount: |-
+    #!/bin/sh
+    if [ -x /sbin/umount ]; then
+    chroot /host umount "$@"
+    elif [ -x /usr/local/sbin/umount ]; then
+    chroot /host umount "$@"
+    elif [ -x /usr/sbin/umount ]; then
+    chroot /host umount "$@"
+    elif [ -x /usr/local/bin/umount ]; then
+    chroot /host umount "$@"
+    else
+    chroot /host umount "$@"
+    fi
+  umount.oci-fss: |-
+    #!/bin/sh
+    if [ -x /sbin/umount-oci-fss ]; then
+    chroot /host umount.oci-fss "$@"
+    elif [ -x /usr/local/sbin/umount-oci-fss ]; then
+    chroot /host umount.oci-fss "$@"
+    elif [ -x /usr/sbin/umount-oci-fss ]; then
+    chroot /host umount.oci-fss "$@"
+    elif [ -x /usr/local/bin/umount-oci-fss ]; then
+    chroot /host umount.oci-fss "$@"
+    else
+    chroot /host umount.oci-fss "$@"
+    fi
