@@ -80,4 +80,3 @@ spec:
           name: oci-kubelet-providerid.service
 
 ---
-

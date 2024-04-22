@@ -60,7 +60,6 @@ See the following for installation instructions:
 - **Compute Configurations**:
     - Master Instance Configuration
     - Worker Instance Configuration
-- **Compute Pools**: 
+- **Compute Pools**:
     - master nodes
     - worker nodes
-
