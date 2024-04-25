@@ -1,2 +1,8 @@
 .idea/
 .DS_Store
+
+### Terraform ###
+# Local .terraform directories
+**/.terraform/*
+**/.terrafor*
+!.terraform.lock.hcl

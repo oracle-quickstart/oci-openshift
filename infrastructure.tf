@@ -1,5 +1,21 @@
+terraform {
+  required_version = ">= 1.0"
+  required_providers {
+    oci = {
+      source  = "oracle/oci"
+      version = ">= 5.38.0"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.11.1"
+    }
+  }
+}
+
 ## Infra Region or Default Region of the Current RMS Stack
-variable "region" {}
+variable "region" {
+  type = string
+}
 
 variable "zone_dns" {
   type        = string
@@ -12,6 +28,7 @@ variable "master_count" {
 }
 variable "master_shape" {
   default     = "VM.Standard.E4.Flex"
+  type        = string
   description = "Compute shape of the master nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm ."
 }
 variable "master_ocpu" {
@@ -61,6 +78,7 @@ variable "worker_count" {
 }
 variable "worker_shape" {
   default     = "VM.Standard.E4.Flex"
+  type        = string
   description = "Compute shape of the worker nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm "
 }
 variable "worker_ocpu" {
@@ -142,10 +160,12 @@ variable "cluster_name" {
 
 variable "vcn_cidr" {
   default     = "10.0.0.0/16"
+  type        = string
   description = "The IPv4 CIDR blocks for the VCN of your OpenShift Cluster. The default value is 10.0.0.0/16. "
 }
 variable "vcn_dns_label" {
   default     = "openshiftvcn"
+  type        = string
   description = "A DNS label for the VCN, used in conjunction with the VNIC's hostname and subnet's DNS label to form a fully qualified domain name (FQDN) for each VNIC within this subnet (for example, bminstance1.subnet123.vcn1.oraclevcn.com). Must be an alphanumeric string that begins with a letter"
   validation {
     condition     = can(regex("^([a-z0-9]{1,15})$", var.vcn_dns_label))
@@ -154,10 +174,12 @@ variable "vcn_dns_label" {
 }
 variable "private_cidr" {
   default     = "10.0.16.0/20"
+  type        = string
   description = "The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.16.0/20. "
 }
 variable "public_cidr" {
   default     = "10.0.0.0/20"
+  type        = string
   description = "The IPv4 CIDR blocks for the public subnet of your OpenShift Cluster. The default value is 10.0.0.0/20. "
 }
 
@@ -181,14 +203,6 @@ data "oci_identity_tenancy" "tenancy" {
   tenancy_id = var.tenancy_ocid
 }
 
-data "oci_identity_region_subscriptions" "region_subscriptions" {
-  tenancy_id = var.tenancy_ocid
-  filter {
-    name   = "region_name"
-    values = [var.region]
-  }
-}
-
 data "oci_identity_regions" "regions" {}
 
 locals {
@@ -197,7 +211,7 @@ locals {
     r.key => r.name
   }
 
-  home_region = lookup(local.region_map, data.oci_identity_tenancy.tenancy.home_region_key)
+  home_region = local.region_map[data.oci_identity_tenancy.tenancy.home_region_key]
 }
 
 # Home Region Terraform Provider
