@@ -347,7 +347,6 @@ resource "oci_core_service_gateway" "service_gateway" {
 }
 
 resource "oci_core_route_table" "public_routes" {
-  count          = var.enable_private_dns ? 0 : 1
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "public"
@@ -392,7 +391,6 @@ resource "oci_core_security_list" "private" {
 }
 
 resource "oci_core_security_list" "public" {
-  count          = var.enable_private_dns ? 0 : 1
   compartment_id = var.compartment_ocid
   display_name   = "public"
   vcn_id         = oci_core_vcn.openshift_vcn.id
@@ -431,15 +429,14 @@ resource "oci_core_subnet" "private" {
 }
 
 resource "oci_core_subnet" "public" {
-  count          = var.enable_private_dns ? 0 : 1
   cidr_block     = var.public_cidr
   display_name   = "public"
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
-  route_table_id = oci_core_route_table.public_routes[0].id
+  route_table_id = oci_core_route_table.public_routes.id
 
   security_list_ids = [
-    oci_core_security_list.public[0].id,
+    oci_core_security_list.public.id,
   ]
 
   dns_label                  = "public"
@@ -563,7 +560,7 @@ resource "oci_load_balancer_load_balancer" "openshift_api_apps_lb" {
   compartment_id             = var.compartment_ocid
   display_name               = "${var.cluster_name}-openshift_api_apps_lb"
   shape                      = "flexible"
-  subnet_ids                 = var.enable_private_dns ? [oci_core_subnet.private.id] : [oci_core_subnet.public[0].id]
+  subnet_ids                 = var.enable_private_dns ? [oci_core_subnet.private.id] : [oci_core_subnet.public.id]
   is_private                 = var.enable_private_dns ? true : false
   network_security_group_ids = [oci_core_network_security_group.cluster_lb_nsg.id]
 
@@ -946,10 +943,10 @@ useInstancePrincipals: true
 compartment: ${var.compartment_ocid}
 vcn: ${oci_core_vcn.openshift_vcn.id}
 loadBalancer:
-  subnet1: ${var.enable_private_dns ? oci_core_subnet.private.id : oci_core_subnet.public[0].id}
+  subnet1: ${var.enable_private_dns ? oci_core_subnet.private.id : oci_core_subnet.public.id}
   securityListManagementMode: Frontend
   securityLists:
-    ${var.enable_private_dns ? oci_core_subnet.private.id : oci_core_subnet.public[0].id}: ${var.enable_private_dns ? oci_core_security_list.private.id : oci_core_security_list.public[0].id}
+    ${var.enable_private_dns ? oci_core_subnet.private.id : oci_core_subnet.public.id}: ${var.enable_private_dns ? oci_core_security_list.private.id : oci_core_security_list.public.id}
 rateLimiter:
   rateLimitQPSRead: 20.0
   rateLimitBucketRead: 5
