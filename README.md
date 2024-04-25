@@ -17,7 +17,7 @@ See the following for installation instructions:
 - **Availability Domain**: First availability domain for the compartment.
 - **Tag Namespace and Tags**:
     - Namespace: "openshift"
-    - Tag values: "master" and "worker"
+    - Tag values: "control-plane" and "compute"
 - **Image Capabilities**:
     - Global Image Capability Schemas
     - Image Capability Schema for Openshift
@@ -44,9 +44,9 @@ See the following for installation instructions:
         - Cluster control plane NSG
         - Compute nodes NSG
 - **Application Load Balancers**:
-    - Internal
+    - API Int
         - serves "api-int"
-    - External
+    - API Apps
         - serves "api" and "*.apps"
 - **OCI Identity Resources**:
     - Dynamic groups
@@ -58,8 +58,8 @@ See the following for installation instructions:
         - api-int
         - *.apps
 - **Compute Configurations**:
-    - Master Instance Configuration
-    - Worker Instance Configuration
+    - Control Plane Instance Configuration
+    - Compute Instance Configuration
 - **Compute Pools**:
-    - master nodes
-    - worker nodes
+    - Control Plane nodes
+    - Compute nodes

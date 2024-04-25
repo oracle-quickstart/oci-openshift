@@ -21,104 +21,104 @@ variable "zone_dns" {
   type        = string
   description = "The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation. The zone_dns value must be a valid hostname."
 }
-variable "master_count" {
+variable "control_plane_count" {
   default     = 3
   type        = number
-  description = "The number of master nodes in the cluster. The default value is 3. "
+  description = "The number of control_plane nodes in the cluster. The default value is 3. "
 }
-variable "master_shape" {
+variable "control_plane_shape" {
   default     = "VM.Standard.E4.Flex"
   type        = string
-  description = "Compute shape of the master nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm ."
+  description = "Compute shape of the control_plane nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm ."
 }
-variable "master_ocpu" {
+variable "control_plane_ocpu" {
   default     = 4
   type        = number
-  description = "The number of OCPUs available for the shape of each master node. The default value is 4. "
+  description = "The number of OCPUs available for the shape of each control_plane node. The default value is 4. "
 
   validation {
-    condition     = var.master_ocpu >= 1 && var.master_ocpu <= 114
-    error_message = "The master_ocpu value must be between 1 and 114."
+    condition     = var.control_plane_ocpu >= 1 && var.control_plane_ocpu <= 114
+    error_message = "The control_plane_ocpu value must be between 1 and 114."
   }
 }
-variable "master_memory" {
+variable "control_plane_memory" {
   default     = 16
   type        = number
-  description = "The amount of memory available for the shape of each master node, in gigabytes. The default value is 16. "
+  description = "The amount of memory available for the shape of each control_plane node, in gigabytes. The default value is 16. "
 
   validation {
-    condition     = var.master_memory >= 1 && var.master_memory <= 1760
-    error_message = "The master_memory value must be between the value of master_ocpu and 1760."
+    condition     = var.control_plane_memory >= 1 && var.control_plane_memory <= 1760
+    error_message = "The control_plane_memory value must be between the value of control_plane_ocpu and 1760."
   }
 }
-variable "master_boot_size" {
+variable "control_plane_boot_size" {
   default     = 1024
   type        = number
-  description = "The size of the boot volume of each master node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 1024 GB. "
+  description = "The size of the boot volume of each control_plane node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 1024 GB. "
 
   validation {
-    condition     = var.master_boot_size >= 50 && var.master_boot_size <= 32768
-    error_message = "The master_boot_size value must be between 50 and 32768."
+    condition     = var.control_plane_boot_size >= 50 && var.control_plane_boot_size <= 32768
+    error_message = "The control_plane_boot_size value must be between 50 and 32768."
   }
 }
-variable "master_boot_volume_vpus_per_gb" {
+variable "control_plane_boot_volume_vpus_per_gb" {
   default     = 90
   type        = number
-  description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each master node. The default value is 90. "
+  description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each control_plane node. The default value is 90. "
 
   validation {
-    condition     = var.master_boot_volume_vpus_per_gb >= 10 && var.master_boot_volume_vpus_per_gb <= 120 && var.master_boot_volume_vpus_per_gb % 10 == 0
-    error_message = "The master_boot_volume_vpus_per_gb value must be between 10 and 120, and must be a multiple of 10."
+    condition     = var.control_plane_boot_volume_vpus_per_gb >= 10 && var.control_plane_boot_volume_vpus_per_gb <= 120 && var.control_plane_boot_volume_vpus_per_gb % 10 == 0
+    error_message = "The control_plane_boot_volume_vpus_per_gb value must be between 10 and 120, and must be a multiple of 10."
   }
 }
-variable "worker_count" {
+variable "compute_count" {
   default     = 3
   type        = number
-  description = "The number of worker nodes in the cluster. The default value is 3. "
+  description = "The number of compute nodes in the cluster. The default value is 3. "
 }
-variable "worker_shape" {
+variable "compute_shape" {
   default     = "VM.Standard.E4.Flex"
   type        = string
-  description = "Compute shape of the worker nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm "
+  description = "Compute shape of the compute nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm "
 }
-variable "worker_ocpu" {
+variable "compute_ocpu" {
   default     = 4
   type        = number
-  description = "The number of OCPUs available for the shape of each worker node. The default value is 4. "
+  description = "The number of OCPUs available for the shape of each compute node. The default value is 4. "
 
   validation {
-    condition     = var.worker_ocpu >= 1 && var.worker_ocpu <= 114
-    error_message = "The worker_ocpu value must be between 1 and 114."
+    condition     = var.compute_ocpu >= 1 && var.compute_ocpu <= 114
+    error_message = "The compute_ocpu value must be between 1 and 114."
   }
 }
-variable "worker_boot_volume_vpus_per_gb" {
+variable "compute_boot_volume_vpus_per_gb" {
   default     = 30
   type        = number
-  description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each worker node. The default value is 30. "
+  description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each compute node. The default value is 30. "
 
   validation {
-    condition     = var.worker_boot_volume_vpus_per_gb >= 10 && var.worker_boot_volume_vpus_per_gb <= 120 && var.worker_boot_volume_vpus_per_gb % 10 == 0
-    error_message = "The worker_boot_volume_vpus_per_gb value must be between 10 and 120, and must be a multiple of 10."
+    condition     = var.compute_boot_volume_vpus_per_gb >= 10 && var.compute_boot_volume_vpus_per_gb <= 120 && var.compute_boot_volume_vpus_per_gb % 10 == 0
+    error_message = "The compute_boot_volume_vpus_per_gb value must be between 10 and 120, and must be a multiple of 10."
   }
 }
-variable "worker_memory" {
+variable "compute_memory" {
   default     = 16
   type        = number
-  description = "The amount of memory available for the shape of each worker node, in gigabytes. The default value is 16."
+  description = "The amount of memory available for the shape of each compute node, in gigabytes. The default value is 16."
 
   validation {
-    condition     = var.worker_memory >= 1 && var.worker_memory <= 1760
-    error_message = "The worker_memory value must be between the value of worker_ocpu and 1760."
+    condition     = var.compute_memory >= 1 && var.compute_memory <= 1760
+    error_message = "The compute_memory value must be between the value of compute_ocpu and 1760."
   }
 }
-variable "worker_boot_size" {
+variable "compute_boot_size" {
   default     = 100
   type        = number
-  description = "The size of the boot volume of each worker node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB."
+  description = "The size of the boot volume of each compute node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB."
 
   validation {
-    condition     = var.worker_boot_size >= 50 && var.worker_boot_size <= 32768
-    error_message = "The worker_boot_size value must be between 50 and 32768."
+    condition     = var.compute_boot_size >= 50 && var.compute_boot_size <= 32768
+    error_message = "The compute_boot_size value must be between 50 and 32768."
   }
 }
 variable "load_balancer_shape_details_maximum_bandwidth_in_mbps" {
@@ -250,8 +250,8 @@ resource "oci_identity_tag" "openshift_instance_role" {
   validator {
     validator_type = "ENUM"
     values = [
-      "master",
-      "worker",
+      "control_plane",
+      "compute",
     ]
   }
   provider = oci.home
@@ -281,18 +281,18 @@ resource "oci_core_image" "openshift_image" {
   }
 }
 
-resource "oci_core_shape_management" "imaging_master_shape" {
+resource "oci_core_shape_management" "imaging_control_plane_shape" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
   image_id       = oci_core_image.openshift_image[0].id
-  shape_name     = var.master_shape
+  shape_name     = var.control_plane_shape
 }
 
-resource "oci_core_shape_management" "imaging_worker_shape" {
+resource "oci_core_shape_management" "imaging_compute_shape" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
   image_id       = oci_core_image.openshift_image[0].id
-  shape_name     = var.worker_shape
+  shape_name     = var.compute_shape
 }
 
 resource "oci_core_compute_image_capability_schema" "openshift_image_capability_schema" {
@@ -347,6 +347,7 @@ resource "oci_core_service_gateway" "service_gateway" {
 }
 
 resource "oci_core_route_table" "public_routes" {
+  count          = var.enable_private_dns ? 0 : 1
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "public"
@@ -391,6 +392,7 @@ resource "oci_core_security_list" "private" {
 }
 
 resource "oci_core_security_list" "public" {
+  count          = var.enable_private_dns ? 0 : 1
   compartment_id = var.compartment_ocid
   display_name   = "public"
   vcn_id         = oci_core_vcn.openshift_vcn.id
@@ -429,14 +431,15 @@ resource "oci_core_subnet" "private" {
 }
 
 resource "oci_core_subnet" "public" {
+  count          = var.enable_private_dns ? 0 : 1
   cidr_block     = var.public_cidr
   display_name   = "public"
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
-  route_table_id = oci_core_route_table.public_routes.id
+  route_table_id = oci_core_route_table.public_routes[0].id
 
   security_list_ids = [
-    oci_core_security_list.public.id,
+    oci_core_security_list.public[0].id,
   ]
 
   dns_label                  = "public"
@@ -542,9 +545,9 @@ resource "oci_core_network_security_group_security_rule" "cluster_compute_nsg_2"
   source                    = var.vcn_cidr
 }
 
-resource "oci_load_balancer_load_balancer" "openshift_internal_lb" {
+resource "oci_load_balancer_load_balancer" "openshift_api_int_lb" {
   compartment_id             = var.compartment_ocid
-  display_name               = "${var.cluster_name}-openshift_internal_lb"
+  display_name               = "${var.cluster_name}-openshift_api_int_lb"
   shape                      = "flexible"
   subnet_ids                 = [oci_core_subnet.private.id]
   is_private                 = true
@@ -556,29 +559,18 @@ resource "oci_load_balancer_load_balancer" "openshift_internal_lb" {
   }
 }
 
-resource "oci_load_balancer_load_balancer" "openshift_external_lb" {
+resource "oci_load_balancer_load_balancer" "openshift_api_apps_lb" {
   compartment_id             = var.compartment_ocid
-  display_name               = "${var.cluster_name}-openshift_external_lb"
+  display_name               = "${var.cluster_name}-openshift_api_apps_lb"
   shape                      = "flexible"
-  subnet_ids                 = [oci_core_subnet.public.id]
-  is_private                 = false
+  subnet_ids                 = var.enable_private_dns ? [oci_core_subnet.private.id] : [oci_core_subnet.public[0].id]
+  is_private                 = var.enable_private_dns ? true : false
   network_security_group_ids = [oci_core_network_security_group.cluster_lb_nsg.id]
 
   shape_details {
     maximum_bandwidth_in_mbps = var.load_balancer_shape_details_maximum_bandwidth_in_mbps
     minimum_bandwidth_in_mbps = var.load_balancer_shape_details_minimum_bandwidth_in_mbps
   }
-}
-
-locals {
-  lb_private_addr = element([
-    for address in oci_load_balancer_load_balancer.openshift_internal_lb.ip_address_details : address
-    if address.is_public == false
-  ], 0).ip_address
-  lb_public_addr = element([
-    for address in oci_load_balancer_load_balancer.openshift_external_lb.ip_address_details : address
-    if address.is_public == true
-  ], 0).ip_address
 }
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_api_backend_external" {
@@ -592,18 +584,16 @@ resource "oci_load_balancer_backend_set" "openshift_cluster_api_backend_external
     retries           = 3
   }
   name             = "openshift_cluster_api_backend"
-  load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
   policy           = "LEAST_CONNECTIONS"
-  depends_on       = [oci_load_balancer_load_balancer.openshift_external_lb]
 }
 
 resource "oci_load_balancer_listener" "openshift_cluster_api_listener_external" {
   default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_external.name
   name                     = "openshift_cluster_api_listener"
-  load_balancer_id         = oci_load_balancer_load_balancer.openshift_external_lb.id
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
   port                     = 6443
   protocol                 = "TCP"
-  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_api_backend_external]
 }
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_http_backend" {
@@ -615,18 +605,16 @@ resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_http_backend
     retries           = 3
   }
   name             = "openshift_cluster_ingress_http"
-  load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
   policy           = "LEAST_CONNECTIONS"
-  depends_on       = [oci_load_balancer_load_balancer.openshift_external_lb]
 }
 
 resource "oci_load_balancer_listener" "openshift_cluster_ingress_http" {
   default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend.name
   name                     = "openshift_cluster_ingress_http"
-  load_balancer_id         = oci_load_balancer_load_balancer.openshift_external_lb.id
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
   port                     = 80
   protocol                 = "TCP"
-  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend]
 }
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_https_backend" {
@@ -638,18 +626,16 @@ resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_https_backen
     retries           = 3
   }
   name             = "openshift_cluster_ingress_https"
-  load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
   policy           = "LEAST_CONNECTIONS"
-  depends_on       = [oci_load_balancer_load_balancer.openshift_external_lb]
 }
 
 resource "oci_load_balancer_listener" "openshift_cluster_ingress_https" {
   default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend.name
   name                     = "openshift_cluster_ingress_https"
-  load_balancer_id         = oci_load_balancer_load_balancer.openshift_external_lb.id
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
   port                     = 443
   protocol                 = "TCP"
-  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend]
 }
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_api_backend_internal" {
@@ -663,18 +649,16 @@ resource "oci_load_balancer_backend_set" "openshift_cluster_api_backend_internal
     retries           = 3
   }
   name             = "openshift_cluster_api_backend"
-  load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_int_lb.id
   policy           = "LEAST_CONNECTIONS"
-  depends_on       = [oci_load_balancer_load_balancer.openshift_internal_lb]
 }
 
 resource "oci_load_balancer_listener" "openshift_cluster_api_listener_internal" {
   default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_internal.name
   name                     = "openshift_cluster_api_listener"
-  load_balancer_id         = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_int_lb.id
   port                     = 6443
   protocol                 = "TCP"
-  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_api_backend_internal]
 }
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_infra-mcs_backend" {
@@ -688,18 +672,16 @@ resource "oci_load_balancer_backend_set" "openshift_cluster_infra-mcs_backend" {
     retries           = 3
   }
   name             = "openshift_cluster_infra-mcs"
-  load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_int_lb.id
   policy           = "LEAST_CONNECTIONS"
-  depends_on       = [oci_load_balancer_load_balancer.openshift_internal_lb]
 }
 
 resource "oci_load_balancer_listener" "openshift_cluster_infra-mcs" {
   default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend.name
   name                     = "openshift_cluster_infra-mcs"
-  load_balancer_id         = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_int_lb.id
   port                     = 22623
   protocol                 = "TCP"
-  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend]
 }
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_infra-mcs_backend_2" {
@@ -713,47 +695,45 @@ resource "oci_load_balancer_backend_set" "openshift_cluster_infra-mcs_backend_2"
     retries           = 3
   }
   name             = "openshift_cluster_infra-mcs_2"
-  load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_int_lb.id
   policy           = "LEAST_CONNECTIONS"
-  depends_on       = [oci_load_balancer_load_balancer.openshift_internal_lb]
 }
 
 resource "oci_load_balancer_listener" "openshift_cluster_infra-mcs_2" {
   default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2.name
   name                     = "openshift_cluster_infra-mcs_2"
-  load_balancer_id         = oci_load_balancer_load_balancer.openshift_internal_lb.id
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_int_lb.id
   port                     = 22624
   protocol                 = "TCP"
-  depends_on               = [oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2]
 }
 
-resource "oci_identity_dynamic_group" "openshift_master_nodes" {
+resource "oci_identity_dynamic_group" "openshift_control_plane_nodes" {
   compartment_id = var.tenancy_ocid
-  description    = "OpenShift master nodes"
-  matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='master'}"
-  name           = "${var.cluster_name}_master_nodes"
+  description    = "OpenShift control_plane nodes"
+  matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='control_plane'}"
+  name           = "${var.cluster_name}_control_plane_nodes"
   provider       = oci.home
 }
 
-resource "oci_identity_policy" "openshift_master_nodes" {
+resource "oci_identity_policy" "openshift_control_plane_nodes" {
   compartment_id = var.compartment_ocid
-  description    = "OpenShift master nodes instance principal"
-  name           = "${var.cluster_name}_master_nodes"
+  description    = "OpenShift control_plane nodes instance principal"
+  name           = "${var.cluster_name}_control_plane_nodes"
   statements = [
-    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage volume-family in compartment id ${var.compartment_ocid}",
-    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage instance-family in compartment id ${var.compartment_ocid}",
-    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage security-lists in compartment id ${var.compartment_ocid}",
-    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to use virtual-network-family in compartment id ${var.compartment_ocid}",
-    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_master_nodes.name} to manage load-balancers in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage volume-family in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage instance-family in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage security-lists in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to use virtual-network-family in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage load-balancers in compartment id ${var.compartment_ocid}",
   ]
   provider = oci.home
 }
 
-resource "oci_identity_dynamic_group" "openshift_worker_nodes" {
+resource "oci_identity_dynamic_group" "openshift_compute_nodes" {
   compartment_id = var.tenancy_ocid
-  description    = "OpenShift worker nodes"
-  matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='worker'}"
-  name           = "${var.cluster_name}_worker_nodes"
+  description    = "OpenShift compute nodes"
+  matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='compute'}"
+  name           = "${var.cluster_name}_compute_nodes"
   provider       = oci.home
 }
 
@@ -770,7 +750,7 @@ resource "oci_dns_rrset" "openshift_api" {
   domain = "api.${var.cluster_name}.${var.zone_dns}"
   items {
     domain = "api.${var.cluster_name}.${var.zone_dns}"
-    rdata  = var.enable_private_dns ? local.lb_private_addr : local.lb_public_addr
+    rdata  = oci_load_balancer_load_balancer.openshift_api_apps_lb.ip_address_details[0].ip_address
     rtype  = "A"
     ttl    = "3600"
   }
@@ -782,7 +762,7 @@ resource "oci_dns_rrset" "openshift_apps" {
   domain = "*.apps.${var.cluster_name}.${var.zone_dns}"
   items {
     domain = "*.apps.${var.cluster_name}.${var.zone_dns}"
-    rdata  = var.enable_private_dns ? local.lb_private_addr : local.lb_public_addr
+    rdata  = oci_load_balancer_load_balancer.openshift_api_apps_lb.ip_address_details[0].ip_address
     rtype  = "A"
     ttl    = "3600"
   }
@@ -794,7 +774,7 @@ resource "oci_dns_rrset" "openshift_api_int" {
   domain = "api-int.${var.cluster_name}.${var.zone_dns}"
   items {
     domain = "api-int.${var.cluster_name}.${var.zone_dns}"
-    rdata  = local.lb_private_addr
+    rdata  = oci_load_balancer_load_balancer.openshift_api_int_lb.ip_address_details[0].ip_address
     rtype  = "A"
     ttl    = "3600"
   }
@@ -813,17 +793,14 @@ data "oci_core_vcn_dns_resolver_association" "dns_resolver_association" {
 }
 
 data "oci_dns_resolver" "dns_resolver" {
-  depends_on = [
-    data.oci_core_vcn_dns_resolver_association.dns_resolver_association
-  ]
   resolver_id = data.oci_core_vcn_dns_resolver_association.dns_resolver_association.dns_resolver_id
   scope       = "PRIVATE"
 }
 
-resource "oci_core_instance_configuration" "master_node_config" {
+resource "oci_core_instance_configuration" "control_plane_node_config" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
-  display_name   = "${var.cluster_name}-master"
+  display_name   = "${var.cluster_name}-control_plane"
   instance_details {
     instance_type = "compute"
     launch_details {
@@ -838,16 +815,16 @@ resource "oci_core_instance_configuration" "master_node_config" {
         subnet_id = oci_core_subnet.private.id
       }
       defined_tags = {
-        "openshift-${var.cluster_name}.instance-role" = "master"
+        "openshift-${var.cluster_name}.instance-role" = "control_plane"
       }
-      shape = var.master_shape
+      shape = var.control_plane_shape
       shape_config {
-        memory_in_gbs = var.master_memory
-        ocpus         = var.master_ocpu
+        memory_in_gbs = var.control_plane_memory
+        ocpus         = var.control_plane_ocpu
       }
       source_details {
-        boot_volume_size_in_gbs = var.master_boot_size
-        boot_volume_vpus_per_gb = var.master_boot_volume_vpus_per_gb
+        boot_volume_size_in_gbs = var.control_plane_boot_size
+        boot_volume_vpus_per_gb = var.control_plane_boot_volume_vpus_per_gb
         image_id                = oci_core_image.openshift_image[0].id
         source_type             = "image"
       }
@@ -855,34 +832,35 @@ resource "oci_core_instance_configuration" "master_node_config" {
   }
 }
 
-resource "oci_core_instance_pool" "master_nodes" {
+resource "oci_core_instance_pool" "control_plane_nodes" {
   count                           = local.create_openshift_instance_pools ? 1 : 0
   compartment_id                  = var.compartment_ocid
-  display_name                    = "${var.cluster_name}-master"
-  instance_configuration_id       = oci_core_instance_configuration.master_node_config[0].id
-  instance_display_name_formatter = "${var.cluster_name}-master-${local.pool_formatter_id}"
-  instance_hostname_formatter     = "${var.cluster_name}-master-${local.pool_formatter_id}"
+  display_name                    = "${var.cluster_name}-control-plane"
+  instance_configuration_id       = oci_core_instance_configuration.control_plane_node_config[0].id
+  instance_display_name_formatter = "${var.cluster_name}-control-plane-${local.pool_formatter_id}"
+  instance_hostname_formatter     = "${var.cluster_name}-control-plane-${local.pool_formatter_id}"
+
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_external.name
-    load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
     port             = "6443"
     vnic_selection   = "PrimaryVnic"
   }
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_internal.name
-    load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_api_int_lb.id
     port             = "6443"
     vnic_selection   = "PrimaryVnic"
   }
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend.name
-    load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_api_int_lb.id
     port             = "22623"
     vnic_selection   = "PrimaryVnic"
   }
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2.name
-    load_balancer_id = oci_load_balancer_load_balancer.openshift_internal_lb.id
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_api_int_lb.id
     port             = "22624"
     vnic_selection   = "PrimaryVnic"
   }
@@ -890,20 +868,13 @@ resource "oci_core_instance_pool" "master_nodes" {
     availability_domain = data.oci_identity_availability_domain.availability_domain.name
     primary_subnet_id   = oci_core_subnet.private.id
   }
-  size = var.master_count
-  depends_on = [
-    oci_load_balancer_backend_set.openshift_cluster_api_backend_external,
-    oci_load_balancer_backend_set.openshift_cluster_api_backend_internal,
-    oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend,
-    oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_2,
-    oci_core_instance_configuration.master_node_config,
-  ]
+  size = var.control_plane_count
 }
 
-resource "oci_core_instance_configuration" "worker_node_config" {
+resource "oci_core_instance_configuration" "compute_node_config" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
-  display_name   = "${var.cluster_name}-worker"
+  display_name   = "${var.cluster_name}-compute"
   instance_details {
     instance_type = "compute"
     launch_details {
@@ -918,16 +889,16 @@ resource "oci_core_instance_configuration" "worker_node_config" {
         subnet_id = oci_core_subnet.private.id
       }
       defined_tags = {
-        "openshift-${var.cluster_name}.instance-role" = "worker"
+        "openshift-${var.cluster_name}.instance-role" = "compute"
       }
-      shape = var.worker_shape
+      shape = var.compute_shape
       shape_config {
-        memory_in_gbs = var.worker_memory
-        ocpus         = var.worker_ocpu
+        memory_in_gbs = var.compute_memory
+        ocpus         = var.compute_ocpu
       }
       source_details {
-        boot_volume_size_in_gbs = var.worker_boot_size
-        boot_volume_vpus_per_gb = var.worker_boot_volume_vpus_per_gb
+        boot_volume_size_in_gbs = var.compute_boot_size
+        boot_volume_vpus_per_gb = var.compute_boot_volume_vpus_per_gb
         image_id                = oci_core_image.openshift_image[0].id
         source_type             = "image"
       }
@@ -935,22 +906,22 @@ resource "oci_core_instance_configuration" "worker_node_config" {
   }
 }
 
-resource "oci_core_instance_pool" "worker_nodes" {
+resource "oci_core_instance_pool" "compute_nodes" {
   count                           = local.create_openshift_instance_pools ? 1 : 0
   compartment_id                  = var.compartment_ocid
-  display_name                    = "${var.cluster_name}-worker"
-  instance_configuration_id       = oci_core_instance_configuration.worker_node_config[0].id
-  instance_display_name_formatter = "${var.cluster_name}-worker-${local.pool_formatter_id}"
-  instance_hostname_formatter     = "${var.cluster_name}-worker-${local.pool_formatter_id}"
+  display_name                    = "${var.cluster_name}-compute"
+  instance_configuration_id       = oci_core_instance_configuration.compute_node_config[0].id
+  instance_display_name_formatter = "${var.cluster_name}-compute-${local.pool_formatter_id}"
+  instance_hostname_formatter     = "${var.cluster_name}-compute-${local.pool_formatter_id}"
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend.name
-    load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
     port             = "443"
     vnic_selection   = "PrimaryVnic"
   }
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend.name
-    load_balancer_id = oci_load_balancer_load_balancer.openshift_external_lb.id
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
     port             = "80"
     vnic_selection   = "PrimaryVnic"
   }
@@ -958,20 +929,15 @@ resource "oci_core_instance_pool" "worker_nodes" {
     availability_domain = data.oci_identity_availability_domain.availability_domain.name
     primary_subnet_id   = oci_core_subnet.private.id
   }
-  size = var.worker_count
-  depends_on = [
-    oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend,
-    oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend,
-    oci_core_instance_configuration.worker_node_config,
-  ]
+  size = var.compute_count
 }
 
-output "open_shift_lb_private_addr" {
-  value = local.lb_private_addr
+output "open_shift_api_int_lb_addr" {
+  value = oci_load_balancer_load_balancer.openshift_api_int_lb.ip_address_details[0].ip_address
 }
 
-output "open_shift_lb_public_addr" {
-  value = local.lb_public_addr
+output "open_shift_api_apps_lb_addr" {
+  value = oci_load_balancer_load_balancer.openshift_api_apps_lb.ip_address_details[0].ip_address
 }
 
 output "oci_ccm_config" {
@@ -980,10 +946,10 @@ useInstancePrincipals: true
 compartment: ${var.compartment_ocid}
 vcn: ${oci_core_vcn.openshift_vcn.id}
 loadBalancer:
-  subnet1: ${oci_core_subnet.public.id}
+  subnet1: ${var.enable_private_dns ? oci_core_subnet.private.id : oci_core_subnet.public[0].id}
   securityListManagementMode: Frontend
   securityLists:
-    ${oci_core_subnet.public.id}: ${oci_core_security_list.public.id}
+    ${var.enable_private_dns ? oci_core_subnet.private.id : oci_core_subnet.public[0].id}: ${var.enable_private_dns ? oci_core_security_list.private.id : oci_core_security_list.public[0].id}
 rateLimiter:
   rateLimitQPSRead: 20.0
   rateLimitBucketRead: 5
