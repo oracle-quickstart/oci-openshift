@@ -196,14 +196,14 @@ metadata:
   namespace: oci-cloud-controller-manager
 stringData:
   cloud-provider.yaml: |
-    auth:
-      region: $OCI_CLI_REGION
-      useInstancePrincipals: true
-      compartment: $COMPARTMENT_ID
+    useInstancePrincipals: true
+    compartment: $COMPARTMENT_ID
     vcn: $OCP_VCN_ID
     loadBalancer:
       subnet1: $OCP_SUBNET_ID
-      securityListManagementMode: None
+      securityListManagementMode: Frontend
+      securityLists:
+        $OCP_SUBNET_ID: $OPC_SEC_LIST_ID
     rateLimiter:
       rateLimitQPSRead: 20.0
       rateLimitBucketRead: 5
