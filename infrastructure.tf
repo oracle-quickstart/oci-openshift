@@ -844,6 +844,18 @@ resource "oci_core_instance_pool" "control_plane_nodes" {
     vnic_selection   = "PrimaryVnic"
   }
   load_balancers {
+    backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend.name
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
+    port             = "443"
+    vnic_selection   = "PrimaryVnic"
+  }
+  load_balancers {
+    backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend.name
+    load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
+    port             = "80"
+    vnic_selection   = "PrimaryVnic"
+  }
+  load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_internal.name
     load_balancer_id = oci_load_balancer_load_balancer.openshift_api_int_lb.id
     port             = "6443"
