@@ -4,13 +4,10 @@ This Terraform code is specifically designed for the OpenShift on Oracle Cloud I
 
 See the following for installation instructions:
 
-**OpenShift 4.14 on Oracle Cloud Infrastructure (OCI) [Technology Preview]**
-- Connected deployments using Assisted Installer: https://docs.openshift.com/container-platform/4.14/installing/installing_oci/installing-oci-assisted-installer.html
-- Disconnected or air gapped deployments using Agent-based Installer: https://docs.openshift.com/container-platform/4.14/installing/installing_oci/installing-oci-agent-based-installer.html
-
-**OpenShift 4.15 on Oracle Cloud Infrastructure (OCI) [Technology Preview]**
-- Connected deployments using Assisted Installer: https://docs.openshift.com/container-platform/4.15/installing/installing_oci/installing-oci-assisted-installer.html
-- Disconnected or air gapped deployments using Agent-based Installer: https://docs.openshift.com/container-platform/4.15/installing/installing_oci/installing-oci-agent-based-installer.html
+**Redhat OpenShift latest version on Oracle Cloud Infrastructure (OCI)**
+- OCI documentation - https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm
+- Connected deployments using Assisted Installer: https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-assisted-installer.html
+- Disconnected or air gapped deployments using Agent-based Installer: https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-agent-based-installer.html
 
 ## Resources Created:
 
