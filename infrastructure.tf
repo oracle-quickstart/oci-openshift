@@ -259,7 +259,7 @@ resource "oci_identity_tag" "openshift_instance_role" {
 
 resource "oci_identity_tag" "openshift_resource" {
   description      = "Openshift Resource"
-  is_cost_tracking = "false"
+  is_cost_tracking = "true"
   is_retired       = "false"
   name             = "openshift-resource"
   tag_namespace_id = oci_identity_tag_namespace.openshift_tags.id
