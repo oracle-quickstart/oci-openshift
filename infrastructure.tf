@@ -232,6 +232,33 @@ data "oci_identity_availability_domain" "availability_domain" {
   ad_number      = "1"
 }
 
+data "oci_identity_availability_domains" "ads" {
+  compartment_id = var.compartment_ocid
+}
+
+locals {
+  availability_domains = data.oci_identity_availability_domains.ads.availability_domains
+  total_ads            = length(local.availability_domains)
+
+  # Calculate base nodes per AD
+  cp_nodes_per_ad      = floor(var.control_plane_count / local.total_ads)
+  compute_nodes_per_ad = floor(var.compute_count / local.total_ads)
+
+  # Calculate extra nodes to distribute
+  cp_extra_nodes      = var.control_plane_count % local.total_ads
+  compute_extra_nodes = var.compute_count % local.total_ads
+
+  # Create a map for node count per AD in round-robin fashion
+  cp_node_count_per_ad_map = {
+    for i in range(local.total_ads) :
+    local.availability_domains[i].name => local.cp_nodes_per_ad + (i < local.cp_extra_nodes ? 1 : 0)
+  }
+  compute_node_count_per_ad_map = {
+    for i in range(local.total_ads) :
+    local.availability_domains[i].name => local.compute_nodes_per_ad + (i < local.compute_extra_nodes ? 1 : 0)
+  }
+}
+
 ##Defined tag namespace. Use to mark instance roles and configure instance policy
 resource "oci_identity_tag_namespace" "openshift_tags" {
   compartment_id = var.compartment_ocid
@@ -263,7 +290,7 @@ resource "oci_identity_tag" "openshift_resource" {
   is_retired       = "false"
   name             = "openshift-resource"
   tag_namespace_id = oci_identity_tag_namespace.openshift_tags.id
-  provider = oci.home
+  provider         = oci.home
 }
 
 locals {
@@ -317,7 +344,7 @@ resource "oci_core_compute_image_capability_schema" "openshift_image_capability_
   compute_global_image_capability_schema_version_name = local.global_image_capability_schemas[0].current_version_name
   image_id                                            = oci_core_image.openshift_image[0].id
   schema_data                                         = local.image_schema_data
-  defined_tags = local.common_defined_tags
+  defined_tags                                        = local.common_defined_tags
 }
 
 ##Define network
@@ -328,21 +355,21 @@ resource "oci_core_vcn" "openshift_vcn" {
   compartment_id = var.compartment_ocid
   display_name   = var.cluster_name
   dns_label      = var.vcn_dns_label
-  defined_tags = local.common_defined_tags
+  defined_tags   = local.common_defined_tags
 }
 
 resource "oci_core_internet_gateway" "internet_gateway" {
   compartment_id = var.compartment_ocid
   display_name   = "InternetGateway"
   vcn_id         = oci_core_vcn.openshift_vcn.id
-  defined_tags = local.common_defined_tags
+  defined_tags   = local.common_defined_tags
 }
 
 resource "oci_core_nat_gateway" "nat_gateway" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "NatGateway"
-  defined_tags = local.common_defined_tags
+  defined_tags   = local.common_defined_tags
 }
 
 data "oci_core_services" "oci_services" {
@@ -451,7 +478,7 @@ resource "oci_core_subnet" "private" {
 
   dns_label                  = "private"
   prohibit_public_ip_on_vnic = true
-  defined_tags = local.common_defined_tags
+  defined_tags               = local.common_defined_tags
 }
 
 resource "oci_core_subnet" "public" {
@@ -467,14 +494,14 @@ resource "oci_core_subnet" "public" {
 
   dns_label                  = "public"
   prohibit_public_ip_on_vnic = false
-  defined_tags = local.common_defined_tags
+  defined_tags               = local.common_defined_tags
 }
 
 resource "oci_core_network_security_group" "cluster_lb_nsg" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "cluster-lb-nsg"
-  defined_tags = local.common_defined_tags
+  defined_tags   = local.common_defined_tags
 }
 
 resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_1" {
@@ -534,7 +561,7 @@ resource "oci_core_network_security_group" "cluster_controlplane_nsg" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "cluster-controlplane-nsg"
-  defined_tags = local.common_defined_tags
+  defined_tags   = local.common_defined_tags
 }
 
 resource "oci_core_network_security_group_security_rule" "cluster_controlplane_nsg_rule_1" {
@@ -555,7 +582,7 @@ resource "oci_core_network_security_group" "cluster_compute_nsg" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "cluster-compute-nsg"
-  defined_tags = local.common_defined_tags
+  defined_tags   = local.common_defined_tags
 }
 
 resource "oci_core_network_security_group_security_rule" "cluster_compute_nsg_rule_1" {
@@ -742,7 +769,7 @@ resource "oci_identity_dynamic_group" "openshift_control_plane_nodes" {
   matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='control_plane'}"
   name           = "${var.cluster_name}_control_plane_nodes"
   provider       = oci.home
-  defined_tags = local.common_defined_tags
+  defined_tags   = local.common_defined_tags
 }
 
 resource "oci_identity_policy" "openshift_control_plane_nodes" {
@@ -756,7 +783,7 @@ resource "oci_identity_policy" "openshift_control_plane_nodes" {
     "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to use virtual-network-family in compartment id ${var.compartment_ocid}",
     "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage load-balancers in compartment id ${var.compartment_ocid}",
   ]
-  provider = oci.home
+  provider     = oci.home
   defined_tags = local.common_defined_tags
 }
 
@@ -766,7 +793,7 @@ resource "oci_identity_dynamic_group" "openshift_compute_nodes" {
   matching_rule  = "all {instance.compartment.id='${var.compartment_ocid}', tag.openshift-${var.cluster_name}.instance-role.value='compute'}"
   name           = "${var.cluster_name}_compute_nodes"
   provider       = oci.home
-  defined_tags = local.common_defined_tags
+  defined_tags   = local.common_defined_tags
 }
 
 resource "oci_dns_zone" "openshift" {
@@ -776,7 +803,7 @@ resource "oci_dns_zone" "openshift" {
   view_id        = var.enable_private_dns ? data.oci_dns_resolver.dns_resolver.default_view_id : null
   zone_type      = "PRIMARY"
   depends_on     = [oci_core_subnet.private]
-  defined_tags = local.common_defined_tags
+  defined_tags   = local.common_defined_tags
 }
 
 resource "oci_dns_rrset" "openshift_api" {
@@ -837,8 +864,7 @@ resource "oci_core_instance_configuration" "control_plane_node_config" {
   instance_details {
     instance_type = "compute"
     launch_details {
-      availability_domain = data.oci_identity_availability_domain.availability_domain.name
-      compartment_id      = var.compartment_ocid
+      compartment_id = var.compartment_ocid
       create_vnic_details {
         assign_private_dns_record = "true"
         assign_public_ip          = "false"
@@ -869,13 +895,13 @@ resource "oci_core_instance_configuration" "control_plane_node_config" {
 }
 
 resource "oci_core_instance_pool" "control_plane_nodes" {
-  count                           = local.create_openshift_instance_pools ? 1 : 0
+  for_each                        = local.create_openshift_instance_pools ? local.cp_node_count_per_ad_map : {}
   compartment_id                  = var.compartment_ocid
   display_name                    = "${var.cluster_name}-control-plane"
   instance_configuration_id       = oci_core_instance_configuration.control_plane_node_config[0].id
   instance_display_name_formatter = "${var.cluster_name}-control-plane-${local.pool_formatter_id}"
   instance_hostname_formatter     = "${var.cluster_name}-control-plane-${local.pool_formatter_id}"
-  defined_tags = local.common_defined_tags
+  defined_tags                    = local.common_defined_tags
 
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_external.name
@@ -914,10 +940,10 @@ resource "oci_core_instance_pool" "control_plane_nodes" {
     vnic_selection   = "PrimaryVnic"
   }
   placement_configurations {
-    availability_domain = data.oci_identity_availability_domain.availability_domain.name
+    availability_domain = each.key
     primary_subnet_id   = oci_core_subnet.private.id
   }
-  size = var.control_plane_count
+  size = each.value
 }
 
 resource "oci_core_instance_configuration" "compute_node_config" {
@@ -927,8 +953,8 @@ resource "oci_core_instance_configuration" "compute_node_config" {
   instance_details {
     instance_type = "compute"
     launch_details {
-      availability_domain = data.oci_identity_availability_domain.availability_domain.name
-      compartment_id      = var.compartment_ocid
+      # availability_domain = data.oci_identity_availability_domain.availability_domain.name
+      compartment_id = var.compartment_ocid
       create_vnic_details {
         assign_private_dns_record = "true"
         assign_public_ip          = "false"
@@ -940,7 +966,7 @@ resource "oci_core_instance_configuration" "compute_node_config" {
       defined_tags = merge(
         local.common_defined_tags,
         {
-        "openshift-${var.cluster_name}.instance-role" = "compute"
+          "openshift-${var.cluster_name}.instance-role" = "compute"
         }
       )
       shape = var.compute_shape
@@ -959,13 +985,13 @@ resource "oci_core_instance_configuration" "compute_node_config" {
 }
 
 resource "oci_core_instance_pool" "compute_nodes" {
-  count                           = local.create_openshift_instance_pools ? 1 : 0
+  for_each                        = local.create_openshift_instance_pools ? local.compute_node_count_per_ad_map : {}
   compartment_id                  = var.compartment_ocid
   display_name                    = "${var.cluster_name}-compute"
   instance_configuration_id       = oci_core_instance_configuration.compute_node_config[0].id
   instance_display_name_formatter = "${var.cluster_name}-compute-${local.pool_formatter_id}"
   instance_hostname_formatter     = "${var.cluster_name}-compute-${local.pool_formatter_id}"
-  defined_tags = local.common_defined_tags
+  defined_tags                    = local.common_defined_tags
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend.name
     load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
@@ -979,10 +1005,10 @@ resource "oci_core_instance_pool" "compute_nodes" {
     vnic_selection   = "PrimaryVnic"
   }
   placement_configurations {
-    availability_domain = data.oci_identity_availability_domain.availability_domain.name
+    availability_domain = each.key
     primary_subnet_id   = oci_core_subnet.private.id
   }
-  size = var.compute_count
+  size = each.value
 }
 
 output "open_shift_api_int_lb_addr" {
