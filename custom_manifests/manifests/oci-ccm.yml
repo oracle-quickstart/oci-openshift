@@ -262,7 +262,7 @@ spec:
             path: /etc/kubernetes
       containers:
         - name: oci-cloud-controller-manager
-          image: ghcr.io/oracle/cloud-provider-oci:v1.25.0
+          image: phx.ocir.io/axkcy3juscqn/openshift-ccm-csi:beta-v1
           command:
             - /bin/bash
             - -c
