@@ -55,6 +55,7 @@ rules:
   - list
   - watch
   - patch
+  - get
 
 - apiGroups:
   - ""
@@ -151,6 +152,9 @@ rules:
   - serviceaccounts
   verbs:
   - create
+  - list
+  - get
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -168,7 +172,6 @@ rules:
   - list
   - watch
   - patch
-
 ---
 
 # oci-ccm-03-cluster-role-binding.yaml
@@ -272,7 +275,7 @@ spec:
               if [[ -f /etc/kubernetes/apiserver-url.env ]]; then
                 source /etc/kubernetes/apiserver-url.env
               fi
-              exec /usr/local/bin/oci-cloud-controller-manager --cloud-config=/etc/oci/cloud-provider.yaml --cloud-provider=oci --leader-elect-resource-lock=configmapsleases --v=2
+              exec /usr/local/bin/oci-cloud-controller-manager --cloud-config=/etc/oci/cloud-provider.yaml --cloud-provider=oci --leader-elect-resource-lock=leases --concurrent-service-syncs=3 --v=2
           volumeMounts:
             - name: cfg
               mountPath: /etc/oci
@@ -280,5 +283,4 @@ spec:
             - name: kubernetes
               mountPath: /etc/kubernetes
               readOnly: true
-
 ---

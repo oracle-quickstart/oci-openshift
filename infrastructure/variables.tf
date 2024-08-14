@@ -178,6 +178,7 @@ variable "private_cidr" {
 
 variable "private_cidr_2" {
   default     = "10.0.32.0/20"
+  type        = string
   description = "The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.32.0/20."
 }
 

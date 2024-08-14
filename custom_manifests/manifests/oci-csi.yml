@@ -66,7 +66,7 @@ spec:
         node-role.kubernetes.io/control-plane: ""
       containers:
         - name: csi-volume-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v3.2.1
+          image: registry.k8s.io/sig-storage/csi-provisioner:v3.6.0
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --volume-name-prefix=csi
@@ -81,7 +81,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-fss-volume-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v3.2.1
+          image: registry.k8s.io/sig-storage/csi-provisioner:v3.6.0
           args:
             - --csi-address=/var/run/shared-tmpfs/csi-fss.sock
             - --volume-name-prefix=csi-fss
@@ -96,7 +96,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-attacher
-          image: k8s.gcr.io/sig-storage/csi-attacher:v4.2.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.4.0
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --timeout=120s
@@ -109,7 +109,24 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-resizer
-          image: k8s.gcr.io/sig-storage/csi-resizer:v1.7.0
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.9.0
+          args:
+            - --csi-address=/var/run/shared-tmpfs/csi.sock
+            - --leader-election
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: snapshot-controller
+          image: registry.k8s.io/sig-storage/snapshot-controller:v6.2.0
+          args:
+            - --leader-election
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: csi-snapshotter
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.2.0
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --leader-election
@@ -305,6 +322,7 @@ spec:
             - mountPath: /dev
               name: device-dir
             - mountPath: /host
+              mountPropagation: HostToContainer
               name: host-root
             - mountPath: /sbin/iscsiadm
               name: chroot-iscsiadm
@@ -325,7 +343,7 @@ spec:
           args:
             - --csi-address=/csi/csi.sock
             - --kubelet-registration-path=/var/lib/kubelet/plugins/blockvolume.csi.oraclecloud.com/csi.sock
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.1
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
           securityContext:
             privileged: true
           lifecycle:
@@ -344,7 +362,7 @@ spec:
           args:
             - --csi-address=/fss/csi.sock
             - --kubelet-registration-path=/var/lib/kubelet/plugins/fss.csi.oraclecloud.com/csi.sock
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.0
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.0
           securityContext:
             privileged: true
           lifecycle:
@@ -458,6 +476,21 @@ rules:
  - apiGroups: [""]
    resources: ["persistentvolumeclaims/status"]
    verbs: ["patch"]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshotclasses" ]
+   verbs: [ "get", "list", "watch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshotcontents" ]
+   verbs: [ "create", "get", "list", "watch", "update", "delete", "patch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshotcontents/status" ]
+   verbs: [ "update", "patch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshots" ]
+   verbs: [ "get", "list", "watch", "update", "patch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshots/status" ]
+   verbs: [ "update", "patch" ]
 
 ---
 
