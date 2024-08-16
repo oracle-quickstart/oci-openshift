@@ -48,14 +48,6 @@ variableGroups:
     - private_cidr_2
     - load_balancer_shape_details_maximum_bandwidth_in_mbps
     - load_balancer_shape_details_minimum_bandwidth_in_mbps
-#
-#- title: "Registry VM Configuration"
-#  variables:
-#    - create_registry_vm
-#    - registry_shape
-#    - registry_ocpu
-#    - registry_memory
-#     - ssh_public_key
 
 
 ###########
@@ -138,8 +130,8 @@ variables:
   control_plane_boot_size:
     type: integer
     title: Control Plan Boot Volume
-    description: The size of the boot volume of each control_plane node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB.
-    default: 100
+    description: The size of the boot volume of each control_plane node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 1024 GB.
+    default: 1024
     minimum: 50
     maximum: 32768
     required: true
@@ -201,8 +193,8 @@ variables:
   compute_boot_volume_vpus_per_gb:
     type: integer
     title: Compute Node VPU
-    description: The number of volume performance units (VPUs) that will be applied to this volume per GB of each compute node. The default value is 100.
-    default: 100
+    description: The number of volume performance units (VPUs) that will be applied to this volume per GB of each compute node. The default value is 30.
+    default: 30
     minimum: 10
     maximum: 120
     multipleOf: 10
@@ -276,39 +268,3 @@ variables:
     minimum: 10
     maximum: 8000
     required: true
-
-#  #
-#  # Registry VM Configuration Variables
-#  #
-#  create_registry_vm:
-#    type: boolean
-#    title: Create Registry VM
-#    default: true
-#
-#  registry_shape:
-#    title: Registry VM Shape
-#    type: enum
-#    enum:
-#      - "VM.Standard.E4.Flex"
-#    required: true
-#    default: "VM.Standard.E4.Flex"
-#
-#  registry_ocpu:
-#    type: integer
-#    title: Registry VM Ocpu
-#    description: The amount of Ocpu available for Registry VM. The default value is 2.
-#    default: 2
-#    required: true
-#
-#  registry_memory:
-#    type: integer
-#    title: Registry VM Memory
-#    description: The amount of memory available for Registry VM in gigabytes. The default value is 8.
-#    default: 8
-#    required: true
-#
-#  ssh_public_key:
-#    type: string
-#    title: SSH Public Key
-#    description: Public SSH key for connecting to instances
-#    required: true
