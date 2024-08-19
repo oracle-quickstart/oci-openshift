@@ -238,25 +238,6 @@ data "oci_identity_availability_domains" "ads" {
 
 locals {
   availability_domains = data.oci_identity_availability_domains.ads.availability_domains
-  total_ads            = length(local.availability_domains)
-
-  # Calculate base nodes per AD
-  cp_nodes_per_ad      = floor(var.control_plane_count / local.total_ads)
-  compute_nodes_per_ad = floor(var.compute_count / local.total_ads)
-
-  # Calculate extra nodes to distribute
-  cp_extra_nodes      = var.control_plane_count % local.total_ads
-  compute_extra_nodes = var.compute_count % local.total_ads
-
-  # Create a map for node count per AD in round-robin fashion
-  cp_node_count_per_ad_map = {
-    for i in range(local.total_ads) :
-    local.availability_domains[i].name => local.cp_nodes_per_ad + (i < local.cp_extra_nodes ? 1 : 0)
-  }
-  compute_node_count_per_ad_map = {
-    for i in range(local.total_ads) :
-    local.availability_domains[i].name => local.compute_nodes_per_ad + (i < local.compute_extra_nodes ? 1 : 0)
-  }
 }
 
 ##Defined tag namespace. Use to mark instance roles and configure instance policy
@@ -895,7 +876,7 @@ resource "oci_core_instance_configuration" "control_plane_node_config" {
 }
 
 resource "oci_core_instance_pool" "control_plane_nodes" {
-  for_each                        = local.create_openshift_instance_pools ? local.cp_node_count_per_ad_map : {}
+  count                           = local.create_openshift_instance_pools ? 1 : 0
   compartment_id                  = var.compartment_ocid
   display_name                    = "${var.cluster_name}-control-plane"
   instance_configuration_id       = oci_core_instance_configuration.control_plane_node_config[0].id
@@ -939,11 +920,15 @@ resource "oci_core_instance_pool" "control_plane_nodes" {
     port             = "22624"
     vnic_selection   = "PrimaryVnic"
   }
-  placement_configurations {
-    availability_domain = each.key
-    primary_subnet_id   = oci_core_subnet.private.id
+  dynamic placement_configurations {
+    for_each = local.availability_domains
+    content {
+      availability_domain = placement_configurations.value.name
+      primary_subnet_id = oci_core_subnet.private.id
+    }
+    
   }
-  size = each.value
+  size = var.control_plane_count
 }
 
 resource "oci_core_instance_configuration" "compute_node_config" {
@@ -985,7 +970,7 @@ resource "oci_core_instance_configuration" "compute_node_config" {
 }
 
 resource "oci_core_instance_pool" "compute_nodes" {
-  for_each                        = local.create_openshift_instance_pools ? local.compute_node_count_per_ad_map : {}
+  count                           = local.create_openshift_instance_pools ? 1 : 0
   compartment_id                  = var.compartment_ocid
   display_name                    = "${var.cluster_name}-compute"
   instance_configuration_id       = oci_core_instance_configuration.compute_node_config[0].id
@@ -1004,11 +989,14 @@ resource "oci_core_instance_pool" "compute_nodes" {
     port             = "80"
     vnic_selection   = "PrimaryVnic"
   }
-  placement_configurations {
-    availability_domain = each.key
-    primary_subnet_id   = oci_core_subnet.private.id
+  dynamic placement_configurations {
+    for_each = local.availability_domains
+    content {
+      availability_domain = placement_configurations.value.name
+      primary_subnet_id = oci_core_subnet.private.id
+    }
   }
-  size = each.value
+  size = var.compute_count
 }
 
 output "open_shift_api_int_lb_addr" {
