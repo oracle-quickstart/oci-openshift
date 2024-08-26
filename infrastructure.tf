@@ -281,7 +281,8 @@ resource "oci_identity_tag" "openshift_instance_role" {
       "compute",
     ]
   }
-  provider = oci.home
+  provider   = oci.home
+  depends_on = [oci_identity_tag_namespace.openshift_tags]
 }
 
 resource "oci_identity_tag" "openshift_resource" {
@@ -291,6 +292,7 @@ resource "oci_identity_tag" "openshift_resource" {
   name             = "openshift-resource"
   tag_namespace_id = oci_identity_tag_namespace.openshift_tags.id
   provider         = oci.home
+  depends_on       = [oci_identity_tag_namespace.openshift_tags]
 }
 
 locals {
@@ -309,6 +311,12 @@ locals {
   }
 }
 
+# Wait for tag namespace validation complete before image creation
+resource "time_sleep" "wait_60_seconds" {
+  depends_on      = [oci_identity_tag_namespace.openshift_tags]
+  create_duration = "60s"
+}
+
 resource "oci_core_image" "openshift_image" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
@@ -322,6 +330,7 @@ resource "oci_core_image" "openshift_image" {
     source_image_type = "QCOW2"
   }
   defined_tags = local.common_defined_tags
+  depends_on   = [time_sleep.wait_60_seconds]
 }
 
 resource "oci_core_shape_management" "imaging_control_plane_shape" {
