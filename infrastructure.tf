@@ -275,9 +275,7 @@ resource "oci_identity_tag" "openshift_resource" {
 }
 
 locals {
-  common_defined_tags = {
-    "openshift-${var.cluster_name}.openshift-resource" = "openshift-resource"
-  }
+  common_defined_tags = tomap({"${oci_identity_tag_namespace.openshift_tags.name}.${oci_identity_tag.openshift_resource.name}" = "openshift-resource"})
 }
 
 data "oci_core_compute_global_image_capability_schemas" "image_capability_schemas" {
@@ -288,6 +286,41 @@ locals {
   image_schema_data = {
     "Compute.Firmware" = "{\"values\": [\"UEFI_64\"],\"defaultValue\": \"UEFI_64\",\"descriptorType\": \"enumstring\",\"source\": \"IMAGE\"}"
   }
+}
+
+resource "null_resource" "wait_for_tags" {
+  depends_on = [
+    oci_identity_tag_namespace.openshift_tags,
+    oci_identity_tag.openshift_instance_role,
+    oci_identity_tag.openshift_resource
+  ]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      timeout=300
+      start_time=$SECONDS
+      echo "Waiting for tag namespace and tags to be fully available..."
+      
+      until oci iam tag-namespace get --tag-namespace-id ${oci_identity_tag_namespace.openshift_tags.id} && \
+            oci iam tag get --tag-namespace-id ${oci_identity_tag_namespace.openshift_tags.id} --tag-name ${oci_identity_tag.openshift_instance_role.name} && \
+            oci iam tag get --tag-namespace-id ${oci_identity_tag_namespace.openshift_tags.id} --tag-name ${oci_identity_tag.openshift_resource.name}
+      do
+        sleep 10
+        echo "Still waiting... ($(( SECONDS - start_time )) seconds elapsed)"
+        if [ $(( SECONDS - start_time )) -ge $timeout ]; then
+          echo "Timeout reached. Tags may not be fully available."
+          exit 1
+        fi
+      done
+      echo "Tag namespace and tags are now available."
+    EOT
+  }
+}
+
+resource "time_sleep" "tag_propagation_buffer" {
+  depends_on = [null_resource.wait_for_tags]
+  create_duration = "180s"
+  
 }
 
 resource "oci_core_image" "openshift_image" {
@@ -303,6 +336,7 @@ resource "oci_core_image" "openshift_image" {
     source_image_type = "QCOW2"
   }
   defined_tags = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_shape_management" "imaging_control_plane_shape" {
@@ -310,6 +344,7 @@ resource "oci_core_shape_management" "imaging_control_plane_shape" {
   compartment_id = var.compartment_ocid
   image_id       = oci_core_image.openshift_image[0].id
   shape_name     = var.control_plane_shape
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_shape_management" "imaging_compute_shape" {
@@ -326,6 +361,7 @@ resource "oci_core_compute_image_capability_schema" "openshift_image_capability_
   image_id                                            = oci_core_image.openshift_image[0].id
   schema_data                                         = local.image_schema_data
   defined_tags                                        = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 ##Define network
@@ -337,6 +373,7 @@ resource "oci_core_vcn" "openshift_vcn" {
   display_name   = var.cluster_name
   dns_label      = var.vcn_dns_label
   defined_tags   = local.common_defined_tags
+  depends_on = [time_sleep.tag_propagation_buffer]
 }
 
 resource "oci_core_internet_gateway" "internet_gateway" {
@@ -344,6 +381,7 @@ resource "oci_core_internet_gateway" "internet_gateway" {
   display_name   = "InternetGateway"
   vcn_id         = oci_core_vcn.openshift_vcn.id
   defined_tags   = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_nat_gateway" "nat_gateway" {
@@ -351,6 +389,7 @@ resource "oci_core_nat_gateway" "nat_gateway" {
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "NatGateway"
   defined_tags   = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 data "oci_core_services" "oci_services" {
@@ -373,6 +412,7 @@ resource "oci_core_service_gateway" "service_gateway" {
 
   display_name = "ServiceGateway"
   defined_tags = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_route_table" "public_routes" {
@@ -386,6 +426,7 @@ resource "oci_core_route_table" "public_routes" {
     network_entity_id = oci_core_internet_gateway.internet_gateway.id
   }
   defined_tags = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_route_table" "private_routes" {
@@ -404,6 +445,7 @@ resource "oci_core_route_table" "private_routes" {
     network_entity_id = oci_core_service_gateway.service_gateway.id
   }
   defined_tags = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_security_list" "private" {
@@ -420,6 +462,7 @@ resource "oci_core_security_list" "private" {
     protocol    = local.all_protocols
   }
   defined_tags = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_security_list" "public" {
@@ -444,6 +487,7 @@ resource "oci_core_security_list" "public" {
     protocol    = local.all_protocols
   }
   defined_tags = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_subnet" "private" {
@@ -460,6 +504,7 @@ resource "oci_core_subnet" "private" {
   dns_label                  = "private"
   prohibit_public_ip_on_vnic = true
   defined_tags               = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_subnet" "public" {
@@ -476,6 +521,7 @@ resource "oci_core_subnet" "public" {
   dns_label                  = "public"
   prohibit_public_ip_on_vnic = false
   defined_tags               = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_network_security_group" "cluster_lb_nsg" {
@@ -483,6 +529,7 @@ resource "oci_core_network_security_group" "cluster_lb_nsg" {
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "cluster-lb-nsg"
   defined_tags   = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_1" {
@@ -543,6 +590,7 @@ resource "oci_core_network_security_group" "cluster_controlplane_nsg" {
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "cluster-controlplane-nsg"
   defined_tags   = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_network_security_group_security_rule" "cluster_controlplane_nsg_rule_1" {
@@ -564,6 +612,7 @@ resource "oci_core_network_security_group" "cluster_compute_nsg" {
   vcn_id         = oci_core_vcn.openshift_vcn.id
   display_name   = "cluster-compute-nsg"
   defined_tags   = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_core_network_security_group_security_rule" "cluster_compute_nsg_rule_1" {
@@ -593,6 +642,7 @@ resource "oci_load_balancer_load_balancer" "openshift_api_int_lb" {
     minimum_bandwidth_in_mbps = var.load_balancer_shape_details_minimum_bandwidth_in_mbps
   }
   defined_tags = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_load_balancer_load_balancer" "openshift_api_apps_lb" {
@@ -608,6 +658,7 @@ resource "oci_load_balancer_load_balancer" "openshift_api_apps_lb" {
     minimum_bandwidth_in_mbps = var.load_balancer_shape_details_minimum_bandwidth_in_mbps
   }
   defined_tags = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_api_backend_external" {
@@ -751,6 +802,7 @@ resource "oci_identity_dynamic_group" "openshift_control_plane_nodes" {
   name           = "${var.cluster_name}_control_plane_nodes"
   provider       = oci.home
   defined_tags   = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_identity_policy" "openshift_control_plane_nodes" {
@@ -766,6 +818,7 @@ resource "oci_identity_policy" "openshift_control_plane_nodes" {
   ]
   provider     = oci.home
   defined_tags = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_identity_dynamic_group" "openshift_compute_nodes" {
@@ -775,6 +828,7 @@ resource "oci_identity_dynamic_group" "openshift_compute_nodes" {
   name           = "${var.cluster_name}_compute_nodes"
   provider       = oci.home
   defined_tags   = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 }
 
 resource "oci_dns_zone" "openshift" {
@@ -830,7 +884,7 @@ resource "time_sleep" "wait_180_seconds" {
 
 data "oci_core_vcn_dns_resolver_association" "dns_resolver_association" {
   vcn_id     = oci_core_vcn.openshift_vcn.id
-  depends_on = [time_sleep.wait_180_seconds]
+  depends_on = [time_sleep.wait_180_seconds, null_resource.wait_for_tags]
 }
 
 data "oci_dns_resolver" "dns_resolver" {
@@ -842,6 +896,7 @@ resource "oci_core_instance_configuration" "control_plane_node_config" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
   display_name   = "${var.cluster_name}-control_plane"
+  depends_on = [null_resource.wait_for_tags]
   instance_details {
     instance_type = "compute"
     launch_details {
@@ -883,6 +938,7 @@ resource "oci_core_instance_pool" "control_plane_nodes" {
   instance_display_name_formatter = "${var.cluster_name}-control-plane-${local.pool_formatter_id}"
   instance_hostname_formatter     = "${var.cluster_name}-control-plane-${local.pool_formatter_id}"
   defined_tags                    = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
 
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_external.name
@@ -935,6 +991,7 @@ resource "oci_core_instance_configuration" "compute_node_config" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
   display_name   = "${var.cluster_name}-compute"
+  depends_on = [null_resource.wait_for_tags]
   instance_details {
     instance_type = "compute"
     launch_details {
@@ -977,6 +1034,7 @@ resource "oci_core_instance_pool" "compute_nodes" {
   instance_display_name_formatter = "${var.cluster_name}-compute-${local.pool_formatter_id}"
   instance_hostname_formatter     = "${var.cluster_name}-compute-${local.pool_formatter_id}"
   defined_tags                    = local.common_defined_tags
+  depends_on = [null_resource.wait_for_tags]
   load_balancers {
     backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend.name
     load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
