@@ -227,11 +227,6 @@ locals {
   pool_formatter_id               = join("", ["$", "{launchCount}"])
 }
 
-data "oci_identity_availability_domain" "availability_domain" {
-  compartment_id = var.compartment_ocid
-  ad_number      = "1"
-}
-
 data "oci_identity_availability_domains" "ads" {
   compartment_id = var.compartment_ocid
 }
@@ -732,7 +727,7 @@ resource "oci_identity_policy" "openshift_control_plane_nodes" {
     "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to use virtual-network-family in compartment id ${var.compartment_ocid}",
     "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage load-balancers in compartment id ${var.compartment_ocid}",
   ]
-  provider     = oci.home
+  provider = oci.home
 }
 
 resource "oci_identity_dynamic_group" "openshift_compute_nodes" {
@@ -820,8 +815,8 @@ resource "oci_core_instance_configuration" "control_plane_node_config" {
         subnet_id = oci_core_subnet.private.id
       }
       defined_tags = {
-          "openshift-${var.cluster_name}.instance-role" = "control_plane"
-        }
+        "openshift-${var.cluster_name}.instance-role" = "control_plane"
+      }
       shape = var.control_plane_shape
       shape_config {
         memory_in_gbs = var.control_plane_memory
@@ -881,13 +876,13 @@ resource "oci_core_instance_pool" "control_plane_nodes" {
     port             = "22624"
     vnic_selection   = "PrimaryVnic"
   }
-  dynamic placement_configurations {
+  dynamic "placement_configurations" {
     for_each = local.availability_domains
     content {
       availability_domain = placement_configurations.value.name
-      primary_subnet_id = oci_core_subnet.private.id
+      primary_subnet_id   = oci_core_subnet.private.id
     }
-    
+
   }
   size = var.control_plane_count
 }
@@ -899,7 +894,6 @@ resource "oci_core_instance_configuration" "compute_node_config" {
   instance_details {
     instance_type = "compute"
     launch_details {
-      # availability_domain = data.oci_identity_availability_domain.availability_domain.name
       compartment_id = var.compartment_ocid
       create_vnic_details {
         assign_private_dns_record = "true"
@@ -910,7 +904,7 @@ resource "oci_core_instance_configuration" "compute_node_config" {
         subnet_id = oci_core_subnet.private.id
       }
       defined_tags = {
-          "openshift-${var.cluster_name}.instance-role" = "compute"
+        "openshift-${var.cluster_name}.instance-role" = "compute"
       }
       shape = var.compute_shape
       shape_config {
@@ -946,11 +940,11 @@ resource "oci_core_instance_pool" "compute_nodes" {
     port             = "80"
     vnic_selection   = "PrimaryVnic"
   }
-  dynamic placement_configurations {
+  dynamic "placement_configurations" {
     for_each = local.availability_domains
     content {
       availability_domain = placement_configurations.value.name
-      primary_subnet_id = oci_core_subnet.private.id
+      primary_subnet_id   = oci_core_subnet.private.id
     }
   }
   size = var.compute_count
