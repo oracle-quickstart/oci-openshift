@@ -1,5 +1,7 @@
 .idea/
 .DS_Store
+.dev
+.secrets
 
 ### Terraform ###
 # Local .terraform directories
