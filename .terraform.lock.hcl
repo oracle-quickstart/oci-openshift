@@ -2,8 +2,10 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/hashicorp/time" {
-  version = "0.11.1"
+  version     = "0.11.1"
+  constraints = ">= 0.11.1"
   hashes = [
+    "h1:UyhbtF79Wy4EVNrnvMcOPzmZLVQQyzM2ostfjs2l5PI=",
     "h1:pQGSL9mdgw4qsLndFYsEF93mbsIxyxNoAyIbBqhS3Xo=",
     "zh:19a393db736ec4fd024d098d55aefaef07056c37a448ece3b55b3f5f4c2c7e4a",
     "zh:227fa1e221de2907f37be78d40c06ca6a6f7b243a1ec33ade014dfaf6d92cd9c",
@@ -24,6 +26,7 @@ provider "registry.terraform.io/oracle/oci" {
   version     = "5.38.0"
   constraints = ">= 5.38.0"
   hashes = [
+    "h1:Vq4J/WcjV5q6G9Ntx8FPUTjZ621xJWE8hmGrbgYkAWI=",
     "h1:mCLWiQE5RMBxzJdL0pqInNQdWNjrcqlvz/DpU/3aVGk=",
     "zh:00dd0573d645f32cc717224f42369d881b9269dcce5766e95be201506feaaea4",
     "zh:116bc1382b7bd2fa090000a0d0fd85bde237ddad890c87bb1cc2c84ad331f416",
