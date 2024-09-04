@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Set NOW env variable
         run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
@@ -42,7 +42,7 @@ jobs:
         with:
           command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source infrastructure.zip --variables "{\"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.OCI_CLI_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
           query: 'data.id'
-      
+
       - name: Output Stack ID
         id: output-stack-id
         env:
@@ -80,7 +80,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Set NOW env variable
         run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
@@ -140,7 +140,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Set NOW env variable
         run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
@@ -199,14 +199,14 @@ jobs:
         id: teardown-vm-infra
         with:
           command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ needs.smoke-test-vm.outputs.stack_id }}'
-      
+
       - name: Teardown BM Infrastructure
         if: ${{ needs.smoke-test-bm.result == 'success' }}
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: teardown-bm-infra
         with:
           command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ needs.smoke-test-bm.outputs.stack_id }}'
-      
+
       - name: Teardown VM multi-ad Infrastructure
         if: ${{ needs.smoke-test-vm-multi-ad.result == 'success' }}
         uses: oracle-actions/run-oci-cli-command@v1.3.1
@@ -229,7 +229,7 @@ jobs:
         continue-on-error: true
         with:
           command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-bm.outputs.stack_id }}'
-     
+
       - name: Destroy VM multi-ad RMS Stack
         if: ${{ steps.teardown-vm-multi-ad-infra.outcome == 'success' }}
         uses: oracle-actions/run-oci-cli-command@v1.3.1
