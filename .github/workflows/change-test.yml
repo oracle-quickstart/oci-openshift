@@ -63,8 +63,9 @@ jobs:
         with:
           command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
-      # - name: Destroy RMS Stack
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-stack
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ steps.create-stack.outputs.raw_output }}'
+      - name: Destroy RMS Stack
+        uses: oracle-actions/run-oci-cli-command@v1.3.1
+        id: destroy-stack
+        continue-on-error: true
+        with:
+          command: 'resource-manager stack delete --force --stack-id ${{ steps.create-stack.outputs.raw_output }}'

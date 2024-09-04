@@ -214,23 +214,26 @@ jobs:
         with:
           command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ needs.smoke-test-vm-multi-ad.outputs.stack_id }}'
 
-      # - name: Destroy VM RMS Stack
-      #   if: ${{ steps.teardown-vm-infra.outcome == 'success' }}
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-vm-stack
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-vm.outputs.stack_id }}'
+      - name: Destroy VM RMS Stack
+        if: ${{ steps.teardown-vm-infra.outcome == 'success' }}
+        uses: oracle-actions/run-oci-cli-command@v1.3.1
+        id: destroy-vm-stack
+        continue-on-error: true
+        with:
+          command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-vm.outputs.stack_id }}'
 
-      # - name: Destroy BM RMS Stack
-      #   if: ${{ steps.teardown-bm-infra.outcome == 'success' }}
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-bm-stack
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-bm.outputs.stack_id }}'
+      - name: Destroy BM RMS Stack
+        if: ${{ steps.teardown-bm-infra.outcome == 'success' }}
+        uses: oracle-actions/run-oci-cli-command@v1.3.1
+        id: destroy-bm-stack
+        continue-on-error: true
+        with:
+          command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-bm.outputs.stack_id }}'
      
-      # - name: Destroy VM multi-ad RMS Stack
-      #   if: ${{ steps.teardown-vm-multi-ad-infra.outcome == 'success' }}
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-vm-multi-ad-stack
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-vm-multi-ad.outputs.stack_id }}'
+      - name: Destroy VM multi-ad RMS Stack
+        if: ${{ steps.teardown-vm-multi-ad-infra.outcome == 'success' }}
+        uses: oracle-actions/run-oci-cli-command@v1.3.1
+        id: destroy-vm-multi-ad-stack
+        continue-on-error: true
+        with:
+          command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-vm-multi-ad.outputs.stack_id }}'
