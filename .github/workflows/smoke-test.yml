@@ -1,6 +1,5 @@
 name: Infrastructure Smoke Test
 on:
-  push:
   schedule:
     - cron: "20 5 */2 * *"
 jobs:
@@ -17,8 +16,6 @@ jobs:
       COMPARTMENT_OCID: ${{ secrets.COMPARTMENT_OCID }}
       ZONE_DNS_SUFFIX: ${{ secrets.ZONE_DNS_SUFFIX }}
       CLUSTER_NAME: smoke-test-vm
-    # outputs:
-    #   stack_id: ${{ steps.output-stack-id.outputs.stack_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,13 +41,6 @@ jobs:
           command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source infrastructure.zip --variables "{\"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.OCI_CLI_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
           query: 'data.id'
 
-      # - name: Output Stack ID
-      #   id: output-stack-id
-      #   env:
-      #     stack_id: ${{ steps.create-stack.outputs.raw_output }}
-      #   run: |
-      #     echo "stack_id=$(echo $stack_id | tr -d '"')" >> $GITHUB_OUTPUT
-
       - name: RMS Stack Plan Job
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: stack-plan-job
@@ -69,13 +59,6 @@ jobs:
         with:
           command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
-      # - name: Destroy VM RMS Stack
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-vm-stack
-      #   continue-on-error: true
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ steps.create-stack.outputs.raw_output }}'
-
   smoke-test-bm:
     needs: [smoke-test-vm]
     runs-on: ubuntu-latest
@@ -90,8 +73,6 @@ jobs:
       COMPARTMENT_OCID: ${{ secrets.COMPARTMENT_OCID }}
       ZONE_DNS_SUFFIX: ${{ secrets.ZONE_DNS_SUFFIX }}
       CLUSTER_NAME: smoke-test-bm
-    # outputs:
-    #   stack_id: ${{ steps.output-stack-id.outputs.stack_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -117,13 +98,6 @@ jobs:
           command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source infrastructure.zip --variables "{\"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"control_plane_shape\": \"BM.Standard3.64\", \"control_plane_ocpu\": \"64\", \"control_plane_memory\": \"1024\", \"compute_shape\": \"BM.Standard3.64\", \"compute_ocpu\": \"64\", \"compute_memory\": \"1024\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.OCI_CLI_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
           query: 'data.id'
 
-      # - name: Output Stack ID
-      #   id: output-stack-id
-      #   env:
-      #     stack_id: ${{ steps.create-stack.outputs.raw_output }}
-      #   run: |
-      #     echo "stack_id=$(echo $stack_id | tr -d '"')" >> $GITHUB_OUTPUT
-
       - name: RMS Stack Plan Job
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: stack-plan-job
@@ -142,13 +116,6 @@ jobs:
         with:
           command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
-      # - name: Destroy BM RMS Stack
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-bm-stack
-      #   continue-on-error: true
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ steps.create-stack.outputs.raw_output }}'
-
   smoke-test-vm-multi-ad:
     needs: [smoke-test-bm]
     runs-on: ubuntu-latest
@@ -164,8 +131,6 @@ jobs:
       ZONE_DNS_SUFFIX: ${{ secrets.ZONE_DNS_SUFFIX }}
       CLUSTER_NAME: smoke-test-vm-multi-ad
       MUTLI_AD_REGION: eu-frankfurt-1
-    # outputs:
-    #   stack_id: ${{ steps.output-stack-id.outputs.stack_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -191,13 +156,6 @@ jobs:
           command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source infrastructure.zip --variables "{\"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.MUTLI_AD_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
           query: 'data.id'
 
-      # - name: Output Stack ID
-      #   id: output-stack-id
-      #   env:
-      #     stack_id: ${{ steps.create-stack.outputs.raw_output }}
-      #   run: |
-      #     echo "stack_id=$(echo $stack_id | tr -d '"')" >> $GITHUB_OUTPUT
-
       - name: RMS Stack Plan Job
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: stack-plan-job
@@ -215,67 +173,3 @@ jobs:
         id: teardown-vm-multi-ad-infra
         with:
           command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
-
-      # - name: Destroy VM Multi AD RMS Stack
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-vm-multi-ad-stack
-      #   continue-on-error: true
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ steps.create-stack.outputs.raw_output }}'
-
-  # teardown-stacks:
-  #   if: ${{ !cancelled() }}
-  #   needs: [smoke-test-vm, smoke-test-bm, smoke-test-vm-multi-ad]
-    # runs-on: ubuntu-latest
-    # name: Teardown cluster infrastructure
-    # env:
-    #   OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
-    #   OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
-    #   OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
-    #   OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-    #   OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
-    # steps:
-    #   - name: Teardown VM Infrastructure
-    #     if: ${{ needs.smoke-test-vm.result == 'success' }}
-    #     uses: oracle-actions/run-oci-cli-command@v1.3.1
-    #     id: teardown-vm-infra
-    #     with:
-    #       command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ needs.smoke-test-vm.outputs.stack_id }}'
-
-    #   - name: Teardown BM Infrastructure
-      #   if: ${{ needs.smoke-test-bm.result == 'success' }}
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: teardown-bm-infra
-      #   with:
-      #     command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ needs.smoke-test-bm.outputs.stack_id }}'
-
-      # - name: Teardown VM multi-ad Infrastructure
-      #   if: ${{ needs.smoke-test-vm-multi-ad.result == 'success' }}
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: teardown-vm-multi-ad-infra
-      #   with:
-      #     command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ needs.smoke-test-vm-multi-ad.outputs.stack_id }}'
-
-      # - name: Destroy VM RMS Stack
-      #   if: ${{ steps.teardown-vm-infra.outcome == 'success' }}
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-vm-stack
-      #   continue-on-error: true
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-vm.outputs.stack_id }}'
-
-      # - name: Destroy BM RMS Stack
-      #   if: ${{ steps.teardown-bm-infra.outcome == 'success' }}
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-bm-stack
-      #   continue-on-error: true
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-bm.outputs.stack_id }}'
-
-      # - name: Destroy VM multi-ad RMS Stack
-      #   if: ${{ steps.teardown-vm-multi-ad-infra.outcome == 'success' }}
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.1
-      #   id: destroy-vm-multi-ad-stack
-      #   continue-on-error: true
-      #   with:
-      #     command: 'resource-manager stack delete --force --stack-id ${{ needs.smoke-test-vm-multi-ad.outputs.stack_id }}'
