@@ -613,6 +613,7 @@ resource "oci_dns_zone" "openshift" {
   name           = var.zone_dns
   scope          = var.enable_private_dns ? "PRIVATE" : null
   view_id        = var.enable_private_dns ? data.oci_dns_resolver.dns_resolver.default_view_id : null
+  count          = var.use_existing_zone ? 0 : 1
   zone_type      = "PRIMARY"
   depends_on     = [oci_core_subnet.private]
 }
@@ -626,7 +627,7 @@ resource "oci_dns_rrset" "openshift_api" {
     ttl    = "3600"
   }
   rtype           = "A"
-  zone_name_or_id = oci_dns_zone.openshift.id
+  zone_name_or_id = var.use_existing_zone ? var.zone_dns : oci_dns_zone.openshift[0].id
 }
 
 resource "oci_dns_rrset" "openshift_apps" {
@@ -638,7 +639,7 @@ resource "oci_dns_rrset" "openshift_apps" {
     ttl    = "3600"
   }
   rtype           = "A"
-  zone_name_or_id = oci_dns_zone.openshift.id
+  zone_name_or_id = var.use_existing_zone ? var.zone_dns : oci_dns_zone.openshift[0].id
 }
 
 resource "oci_dns_rrset" "openshift_api_int" {
@@ -650,7 +651,7 @@ resource "oci_dns_rrset" "openshift_api_int" {
     ttl    = "3600"
   }
   rtype           = "A"
-  zone_name_or_id = oci_dns_zone.openshift.id
+  zone_name_or_id = var.use_existing_zone ? var.zone_dns : oci_dns_zone.openshift[0].id
 }
 
 resource "time_sleep" "wait_180_seconds" {

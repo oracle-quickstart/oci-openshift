@@ -199,6 +199,12 @@ variable "enable_private_dns" {
   default     = false
 }
 
+variable "use_existing_zone" {
+  type        = bool
+  description = "When set, an existing DNS zone will be used instead of creating a new one."
+  default     = false
+}
+
 variable "create_openshift_instances" {
   type    = bool
   default = true
