@@ -37,7 +37,7 @@ jobs:
 
       # Upload the zip file
       - name: Upload ZIP file as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: openshift-infrastructure.zip
-          path: openshift-infrastructure.zip.zip
+          name: openshift-infrastructure
+          path: openshift-infrastructure.zip
