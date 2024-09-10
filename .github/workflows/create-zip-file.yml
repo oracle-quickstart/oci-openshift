@@ -27,6 +27,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      # Install ZIP package
+      - name: Install zip
+        run: sudo apt-get install zip
+
+      # Create ZIP file of the
+      - name: Create ZIP file
+        run: zip -r openshift-infrastructure.zip ./infrastructure.tf
+
+      # Upload the zip file
+      - name: Upload ZIP file as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: repo-archive
+          path: repo-archive.zip
+
