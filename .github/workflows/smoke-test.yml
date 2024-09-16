@@ -51,13 +51,13 @@ jobs:
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: stack-apply-job
         with:
-          command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
+          command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
       
       - name: Teardown VM Infrastructure
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: teardown-vm-infra
         with:
-          command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
+          command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
   smoke-test-bm:
     needs: [smoke-test-vm]
@@ -108,13 +108,13 @@ jobs:
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: stack-apply-job
         with:
-          command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
+          command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
       
       - name: Teardown BM Infrastructure
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: teardown-bm-infra
         with:
-          command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
+          command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
   smoke-test-vm-multi-ad:
     needs: [smoke-test-bm]
@@ -166,10 +166,10 @@ jobs:
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: stack-apply-job
         with:
-          command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
+          command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
       - name: Teardown VM Multi AD Infrastructure
         uses: oracle-actions/run-oci-cli-command@v1.3.1
         id: teardown-vm-multi-ad-infra
         with:
-          command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
+          command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
