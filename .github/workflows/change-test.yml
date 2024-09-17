@@ -55,13 +55,13 @@ jobs:
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: stack-apply-job
         with:
-          command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
+          command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
       - name: RMS Stack Destroy Job
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: stack-destroy-job
         with:
-          command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
+          command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
       - name: Destroy RMS Stack
         uses: oracle-actions/run-oci-cli-command@v1.3.2
