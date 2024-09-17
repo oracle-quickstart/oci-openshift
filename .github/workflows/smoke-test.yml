@@ -3,64 +3,7 @@ on:
   schedule:
     - cron: "20 5 */2 * *"
 jobs:
-  smoke-test-vm:
-    runs-on: ubuntu-latest
-    name: Create VM cluster infrastructure
-    env:
-      OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
-      OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
-      OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
-      OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-      OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
-      OPENSHIFT_IMAGE_SOURCE_URI: ${{ secrets.OPENSHIFT_IMAGE_SOURCE_URI }}
-      COMPARTMENT_OCID: ${{ secrets.COMPARTMENT_OCID }}
-      ZONE_DNS_SUFFIX: ${{ secrets.ZONE_DNS_SUFFIX }}
-      CLUSTER_NAME: smoke-test-vm
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set NOW env variable
-        run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-
-      - name: Create Terraform ZIP
-        run: |
-          if [ -f infrastructure.tf ]; then
-            zip infrastructure.zip infrastructure.tf
-          elif [ -d infrastructure ]; then
-            zip -j infrastructure.zip infrastructure/data.tf infrastructure/locals.tf infrastructure/main.tf infrastructure/output.tf infrastructure/schema.yaml infrastructure/variables.tf
-          else
-            echo "Could not find infrastructure.tf or infrastructure directory"
-            exit 1
-          fi
-
-      - name: Create RMS Stack
-        uses: oracle-actions/run-oci-cli-command@v1.3.1
-        id: create-stack
-        with:
-          command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source infrastructure.zip --variables "{\"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.OCI_CLI_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
-          query: 'data.id'
-
-      - name: RMS Stack Plan Job
-        uses: oracle-actions/run-oci-cli-command@v1.3.1
-        id: stack-plan-job
-        with:
-          command: 'resource-manager job create-plan-job --wait-for-state SUCCEEDED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
-
-      - name: RMS Stack Apply Job
-        uses: oracle-actions/run-oci-cli-command@v1.3.1
-        id: stack-apply-job
-        with:
-          command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
-      
-      - name: Teardown VM Infrastructure
-        uses: oracle-actions/run-oci-cli-command@v1.3.1
-        id: teardown-vm-infra
-        with:
-          command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
-
-  smoke-test-bm:
-    needs: [smoke-test-vm]
+  smoke-test-bm-single-ad:
     runs-on: ubuntu-latest
     name: Create BM cluster infrastructure
     env:
@@ -124,7 +67,7 @@ jobs:
   
 
   smoke-test-vm-multi-ad:
-    needs: [smoke-test-bm]
+    needs: [smoke-test-bm-single-ad]
     runs-on: ubuntu-latest
     name: Create VM cluster infrastructure in multi-ad region
     env:
