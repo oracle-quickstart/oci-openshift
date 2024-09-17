@@ -39,33 +39,32 @@ jobs:
           fi
 
       - name: Create RMS Stack
-        uses: oracle-actions/run-oci-cli-command@v1.3.1
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: create-stack
         with:
           command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source infrastructure.zip --variables "{\"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.OCI_CLI_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}--${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
           query: 'data.id'
 
       - name: RMS Stack Plan Job
-        uses: oracle-actions/run-oci-cli-command@v1.3.1
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: stack-plan-job
         with:
           command: 'resource-manager job create-plan-job --wait-for-state SUCCEEDED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
       - name: RMS Stack Apply Job
-        uses: oracle-actions/run-oci-cli-command@v1.3.1
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: stack-apply-job
         with:
           command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
       - name: RMS Stack Destroy Job
-        uses: oracle-actions/run-oci-cli-command@v1.3.1
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: stack-destroy-job
         with:
           command: 'resource-manager job create-destroy-job --wait-for-state SUCCEEDED --max-wait-seconds 1800 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
 
       - name: Destroy RMS Stack
-        uses: oracle-actions/run-oci-cli-command@v1.3.1
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: destroy-stack
-        continue-on-error: true
         with:
           command: 'resource-manager stack delete --force --stack-id ${{ steps.create-stack.outputs.raw_output }}'
