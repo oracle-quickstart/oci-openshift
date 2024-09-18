@@ -739,6 +739,10 @@ resource "oci_core_instance" "control_plane_node" {
       ocpus         = var.control_plane_ocpu
     }
   }
+
+  metadata = local.is_control_plane_iscsi_type ? {
+    user_data = base64encode(file("./userdata/iscsi-oci-configure-secondary-nic.sh"))
+  } : null
 }
 
 resource "oci_core_instance" "compute_node" {
@@ -775,4 +779,8 @@ resource "oci_core_instance" "compute_node" {
       ocpus         = var.compute_ocpu
     }
   }
+
+  metadata = local.is_compute_iscsi_type ? {
+    user_data = base64encode(file("./userdata/iscsi-oci-configure-secondary-nic.sh"))
+  } : null
 }
