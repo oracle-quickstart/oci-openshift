@@ -23,20 +23,3 @@ rateLimiter:
   rateLimitBucketWrite: 5
   OCICCMCONFIG
 }
-
-locals {
-  x = local.compute_node_count_per_ad_flattened
-  y = local.cp_node_count_per_ad_flattened
-  z = local.compute_node_map
-  c = local.cp_node_map
-}
-
-output "ad-fd-distro" {
-  value = {
-    a = local.compute_node_count_per_ad_flattened
-    b = local.cp_node_count_per_ad_flattened
-    c = local.compute_node_map
-    d = local.cp_node_map
-  }
-}
-
