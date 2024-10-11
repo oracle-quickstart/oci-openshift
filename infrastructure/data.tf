@@ -9,6 +9,12 @@ data "oci_identity_availability_domains" "ads" {
   compartment_id = var.compartment_ocid
 }
 
+data "oci_identity_fault_domains" "fds" {
+  for_each            = toset([for ad in local.availability_domains : ad.name])
+  availability_domain = each.value
+  compartment_id      = var.compartment_ocid
+}
+
 data "oci_core_compute_global_image_capability_schemas" "image_capability_schemas" {
 }
 
