@@ -2,10 +2,6 @@ data "oci_identity_tenancy" "tenancy" {
   tenancy_id = var.tenancy_ocid
 }
 
-data "oci_identity_compartment" "compartment" {
-  id = var.compartment_ocid
-}
-
 data "oci_identity_regions" "regions" {
 }
 
@@ -26,28 +22,32 @@ data "oci_core_services" "oci_services" {
 
 # Defined tag namespace. Use to mark instance roles and configure instance policy
 data "oci_identity_tag_namespaces" "openshift_tags" {
-  compartment_id = var.compartment_ocid
+  count          = var.reuse_tags ? 1 : 0
+  compartment_id = var.tag_namespace_compartment_ocid != "" ? var.tag_namespace_compartment_ocid : var.compartment_ocid
   state          = "ACTIVE"
   filter {
     name   = "name"
-    values = ["openshift-tags-${data.oci_identity_compartment.compartment.name}"]
+    values = [var.tag_namespace_name != "" ? var.tag_namespace_name : "openshift-${var.cluster_name}"]
     regex  = true
   }
 }
 
 data "oci_identity_tag" "openshift_resource" {
+  count            = var.reuse_tags ? 1 : 0
   tag_name         = "openshift-resource"
-  tag_namespace_id = data.oci_identity_tag_namespaces.openshift_tags.tag_namespaces[0].id
+  tag_namespace_id = data.oci_identity_tag_namespaces.openshift_tags[0].tag_namespaces[0].id
 }
 
 data "oci_identity_tag" "openshift_instance_role" {
+  count            = var.reuse_tags ? 1 : 0
   tag_name         = "instance-role"
-  tag_namespace_id = data.oci_identity_tag_namespaces.openshift_tags.tag_namespaces[0].id
+  tag_namespace_id = data.oci_identity_tag_namespaces.openshift_tags[0].tag_namespaces[0].id
 }
 
 data "oci_identity_tag" "openshift_boot_volume_type" {
+  count            = var.reuse_tags ? 1 : 0
   tag_name         = "boot-volume-type"
-  tag_namespace_id = data.oci_identity_tag_namespaces.openshift_tags.tag_namespaces[0].id
+  tag_namespace_id = data.oci_identity_tag_namespaces.openshift_tags[0].tag_namespaces[0].id
 }
 
 data "oci_core_vcn_dns_resolver_association" "dns_resolver_association" {

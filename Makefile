@@ -9,6 +9,3 @@ pre-commit:
 zip:
 	rm -f infrastructure.zip
 	zip infrastructure.zip infrastructure/*
-
-	rm -f tagging-resources.zip
-	zip tagging-resources.zip tagging-resources/*
