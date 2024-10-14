@@ -203,3 +203,27 @@ variable "create_openshift_instances" {
   type    = bool
   default = true
 }
+
+variable "reuse_tags" {
+  type        = bool
+  description = "Use existing tag namespace and defined tags when tagging OCI resources. Tag namespace and defined tags are preserved when the stack is destroyed. Warning: Stack creation will fail if specifed tag namesapce and defined tags do not exist as specified. Create stack with this set to false to create tagging resources that are destroyed when the cluster is, or follow this link for terraform to create tagging resources seperately. It's recommended you do not change this flag after cluster creation to preserve terraform state consistency."
+  default     = false
+}
+
+variable "tag_namespace_name" {
+  type        = string
+  description = "Name of tag namespace to create or use for tagging OCI resources. Defaults to \"openshift-{cluster_name}\""
+  default     = ""
+}
+
+variable "tag_namespace_compartment_ocid" {
+  type        = string
+  description = "Compartment containing tag namespace. Defaults to current compartment."
+  default     = ""
+}
+
+
+variable "wait_for_new_tag_consistency_wait_time" {
+  type    = string
+  default = "600s"
+}
