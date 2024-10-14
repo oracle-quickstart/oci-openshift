@@ -224,6 +224,7 @@ variable "tag_namespace_compartment_ocid" {
 
 
 variable "wait_for_new_tag_consistency_wait_time" {
-  type    = string
-  default = "600s"
+  type        = string
+  description = "Describes how long resource creation will be paused to allow for newly created tagging resources to reach consistency."
+  default     = "600s"
 }
