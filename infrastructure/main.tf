@@ -787,6 +787,7 @@ resource "oci_core_instance" "control_plane_node" {
   for_each            = var.create_openshift_instances ? local.cp_node_map : {}
   compartment_id      = var.compartment_ocid
   availability_domain = each.value.ad_name
+  fault_domain        = each.value.fault_domain
   display_name        = "${var.cluster_name}-cp-${each.value.index}-ad${regex("\\d+$", each.value.ad_name)}"
   shape               = var.control_plane_shape
   defined_tags = {
@@ -817,12 +818,17 @@ resource "oci_core_instance" "control_plane_node" {
       ocpus         = var.control_plane_ocpu
     }
   }
+
+  metadata = local.is_control_plane_iscsi_type ? {
+    user_data = base64encode(file("./userdata/iscsi-oci-configure-secondary-nic.sh"))
+  } : null
 }
 
 resource "oci_core_instance" "compute_node" {
   for_each            = var.create_openshift_instances ? local.compute_node_map : {}
   compartment_id      = var.compartment_ocid
   availability_domain = each.value.ad_name
+  fault_domain        = each.value.fault_domain
   display_name        = "${var.cluster_name}-compute-${each.value.index}-ad${regex("\\d+$", each.value.ad_name)}"
   shape               = var.compute_shape
   defined_tags = {
@@ -853,4 +859,8 @@ resource "oci_core_instance" "compute_node" {
       ocpus         = var.compute_ocpu
     }
   }
+
+  metadata = local.is_compute_iscsi_type ? {
+    user_data = base64encode(file("./userdata/iscsi-oci-configure-secondary-nic.sh"))
+  } : null
 }

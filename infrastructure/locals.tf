@@ -9,6 +9,11 @@ locals {
   availability_domains = data.oci_identity_availability_domains.ads.availability_domains
   total_ads            = length(local.availability_domains)
 
+  # Get FDs for each AD
+  fault_domains = {
+    for ad in local.availability_domains : ad.name => data.oci_identity_fault_domains.fds[ad.name].fault_domains
+  }
+
   # Calculate base nodes per AD
   cp_nodes_per_ad      = floor(var.control_plane_count / local.total_ads)
   compute_nodes_per_ad = floor(var.compute_count / local.total_ads)
@@ -31,8 +36,9 @@ locals {
   cp_node_count_per_ad_flattened = flatten([
     for ad_name, count in local.cp_node_count_per_ad_map : [
       for i in range(count) : {
-        ad_name = ad_name
-        index   = i + 1
+        ad_name      = ad_name
+        fault_domain = local.fault_domains[ad_name][i % length(local.fault_domains[ad_name])].name
+        index        = i + 1
       }
     ]
   ])
@@ -40,22 +46,25 @@ locals {
   compute_node_count_per_ad_flattened = flatten([
     for ad_name, count in local.compute_node_count_per_ad_map : [
       for i in range(count) : {
-        ad_name = ad_name
-        index   = i + 1
+        ad_name      = ad_name
+        fault_domain = local.fault_domains[ad_name][i % length(local.fault_domains[ad_name])].name
+        index        = i + 1
       }
     ]
   ])
 
   cp_node_map = {
     for idx, val in local.cp_node_count_per_ad_flattened : "${val.ad_name}-${val.index}" => {
-      ad_name = val.ad_name
-      index   = val.index
+      ad_name      = val.ad_name
+      index        = val.index
+      fault_domain = val.fault_domain
     }
   }
 
   compute_node_map = { for idx, val in local.compute_node_count_per_ad_flattened : "${val.ad_name}-${val.index}" => {
-    ad_name = val.ad_name
-    index   = val.index
+    ad_name      = val.ad_name
+    index        = val.index
+    fault_domain = val.fault_domain
     }
   }
 
