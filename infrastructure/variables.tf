@@ -206,7 +206,7 @@ variable "create_openshift_instances" {
 
 variable "reuse_tags" {
   type        = bool
-  description = "Use existing tag namespace and defined tags when tagging OCI resources. Tag namespace and defined tags are preserved when the stack is destroyed. Warning: Stack creation will fail if specifed tag namesapce and defined tags do not exist as specified. Create stack with this set to false to create tagging resources that are destroyed when the cluster is, or follow this link for terraform to create tagging resources seperately. It's recommended you do not change this flag after cluster creation to preserve terraform state consistency."
+  description = "Indicates whether to reuse existing tag namespace and defined tags when tagging OCI resources. Tag namespace and defined tags are preserved when the stack is destroyed if reuse_tags is set to true. WARNING - Stack creation will fail if specifed tag namespace and defined tags do not exist as specified. Create stack with reuse_tags set to false to create tagging resources that are destroyed when the cluster is, or use the terraform from oci-openshift/tagging-resources to create tagging resources seperately. It's recommended you do not change this flag after cluster creation to preserve terraform state consistency."
   default     = false
 }
 

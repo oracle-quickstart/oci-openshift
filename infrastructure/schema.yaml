@@ -49,6 +49,12 @@ variableGroups:
     - load_balancer_shape_details_maximum_bandwidth_in_mbps
     - load_balancer_shape_details_minimum_bandwidth_in_mbps
 
+- title: "Tagging Configuration"
+  variables:
+    - reuse_tags
+    - tag_namespace_name
+    - tag_namespace_compartment_ocid
+    - wait_for_new_tag_consistency_wait_time
 
 ###########
 # VARIABLES
@@ -267,4 +273,35 @@ variables:
     default: 10
     minimum: 10
     maximum: 8000
+    required: true
+
+  #
+  # Tagging Configuration Variables
+  #
+  reuse_tags:
+    type: boolean
+    title: Reuse Tagging Resources
+    description: Indicates whether to reuse existing tag namespace and defined tags when tagging OCI resources. Tag namespace and defined tags are preserved when the stack is destroyed if reuse_tags is set to true. WARNING - Stack creation will fail if specifed tag namespace and defined tags do not exist as specified. Create stack with reuse_tags set to false to create tagging resources that are destroyed when the cluster is, or use the terraform from oci-openshift/tagging-resources to create tagging resources seperately. It's recommended you do not change this flag after cluster creation to preserve terraform state consistency.
+    default: false
+    required: true
+
+  tag_namespace_name:
+    type: string
+    title: Tag Namespace Name
+    description: Name of tag namespace to create or reuse for tagging OCI resources. Defaults to openshift-{cluster_name}
+    default: ""
+    required: false
+
+  tag_namespace_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Tag Namespace Compartment OCID
+    description: Compartment containing tag namespace. Defaults to current compartment
+    default: compartment_ocid
+    required: true
+
+  wait_for_new_tag_consistency_wait_time:
+    type: string
+    title: Tag Consistency Wait Duration
+    description: How long the creation process will wait before creating tagged resources while new tags propogate
+    default: "600s"
     required: true
