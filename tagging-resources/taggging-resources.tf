@@ -13,32 +13,27 @@ provider "oci" {
   alias = "home"
 }
 
-variable "compartment_ocid" {
+variable "tag_namespace_compartment_ocid" {
   type        = string
-  description = "The ocid of the compartment that will contain tagging and OpenShift resources."
+  description = "Compartment to create tag namespace in. Defaults to current compartment."
 }
 
 variable "tag_namespace_name" {
   type        = string
-  description = "Name of tag namespace to create or use for tagging OCI resources. Defaults to \"openshift-{compartment_name}\". WARNING - Tag namespace name must be unique accross the tenancy."
-  default     = ""
-}
-
-data "oci_identity_compartment" "compartment" {
-  id = var.compartment_ocid
+  description = "Name of tag namespace to create for tagging OpenShift OCI resources. WARNING - Tag namespace name must be unique accross the tenancy."
 }
 
 # Defined tag namespace (scoped to compartment). Used to mark cluster resources, instance roles, and configure instance policy
 resource "oci_identity_tag_namespace" "openshift_tags" {
-  compartment_id = var.compartment_ocid
-  description    = "Used for track openshift related resources and policies"
+  compartment_id = var.tag_namespace_compartment_ocid
+  description    = "OpenShift related resources and policies"
   is_retired     = "false"
-  name           = var.tag_namespace_name != "" ? var.tag_namespace_name : "openshift-${data.oci_identity_compartment.compartment.name}"
+  name           = var.tag_namespace_name
   provider       = oci.home
 }
 
 resource "oci_identity_tag" "openshift_instance_role" {
-  description      = "Describe instance role inside OpenShift cluster"
+  description      = "Describe instance role of an instance in an OpenShift cluster"
   is_cost_tracking = "false"
   is_retired       = "false"
   name             = "instance-role"
@@ -54,7 +49,7 @@ resource "oci_identity_tag" "openshift_instance_role" {
 }
 
 resource "oci_identity_tag" "openshift_boot_volume_type" {
-  description      = "Describe the boot volume type of an OpenShift cluster"
+  description      = "Describe the boot volume type of an instance in an OpenShift cluster"
   is_cost_tracking = "false"
   is_retired       = "false"
   name             = "boot-volume-type"
@@ -70,7 +65,7 @@ resource "oci_identity_tag" "openshift_boot_volume_type" {
 }
 
 resource "oci_identity_tag" "openshift_resource" {
-  description      = "Openshift Resource"
+  description      = "OpenShift related resource"
   is_cost_tracking = "true"
   is_retired       = "false"
   name             = "openshift-resource"

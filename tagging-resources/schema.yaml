@@ -1,0 +1,36 @@
+#
+# Copyright (c) 2019-2020 Oracle and/or its affiliates. All rights reserved.
+#
+
+
+title: OpenShift on OCI Tagging Resources
+description: OpenShift on OCI Tagging Resources
+schemaVersion: 1.0.0
+version: "20241019"
+locale: "en"
+
+
+variableGroups:
+- title: "OpenShift Tagging Resources"
+  variables:
+    - tag_namespace_name
+    - tag_namespace_compartment_ocid
+
+###########
+# VARIABLES
+###########
+variables:
+  tag_namespace_name:
+    type: string
+    title: Tag Namespace Name
+    description: Name of tag namespace to create for tagging OpenShift OCI resources. WARNING - Tag namespace name must be unique accross the tenancy.
+    default: ""
+    required: true
+
+  tag_namespace_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Tag Namespace Compartment
+    description: Compartment to create tag namespace in. Defaults to current compartment.
+    default: compartment_ocid
+    required: true
+
