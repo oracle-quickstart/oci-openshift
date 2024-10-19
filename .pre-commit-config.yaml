@@ -4,7 +4,7 @@
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
     - id: check-yaml
       args: [--allow-multiple-documents]
@@ -14,7 +14,7 @@ repos:
     - id: check-merge-conflict
     - id: check-symlinks
 - repo: https://github.com/antonbabenko/pre-commit-terraform
-  rev: v1.89.0
+  rev: v1.96.1
   hooks:
     - id: terraform_tflint
     - id: terraform_fmt
