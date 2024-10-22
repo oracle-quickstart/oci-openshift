@@ -123,4 +123,13 @@ locals {
 
   is_control_plane_iscsi_type = can(regex("^BM\\..*$", var.control_plane_shape))
   is_compute_iscsi_type       = can(regex("^BM\\..*$", var.compute_shape))
+
+
+  tag_namespace_name = var.reuse_tags ? data.oci_identity_tag_namespaces.openshift_tags[0].tag_namespaces[0].name : oci_identity_tag_namespace.openshift_tags[0].name
+
+  tag_openshift_resource_name = var.reuse_tags ? data.oci_identity_tag.openshift_resource[0].name : oci_identity_tag.openshift_resource[0].name
+  tag_instance_role_name      = var.reuse_tags ? data.oci_identity_tag.openshift_instance_role[0].name : oci_identity_tag.openshift_instance_role[0].name
+  tag_boot_volume_type_name   = var.reuse_tags ? data.oci_identity_tag.openshift_boot_volume_type[0].name : oci_identity_tag.openshift_boot_volume_type[0].name
+
+  tag_openshift_resource_value = "openshift-resource-${var.cluster_name}"
 }

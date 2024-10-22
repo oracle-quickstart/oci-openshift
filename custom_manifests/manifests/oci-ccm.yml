@@ -16,6 +16,31 @@ metadata:
 
 ---
 
+# oci-ccm-04-cloud-controller-manager-config.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: oci-cloud-controller-manager
+  namespace: oci-cloud-controller-manager
+stringData:
+  cloud-provider.yaml: |
+    useInstancePrincipals: true
+    compartment: $COMPARTMENT_ID
+    vcn: $OCP_VCN_ID
+    loadBalancer:
+      subnet1: $OCP_SUBNET_ID
+      securityListManagementMode: Frontend
+      securityLists:
+        $OCP_SUBNET_ID: $OPC_SEC_LIST_ID
+    rateLimiter:
+      rateLimitQPSRead: 20.0
+      rateLimitBucketRead: 5
+      rateLimitQPSWrite: 20.0
+      rateLimitBucketWrite: 5
+
+---
+
 # oci-ccm-01-service-account.yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -187,31 +212,6 @@ subjects:
 - kind: ServiceAccount
   name: cloud-controller-manager
   namespace: oci-cloud-controller-manager
-
----
-
-# oci-ccm-04-cloud-controller-manager-config.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  creationTimestamp: null
-  name: oci-cloud-controller-manager
-  namespace: oci-cloud-controller-manager
-stringData:
-  cloud-provider.yaml: |
-    useInstancePrincipals: true
-    compartment: $COMPARTMENT_ID
-    vcn: $OCP_VCN_ID
-    loadBalancer:
-      subnet1: $OCP_SUBNET_ID
-      securityListManagementMode: Frontend
-      securityLists:
-        $OCP_SUBNET_ID: $OPC_SEC_LIST_ID
-    rateLimiter:
-      rateLimitQPSRead: 20.0
-      rateLimitBucketRead: 5
-      rateLimitQPSWrite: 20.0
-      rateLimitBucketWrite: 5
 
 ---
 
