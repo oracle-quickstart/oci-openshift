@@ -33,4 +33,3 @@ variables:
     description: Compartment to create tag namespace in. Defaults to current compartment.
     default: compartment_ocid
     required: true
-

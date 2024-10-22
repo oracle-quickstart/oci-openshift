@@ -61,7 +61,8 @@ resource "oci_identity_tag" "openshift_boot_volume_type" {
       "ISCSI",
     ]
   }
-  provider = oci.home
+  provider   = oci.home
+  depends_on = [oci_identity_tag.openshift_instance_role]
 }
 
 resource "oci_identity_tag" "openshift_resource" {
@@ -71,4 +72,5 @@ resource "oci_identity_tag" "openshift_resource" {
   name             = "openshift-resource"
   tag_namespace_id = oci_identity_tag_namespace.openshift_tags.id
   provider         = oci.home
+  depends_on       = [oci_identity_tag.openshift_boot_volume_type]
 }
