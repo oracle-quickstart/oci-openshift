@@ -5,10 +5,10 @@ all: pre-commit zip
 pre-commit:
 	pre-commit run --all-files
 
-.phony: zip
+.PHONY: zip
 zip:
 	rm -f infrastructure.zip
-	zip -r infrastructure.zip infrastructure/*
+	cd infrastructure && zip -r ../infrastructure.zip . -x .terraform/\* -x .\*
 
 	rm -f tagging-resources.zip
 	zip tagging-resources.zip tagging-resources/*
