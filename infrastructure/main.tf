@@ -741,7 +741,7 @@ resource "oci_core_instance" "control_plane_node" {
     }
   }
 
-  metadata = local.is_control_plane_iscsi_type ? {
+  metadata = local.is_control_plane_iscsi_type || local.is_compute_iscsi_type ? {
     user_data = base64encode(file("./userdata/iscsi-oci-configure-secondary-nic.sh"))
   } : null
 }
