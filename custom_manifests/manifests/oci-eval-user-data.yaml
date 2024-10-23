@@ -75,4 +75,3 @@ spec:
             WantedBy=multi-user.target
           enabled: true
           name: oci-eval-user-data.service
-
