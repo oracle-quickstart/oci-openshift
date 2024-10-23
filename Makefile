@@ -12,3 +12,13 @@ zip:
 
 	rm -f tagging-resources.zip
 	zip tagging-resources.zip tagging-resources/*
+
+.PHONY: manifest
+manifest:
+	rm -f single-manifest.yml
+
+	for filename in ./custom_manifests/manifests/* ; do \
+		echo "# $$filename" >> single-manifest.yml ; \
+		cat $$filename >> single-manifest.yml ; \
+		echo "---" >> single-manifest.yml ; \
+	done
