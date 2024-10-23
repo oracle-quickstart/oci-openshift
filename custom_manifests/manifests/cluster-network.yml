@@ -1,3 +1,4 @@
+# required for iscsi boot volumes on OCP 4.17+
 apiVersion: operator.openshift.io/v1
 kind: Network
 metadata:
