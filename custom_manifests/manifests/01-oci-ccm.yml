@@ -1,3 +1,4 @@
+# ----- 01-oci-ccm.yml -----
 
 # oci-ccm-00-namespace.yaml
 apiVersion: v1
@@ -55,6 +56,7 @@ rules:
   - list
   - watch
   - patch
+  - get
 
 - apiGroups:
   - ""
@@ -151,6 +153,9 @@ rules:
   - serviceaccounts
   verbs:
   - create
+  - list
+  - get
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -168,7 +173,6 @@ rules:
   - list
   - watch
   - patch
-
 ---
 
 # oci-ccm-03-cluster-role-binding.yaml
@@ -184,31 +188,6 @@ subjects:
 - kind: ServiceAccount
   name: cloud-controller-manager
   namespace: oci-cloud-controller-manager
-
----
-
-# oci-ccm-04-cloud-controller-manager-config.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  creationTimestamp: null
-  name: oci-cloud-controller-manager
-  namespace: oci-cloud-controller-manager
-stringData:
-  cloud-provider.yaml: |
-    useInstancePrincipals: true
-    compartment: $COMPARTMENT_ID
-    vcn: $OCP_VCN_ID
-    loadBalancer:
-      subnet1: $OCP_SUBNET_ID
-      securityListManagementMode: Frontend
-      securityLists:
-        $OCP_SUBNET_ID: $OPC_SEC_LIST_ID
-    rateLimiter:
-      rateLimitQPSRead: 20.0
-      rateLimitBucketRead: 5
-      rateLimitQPSWrite: 20.0
-      rateLimitBucketWrite: 5
 
 ---
 
@@ -262,7 +241,7 @@ spec:
             path: /etc/kubernetes
       containers:
         - name: oci-cloud-controller-manager
-          image: ghcr.io/oracle/cloud-provider-oci:v1.25.0
+          image: phx.ocir.io/axkcy3juscqn/openshift-ccm-csi:beta-v1
           command:
             - /bin/bash
             - -c
@@ -272,7 +251,7 @@ spec:
               if [[ -f /etc/kubernetes/apiserver-url.env ]]; then
                 source /etc/kubernetes/apiserver-url.env
               fi
-              exec /usr/local/bin/oci-cloud-controller-manager --cloud-config=/etc/oci/cloud-provider.yaml --cloud-provider=oci --leader-elect-resource-lock=configmapsleases --v=2
+              exec /usr/local/bin/oci-cloud-controller-manager --cloud-config=/etc/oci/cloud-provider.yaml --cloud-provider=oci --leader-elect-resource-lock=leases --concurrent-service-syncs=3 --v=2
           volumeMounts:
             - name: cfg
               mountPath: /etc/oci
@@ -280,5 +259,4 @@ spec:
             - name: kubernetes
               mountPath: /etc/kubernetes
               readOnly: true
-
 ---

@@ -1,0 +1,17 @@
+# ----- 04-cluster-network.yml -----
+
+# required for iscsi boot volumes on OCP 4.17+
+apiVersion: operator.openshift.io/v1
+kind: Network
+metadata:
+  name: cluster
+spec:
+  defaultNetwork:
+    ovnKubernetesConfig:
+      gatewayConfig:
+        ipv4:
+          internalMasqueradeSubnet: 169.254.64.0/18
+    type: OVNKubernetes
+  managementState: Managed
+
+---

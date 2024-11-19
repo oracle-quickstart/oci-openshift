@@ -16,29 +16,25 @@ jobs:
       COMPARTMENT_OCID: ${{ secrets.COMPARTMENT_OCID }}
       ZONE_DNS_SUFFIX: ${{ secrets.ZONE_DNS_SUFFIX }}
       CLUSTER_NAME: smoke-test-bm
+      USE_EXISTING_TAGS: true
+      TAG_NAMESPACE: openshift-cicd
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set NOW env variable
-        run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+      - name: Set env variables
+        run: |
+            echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+            echo "PKG_VERSION=$(make version)" >> $GITHUB_ENV
 
       - name: Create Terraform ZIP
-        run: |
-          if [ -f infrastructure.tf ]; then
-            zip infrastructure.zip infrastructure.tf
-          elif [ -d infrastructure ]; then
-            zip -j infrastructure.zip infrastructure/data.tf infrastructure/locals.tf infrastructure/main.tf infrastructure/output.tf infrastructure/schema.yaml infrastructure/variables.tf
-          else
-            echo "Could not find infrastructure.tf or infrastructure directory"
-            exit 1
-          fi
+        run: make zip
 
       - name: Create RMS Stack
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: create-stack
         with:
-          command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source infrastructure.zip --variables "{\"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"control_plane_shape\": \"BM.Standard3.64\", \"control_plane_ocpu\": \"64\", \"control_plane_memory\": \"1024\", \"compute_shape\": \"BM.Standard3.64\", \"compute_ocpu\": \"64\", \"compute_memory\": \"1024\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.OCI_CLI_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
+          command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source dist/create-cluster-${{ env.PKG_VERSION }}.zip --variables "{\"use_existing_tags\": \"${{ env.USE_EXISTING_TAGS }}\", \"tag_namespace_name\": \"${{ env.TAG_NAMESPACE }}\", \"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"control_plane_shape\": \"BM.Standard3.64\", \"control_plane_ocpu\": \"64\", \"control_plane_memory\": \"1024\", \"compute_shape\": \"BM.Standard3.64\", \"compute_ocpu\": \"64\", \"compute_memory\": \"1024\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.OCI_CLI_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
           query: 'data.id'
 
       - name: RMS Stack Plan Job
@@ -52,7 +48,7 @@ jobs:
         id: stack-apply-job
         with:
           command: 'resource-manager job create-apply-job --wait-for-state SUCCEEDED --max-wait-seconds 2400 --execution-plan-strategy AUTO_APPROVED --stack-id ${{ steps.create-stack.outputs.raw_output }}'
-      
+
       - name: Teardown BM Infrastructure
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: teardown-bm-infra
@@ -64,10 +60,9 @@ jobs:
         id: destroy-stack
         with:
           command: 'resource-manager stack delete --force --stack-id ${{ steps.create-stack.outputs.raw_output }}'
-  
+
 
   smoke-test-vm-multi-ad:
-    needs: [smoke-test-bm-single-ad]
     runs-on: ubuntu-latest
     name: Create VM cluster infrastructure in multi-ad region
     env:
@@ -81,29 +76,25 @@ jobs:
       ZONE_DNS_SUFFIX: ${{ secrets.ZONE_DNS_SUFFIX }}
       CLUSTER_NAME: smoke-test-vm-multi-ad
       MUTLI_AD_REGION: eu-frankfurt-1
+      USE_EXISTING_TAGS: true
+      TAG_NAMESPACE: openshift-cicd
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set NOW env variable
-        run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+      - name: Set env variables
+        run: |
+            echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+            echo "PKG_VERSION=$(make version)" >> $GITHUB_ENV
 
       - name: Create Terraform ZIP
-        run: |
-          if [ -f infrastructure.tf ]; then
-            zip infrastructure.zip infrastructure.tf
-          elif [ -d infrastructure ]; then
-            zip -j infrastructure.zip infrastructure/data.tf infrastructure/locals.tf infrastructure/main.tf infrastructure/output.tf infrastructure/schema.yaml infrastructure/variables.tf
-          else
-            echo "Could not find infrastructure.tf or infrastructure directory"
-            exit 1
-          fi
+        run: make zip
 
       - name: Create RMS Stack
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: create-stack
         with:
-          command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source infrastructure.zip --variables "{\"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.MUTLI_AD_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
+          command: 'resource-manager stack create --compartment-id ${{ env.COMPARTMENT_OCID }} --display-name ${{ github.job }}-${{ env.NOW }} --config-source dist/create-cluster-${{ env.PKG_VERSION }}.zip --variables "{\"use_existing_tags\": \"${{ env.USE_EXISTING_TAGS }}\", \"tag_namespace_name\": \"${{ env.TAG_NAMESPACE }}\", \"compartment_ocid\": \"${{ env.COMPARTMENT_OCID }}\", \"cluster_name\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}\", \"openshift_image_source_uri\": \"${{ env.OPENSHIFT_IMAGE_SOURCE_URI }}\", \"region\": \"${{ env.MUTLI_AD_REGION }}\", \"tenancy_ocid\": \"${{ env.OCI_CLI_TENANCY }}\", \"zone_dns\": \"${{ env.CLUSTER_NAME }}-${{ env.NOW }}${{ env.ZONE_DNS_SUFFIX }}\"}"'
           query: 'data.id'
 
       - name: RMS Stack Plan Job

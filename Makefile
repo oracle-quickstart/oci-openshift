@@ -1,0 +1,73 @@
+SHELL = bash
+PKG_VERSION ?= v0.1.0
+PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
+
+.PHONY: all
+all: pre-commit manifests zip
+
+.PHONY: pre-commit
+pre-commit:
+ifdef PRE_COMMIT
+	$(info "Running pre-commit...")
+	pre-commit run --all-files
+else
+	$(warning "pre-commit not installed. Skipping...")
+endif
+
+.PHONY: zip
+zip: version checksums
+	@echo "Packaging stacks..."
+
+	@if [ ! -d dist ]; then \
+		mkdir dist ; \
+	fi
+
+	@cd terraform-stacks ; \
+	for stack in * ; do \
+		if [ -d $$stack ] && [ "$$stack" != "shared_modules" ]; then \
+			cd $$stack ; \
+			echo "Building $$stack-${PKG_VERSION}.zip" ; \
+			zip -FS -r -q ../../dist/$$stack-${PKG_VERSION}.zip * -x **/.terraform/\* -x \.* ; \
+			cd .. ; \
+		fi ; \
+	done
+
+.PHONY: manifests
+manifests:
+	@echo "Creating condensed-manifest.yml..."
+	@cat ./custom_manifests/manifests/* > custom_manifests/condensed-manifest.yml ; \
+
+.PHONY: checksums
+checksums:
+	@echo "Writing checksums..."
+
+	@cd terraform-stacks ; \
+	for stack in * ; do \
+		if [ -d $$stack ] && [ "$$stack" != "shared_modules" ]; then \
+			cd $$stack ; \
+			shasum -a 256 *.tf > checksums ; \
+			if [ -d manifests ]; then \
+				shasum -a 256 manifests/* >> checksums ; \
+			fi ; \
+			cd .. ; \
+		fi ; \
+	done
+
+.PHONY: version
+version:
+	@echo ${PKG_VERSION}
+
+	@cd terraform-stacks ; \
+	for stack in * ; do \
+		if [ -d $$stack ] && [ "$$stack" != "shared_modules" ]; then \
+			cd $$stack ; \
+			printf "locals {\n  stack_version = \"${PKG_VERSION}\"\n}\n" > version.tf ; \
+			cd .. ; \
+		fi ; \
+	done
+
+.PHONY: clean
+clean:
+	@echo "Cleaning up..."
+
+	rm -rvf dist

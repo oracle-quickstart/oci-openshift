@@ -1,12 +1,26 @@
-### Description
-< Insert text describing your change >
+## What type of PR is this? (check all applicable)
 
-### Motivation
-< Why is this change necessary? Is it a bug fix or new feature? >
+- [ ] Refactor
+- [ ] Feature
+- [ ] Bug Fix
+- [ ] Optimization
+- [ ] Documentation Update
 
-< Please link any relevant issues or PRs >
+## Summary
 
-### Testing
-< If you haven't already, [install](https://pre-commit.com/#install) and [use](https://pre-commit.com/#usage) `pre-commit` >
+## Description of Changes
 
-< Provide proof of testing the changes (screenshots, output, etc) >
+## Related Tickets & Documents
+- Related Issue #
+- Closes #
+
+## Testing
+_Describe how the feature has been tested, including both automated and manual testing strategies. Include screenshots or example output if applicable_
+
+## Checklist
+
+- [ ] Ran `make` (with [pre-commit](https://pre-commit.com/#usage) installed)
+- [ ] Tested and added to automated tests (if applicable)
+- [ ] Documentation updated (READMEs, public, internal)
+
+## Notes & Other Considerations
