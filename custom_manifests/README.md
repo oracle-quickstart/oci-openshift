@@ -1,6 +1,6 @@
 # Custom Manifests
 
-These OpenShift and Kubernetes manifest files support the installation of Red Hat OpenShift clusters on Oracle Cloud Infrastructure. The butane files used to generate the OpenShift MachineConigs are also included.
+These OpenShift and Kubernetes manifest files support the installation of Red Hat OpenShift clusters on Oracle Cloud Infrastructure. The Butane files used to generate the OpenShift MachineConfigs are also included.
 
 View usage during [installation](/README.md#documentation-and-installation-instructions)
 
