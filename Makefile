@@ -1,9 +1,10 @@
 SHELL = bash
 PKG_VERSION ?= v0.1.0
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
+PODMAN := $(shell command -v podman 2> /dev/null)
 
 .PHONY: all
-all: pre-commit manifests zip
+all: pre-commit machineconfigs manifests zip
 
 .PHONY: pre-commit
 pre-commit:
@@ -39,6 +40,7 @@ manifests:
 
 .PHONY: machineconfigs
 machineconfigs:
+ifdef PODMAN
 	@echo "Generating MachineConfigs from Butane..."
 
 	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-kubelet-providerid-master.bu > custom_manifests/manifests/02-machineconfig-ccm.yml
@@ -60,6 +62,9 @@ machineconfigs:
 	echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
 	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-eval-user-data-worker.bu >> custom_manifests/manifests/05-oci-eval-user-data.yml
 	echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
+else
+	$(warning "podman not installed. Skipping...")
+endif
 
 .PHONY: checksums
 checksums:
