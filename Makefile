@@ -37,6 +37,30 @@ manifests:
 	@echo "Creating condensed-manifest.yml..."
 	@cat ./custom_manifests/manifests/* > custom_manifests/condensed-manifest.yml ; \
 
+.PHONY: machineconfigs
+machineconfigs:
+	@echo "Generating MachineConfigs from Butane..."
+
+	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-kubelet-providerid-master.bu > custom_manifests/manifests/02-machineconfig-ccm.yml
+	echo '---' >> custom_manifests/manifests/02-machineconfig-ccm.yml
+	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-kubelet-providerid-worker.bu >> custom_manifests/manifests/02-machineconfig-ccm.yml
+	echo '---' >> custom_manifests/manifests/02-machineconfig-ccm.yml
+
+	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/iscsid-master.bu > custom_manifests/manifests/02-machineconfig-csi.yml
+	echo '---' >> custom_manifests/manifests/02-machineconfig-csi.yml
+	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/iscsid-worker.bu >> custom_manifests/manifests/02-machineconfig-csi.yml
+	echo '---' >> custom_manifests/manifests/02-machineconfig-csi.yml
+
+	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-add-consistent-device-path-master.bu > custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
+	echo '---' >> custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
+	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-add-consistent-device-path-worker.bu >> custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
+	echo '---' >> custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
+
+	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-eval-user-data-master.bu > custom_manifests/manifests/05-oci-eval-user-data.yml
+	echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
+	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-eval-user-data-worker.bu >> custom_manifests/manifests/05-oci-eval-user-data.yml
+	echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
+
 .PHONY: checksums
 checksums:
 	@echo "Writing checksums..."

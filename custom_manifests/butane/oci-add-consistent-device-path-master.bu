@@ -33,27 +33,27 @@ storage:
         # If number of parameters being sent to this script is not equal to 1
         # , we throw an error. We expect the kernel device name like "sda", "sdb" etc.
         if [ "$#" -ne 1 ]; then
-        echo "invalid <device>" >&2
-        exit 1
+          echo "invalid <device>" >&2
+          exit 1
         fi
 
         if [[ "$DEVPATH" = *"virtio"* ]]; then
-        # Using ID_PATH to retrieve the LU #
-        # ID_PATH is virtio-pci-0000:00:04.0-scsi-0:0:2:12
-        # With the substitution, we would be able to get 12 which is the LUN number.
-        LUN=$(echo "$ID_PATH" | sed 's/.*://')
+          # Using ID_PATH to retrieve the LU #
+          # ID_PATH is virtio-pci-0000:00:04.0-scsi-0:0:2:12
+          # With the substitution, we would be able to get 12 which is the LUN number.
+          LUN=$(echo "$ID_PATH" | sed 's/.*://')
         else
-        # Using DEVPATH to retrieve the LUN #
-        # DEVPATH is /devices/platform/host5/session3/target5:0:0/5:0:0:12/block/sdc
-        # With first substitution, the string becomes 12/block/sdc
-        # With second substitution, the string becomes 12/
-        # With third substitution, the last character is removed and we are able to retrieve
-        # the LUN number which is 12.
-        LUN=$(echo "$DEVPATH" | sed 's/.*://' | sed 's/\([/]\).*/\1/' | sed s'/.$//')
+          # Using DEVPATH to retrieve the LUN #
+          # DEVPATH is /devices/platform/host5/session3/target5:0:0/5:0:0:12/block/sdc
+          # With first substitution, the string becomes 12/block/sdc
+          # With second substitution, the string becomes 12/
+          # With third substitution, the last character is removed and we are able to retrieve
+          # the LUN number which is 12.
+          LUN=$(echo "$DEVPATH" | sed 's/.*://' | sed 's/\([/]\).*/\1/' | sed s'/.$//')
         fi
 
         if [ x"$LUN" = "x" ]; then
-        exit 1
+          exit 1
         fi
 
         # We can use ID_PATH to figure out iSCSI boot volumes
@@ -63,8 +63,8 @@ storage:
         #BOOTLUN=$(echo "$ID_PATH" |sed 's/.*://')
         # iSCSI boot volumes are recognized with uefi-lun-1
         if [[ "$BOOTLUN" = *"uefi-lun-1"* ]]; then
-        echo "$1" | sed 's#sd[a-z]*[a-z]#oracleoci/oraclevda#g'
-        exit 0
+          echo "$1" | sed 's#sd[a-z]*[a-z]#oracleoci/oraclevda#g'
+          exit 0
         fi
 
         # In case of PV Boot volume, the ID_PATH is virtio-pci-0000:00:04.0-scsi-0:0:0:1
@@ -78,30 +78,30 @@ storage:
         # Test to ensure $LUN is a number
         re='^[0-9]+$'
         if ! [[ "$LUN" =~ $re ]] ; then
-        exit 1
+          exit 1
         fi
 
         # We allow a maximum device name to be vdzz - corresponding to LUN=702 (26 + (26 * 26))
         if [ "$LUN" -gt "702" ]; then
-        exit 1
+          exit 1
         fi
 
         # We don't allow the LUN # to be less than 1
         if [ "$LUN" -le "0" ]; then
-        exit 1
+          exit 1
         fi
 
         # If the IQN of the incoming device matches the one
         # persisted on the filesystem, exit with failure
         FNAME=$(echo "$ID_PATH" | sed 's/.*iscsi-//' | sed 's/-lun-.*//')
         if [ -f "/var/log/oracle-cloud-agent/plugins/oci-blockautoconfig/$FNAME" ]; then
-        echo "This is a path to a multipath device. Skipping symlink creation"
-        exit 1
+          echo "This is a path to a multipath device. Skipping symlink creation"
+          exit 1
         fi
 
         # Converts a number to ASCII char
         chr() {
-        printf \\$(printf '%03o' "$1")
+          printf \\$(printf '%03o' "$1")
         }
 
         # Construct a 2 letter suffix using the LUN ID.
@@ -111,15 +111,15 @@ storage:
         LETTER2=$(((LUN - (LETTER1 * 26)) % 26))
 
         if [ "$LETTER2" -eq 0 ]; then
-        LETTER2='z'
+          LETTER2='z'
             if [ "$LETTER1" -eq 1 ]; then
                 LETTER1=''
             else
                 LETTER1=$(chr $((LETTER1 + 95)))
             fi
         else
-        LETTER2=$(chr $((LETTER2 + 96)))
-        if [ "$LETTER1" -eq 0 ]; then
+          LETTER2=$(chr $((LETTER2 + 96)))
+          if [ "$LETTER1" -eq 0 ]; then
                 LETTER1=''
             else
                 LETTER1=$(chr $((LETTER1 + 96)))
