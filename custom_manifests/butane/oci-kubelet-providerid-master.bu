@@ -1,0 +1,46 @@
+variant: openshift
+version: 4.14.0
+metadata:
+  name: 00-master-oci-kubelet-providerid
+  labels:
+    machineconfiguration.openshift.io/role: master
+storage:
+  files:
+  - mode: 0755
+    path: "/usr/local/bin/oci-kubelet-providerid"
+    contents:
+      inline: |
+        #!/bin/bash
+        set -e -o pipefail
+
+        NODECONF=/etc/systemd/system/kubelet.service.d/20-oci-providerid.conf
+
+        if [ -e "${NODECONF}" ]; then
+            echo "Not replacing existing ${NODECONF}"
+            exit 0
+        fi
+        INSTANCE_ID=$(curl -H "Authorization: Bearer Oracle" -sL http://169.254.169.254/opc/v2/instance/id)
+
+        cat > "${NODECONF}" <<EOF
+        [Service]
+        Environment="KUBELET_PROVIDERID=oci://${INSTANCE_ID}"
+        EOF
+systemd:
+  units:
+  - name: oci-kubelet-providerid.service
+    enabled: true
+    contents: |
+      [Unit]
+      Description=Fetch kubelet provider id from OCI Metadata
+
+      # Wait for NetworkManager to report it's online
+      After=NetworkManager-wait-online.service
+      # Run before kubelet
+      Before=kubelet.service
+
+      [Service]
+      ExecStart=/usr/local/bin/oci-kubelet-providerid
+      Type=oneshot
+
+      [Install]
+      WantedBy=network-online.target

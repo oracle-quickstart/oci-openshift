@@ -1,0 +1,10 @@
+variant: openshift
+version: 4.14.0
+metadata:
+  name: 99-worker-iscsid
+  labels:
+    machineconfiguration.openshift.io/role: worker
+systemd:
+  units:
+  - name: iscsid.service
+    enabled: true
