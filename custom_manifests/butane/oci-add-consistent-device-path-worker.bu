@@ -68,7 +68,7 @@ storage:
         fi
 
         # In case of PV Boot volume, the ID_PATH is virtio-pci-0000:00:04.0-scsi-0:0:0:1
-        # By applying the substitution, we get the LUN number as 1 
+        # By applying the substitution, we get the LUN number as 1
         # 1 is special case reserved for boot volumes.
         if [ "$BOOTLUN" = "1" ]; then
                 echo "$1" | sed 's#sd[a-z]*[a-z]#oracleoci/oraclevda#g'

@@ -9,15 +9,15 @@ all: pre-commit machineconfigs manifests zip
 .PHONY: pre-commit
 pre-commit:
 ifdef PRE_COMMIT
-	$(info "Running pre-commit...")
+	$(info Running pre-commit...)
 	pre-commit run --all-files
 else
-	$(warning "pre-commit not installed. Skipping...")
+	$(warning pre-commit not installed. Skipping...)
 endif
 
 .PHONY: zip
 zip: version checksums
-	@echo "Packaging stacks..."
+	@echo "Packaging stacks with version ${PKG_VERSION}..."
 
 	@if [ ! -d dist ]; then \
 		mkdir dist ; \
@@ -41,29 +41,29 @@ manifests:
 .PHONY: machineconfigs
 machineconfigs:
 ifdef PODMAN
-	@echo "Generating MachineConfigs from Butane..."
+	$(info Generating MachineConfigs from Butane...)
 
-	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-kubelet-providerid-master.bu > custom_manifests/manifests/02-machineconfig-ccm.yml
-	echo '---' >> custom_manifests/manifests/02-machineconfig-ccm.yml
-	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-kubelet-providerid-worker.bu >> custom_manifests/manifests/02-machineconfig-ccm.yml
-	echo '---' >> custom_manifests/manifests/02-machineconfig-ccm.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-kubelet-providerid-master.bu > custom_manifests/manifests/02-machineconfig-ccm.yml
+	@echo '---' >> custom_manifests/manifests/02-machineconfig-ccm.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-kubelet-providerid-worker.bu >> custom_manifests/manifests/02-machineconfig-ccm.yml
+	@echo '---' >> custom_manifests/manifests/02-machineconfig-ccm.yml
 
-	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/iscsid-master.bu > custom_manifests/manifests/02-machineconfig-csi.yml
-	echo '---' >> custom_manifests/manifests/02-machineconfig-csi.yml
-	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/iscsid-worker.bu >> custom_manifests/manifests/02-machineconfig-csi.yml
-	echo '---' >> custom_manifests/manifests/02-machineconfig-csi.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/iscsid-master.bu > custom_manifests/manifests/02-machineconfig-csi.yml
+	@echo '---' >> custom_manifests/manifests/02-machineconfig-csi.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/iscsid-worker.bu >> custom_manifests/manifests/02-machineconfig-csi.yml
+	@echo '---' >> custom_manifests/manifests/02-machineconfig-csi.yml
 
-	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-add-consistent-device-path-master.bu > custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
-	echo '---' >> custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
-	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-add-consistent-device-path-worker.bu >> custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
-	echo '---' >> custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-add-consistent-device-path-master.bu > custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
+	@echo '---' >> custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-add-consistent-device-path-worker.bu >> custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
+	@echo '---' >> custom_manifests/manifests/03-machineconfig-consistent-device-path.yml
 
-	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-eval-user-data-master.bu > custom_manifests/manifests/05-oci-eval-user-data.yml
-	echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
-	podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-eval-user-data-worker.bu >> custom_manifests/manifests/05-oci-eval-user-data.yml
-	echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-eval-user-data-master.bu > custom_manifests/manifests/05-oci-eval-user-data.yml
+	@echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-eval-user-data-worker.bu >> custom_manifests/manifests/05-oci-eval-user-data.yml
+	@echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
 else
-	$(warning "podman not installed. Skipping...")
+	$(warning podman not installed. Skipping...)
 endif
 
 .PHONY: checksums
