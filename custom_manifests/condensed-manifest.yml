@@ -216,10 +216,7 @@ spec:
       hostNetwork: true
       nodeSelector:
         node-role.kubernetes.io/control-plane: ""
-      priorityClassName: system-cluster-critical
       tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
       - key: node.cloudprovider.kubernetes.io/uninitialized
         value: "true"
         effect: NoSchedule
@@ -241,7 +238,7 @@ spec:
             path: /etc/kubernetes
       containers:
         - name: oci-cloud-controller-manager
-          image: phx.ocir.io/axkcy3juscqn/openshift-ccm-csi:beta-v1
+          image: ghcr.io/oracle/cloud-provider-oci:v1.30.0
           command:
             - /bin/bash
             - -c
@@ -304,7 +301,7 @@ spec:
         node-role.kubernetes.io/control-plane: ""
       containers:
         - name: csi-volume-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v3.6.0
+          image: registry.k8s.io/sig-storage/csi-provisioner:v5.0.1
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --volume-name-prefix=csi
@@ -319,7 +316,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-fss-volume-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v3.6.0
+          image: registry.k8s.io/sig-storage/csi-provisioner:v5.0.1
           args:
             - --csi-address=/var/run/shared-tmpfs/csi-fss.sock
             - --volume-name-prefix=csi-fss
@@ -334,7 +331,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-attacher
-          image: registry.k8s.io/sig-storage/csi-attacher:v4.4.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.6.1
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --timeout=120s
@@ -347,7 +344,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-resizer
-          image: registry.k8s.io/sig-storage/csi-resizer:v1.9.0
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.11.1
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --leader-election
@@ -356,7 +353,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: snapshot-controller
-          image: registry.k8s.io/sig-storage/snapshot-controller:v6.2.0
+          image: registry.k8s.io/sig-storage/snapshot-controller:v6.3.0
           args:
             - --leader-election
           imagePullPolicy: "IfNotPresent"
@@ -364,7 +361,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.2.0
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.3.0
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --leader-election
@@ -378,7 +375,7 @@ spec:
             - --fss-csi-endpoint=unix://var/run/shared-tmpfs/csi-fss.sock
           command:
             - /usr/local/bin/oci-csi-controller-driver
-          image: phx.ocir.io/axkcy3juscqn/openshift-ccm-csi:beta-v1
+          image: ghcr.io/oracle/cloud-provider-oci:v1.30.0
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: config
@@ -546,7 +543,7 @@ spec:
                   fieldPath: spec.nodeName
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/host/usr/bin:/host/sbin
-          image: phx.ocir.io/axkcy3juscqn/openshift-ccm-csi:beta-v1
+          image: ghcr.io/oracle/cloud-provider-oci:v1.30.0
           securityContext:
             privileged: true
           volumeMounts:
@@ -581,7 +578,7 @@ spec:
           args:
             - --csi-address=/csi/csi.sock
             - --kubelet-registration-path=/var/lib/kubelet/plugins/blockvolume.csi.oraclecloud.com/csi.sock
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.12.0
           securityContext:
             privileged: true
           lifecycle:
@@ -600,7 +597,7 @@ spec:
           args:
             - --csi-address=/fss/csi.sock
             - --kubelet-registration-path=/var/lib/kubelet/plugins/fss.csi.oraclecloud.com/csi.sock
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.0
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.12.0
           securityContext:
             privileged: true
           lifecycle:
@@ -729,6 +726,9 @@ rules:
  - apiGroups: [ "snapshot.storage.k8s.io" ]
    resources: [ "volumesnapshots/status" ]
    verbs: [ "update", "patch" ]
+ - apiGroups: [""]
+   resources: ["serviceaccounts"]
+   verbs: ["get", "list", "watch", "create"]
 
 ---
 
