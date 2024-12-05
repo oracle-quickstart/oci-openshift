@@ -12,7 +12,7 @@ View usage during [installation](/README.md#documentation-and-installation-instr
 **01-oci-ccm.yml** | Cluster resources for OCI Cloud Controller Manager (CCM). | Always ✅
 **01-oci-csi.yml** | Cluster resources for OCI Cloud Storage Interface (CSI). See [STORAGE.md](/STORAGE.md) | Always ✅
 **01-oci-driver-configs.yml** | Configuration Secrets for CCM and CSI drivers. ❗**Contains placeholder values that need to be replaced before use.** | Always ✅
-**02-machineconfig-ccm.yml** | MachineConfig that fetches the provider (OCI) id for kubelet from the OCI Metadata of the instance. | Always ✅
+**02-machineconfig-ccm.yml** | MachineConfig that fetches the provider (OCI) id for kubelet from the OCI metadata of the instance. | Always ✅
 **02-machineconfig-csi.yml** | MachineConfig that enables the iscsid.service to run. | Always ✅
 **03-machineconfig-consistent-device-path.yml** | MachineConfig that ensures consistent device paths when attaching paravirtualized volumes to instances. | Always ✅
 **04-cluster-network.yml** | Cluster resource that configures the default Network's internalMasqueradeSubnet to 169.254.64.0/18 to avoid collisions with iSCSI boot volumes. |Required when using Bare Metal instances with OpenShift versions >= 4.17

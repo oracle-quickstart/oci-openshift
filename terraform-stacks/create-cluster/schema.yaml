@@ -274,7 +274,7 @@ variables:
   rendezvous_ip:
     type: string
     title: Rendezvous IP
-    description: The IP used to bootstrap the cluster. Needs to match rendezvousIP value specified in agent-config.yaml. Note that when using Bare Metal instances, this IP should be within the private_two subnet CIDR.
+    description: The IP used to bootstrap the cluster using the Agent-based Installer. Needs to match rendezvousIP value specified in agent-config.yaml. Note that when using Bare Metal instances, this IP should be within the private_two subnet CIDR.
     default: "10.0.16.20"
     required: true
     visible:
