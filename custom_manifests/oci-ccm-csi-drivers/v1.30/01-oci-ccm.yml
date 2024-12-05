@@ -238,7 +238,7 @@ spec:
             path: /etc/kubernetes
       containers:
         - name: oci-cloud-controller-manager
-          image: ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:3f14cecd-dirty
+          image: ghcr.io/oracle/cloud-provider-oci:v1.30.0
           command:
             - /bin/bash
             - -c

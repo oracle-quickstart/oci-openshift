@@ -1,5 +1,5 @@
 SHELL = bash
-PKG_VERSION ?= v0.1.0
+PKG_VERSION ?= v1.0.0
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
 PODMAN := $(shell command -v podman 2> /dev/null)
 
@@ -9,10 +9,10 @@ all: pre-commit machineconfigs manifests zip
 .PHONY: pre-commit
 pre-commit:
 ifdef PRE_COMMIT
-	$(info Running pre-commit...)
+	$(info "Running pre-commit...")
 	pre-commit run --all-files
 else
-	$(warning pre-commit not installed. Skipping...)
+	$(warning "pre-commit not installed. Skipping...")
 endif
 
 .PHONY: zip

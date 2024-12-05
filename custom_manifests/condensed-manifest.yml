@@ -726,9 +726,9 @@ rules:
  - apiGroups: [ "snapshot.storage.k8s.io" ]
    resources: [ "volumesnapshots/status" ]
    verbs: [ "update", "patch" ]
- - apiGroups: [""]
-   resources: ["serviceaccounts"]
-   verbs: ["get", "list", "watch", "create"]
+ - apiGroups: [ "" ]
+   resources: [ "serviceaccounts" ]
+   verbs: [ "get", "list", "watch", "create" ]
 
 ---
 
