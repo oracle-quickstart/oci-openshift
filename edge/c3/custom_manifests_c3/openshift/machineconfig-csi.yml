@@ -1,3 +1,4 @@
+# ----- 02-machineconfig-csi.yml -----
 
 # 99_openshift-machineconfig_00-master-iscsi-service.yaml
 apiVersion: machineconfiguration.openshift.io/v1
@@ -12,8 +13,8 @@ spec:
       version: 3.1.0
     systemd:
       units:
-      - enabled: true
-        name: iscsid.service
+        - enabled: true
+          name: iscsid.service
 
 ---
 
@@ -30,7 +31,7 @@ spec:
       version: 3.1.0
     systemd:
       units:
-      - enabled: true
-        name: iscsid.service
+        - enabled: true
+          name: iscsid.service
 
 ---

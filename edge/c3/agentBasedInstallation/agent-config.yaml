@@ -1,0 +1,7 @@
+apiVersion: v1alpha1
+metadata:
+  name: <replace with the OpenShift cluster name>
+  namespace: <replace with the OpenShift cluster name>
+rendezvousIP: <replace with desired value, example 10.0.16.20>
+bootArtifactsBaseURL: <replace with desired value, example http://10.0.0.5>
+# For the specific parameter configurations, please refer to the link  https://docs.openshift.com/container-platform/4.15/installing/installing_with_agent_based_installer/installation-config-parameters-agent.html
