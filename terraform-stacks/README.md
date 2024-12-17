@@ -5,7 +5,7 @@ This directory contains Terraform stacks specifically designed for Red Hat OpenS
 
 ## add-nodes
 
-Add nodes to an existing OpenShift cluster. Requires an existing cluster and an ISO file for booting new nodes. Looks up existing cluster infrastructure (VCN, load balancers, etc.) using the "cluster_name" variable.
+Create new instances to be added to an existing OpenShift cluster. Requires an OpenShift image file generated specifically for adding nodes.
 
 #### OCI Resources
 
@@ -21,26 +21,7 @@ Add nodes to an existing OpenShift cluster. Requires an existing cluster and an 
 
 ## create-cluster
 
-A generic OpenShift cluster on OCI.
-
-#### Default Node Configuration
-
-- **Control Plane**
-    - Count: 3
-    - Shape: VM.Standard.E4.Flex
-    - OCPU: 4
-    - Memory: 16 GB
-    - Boot Volume
-        - Size: 1024 GB
-        - VPUs/GB: 100
-- **Compute**
-    - Count: 3
-    - Shape: VM.Standard.E4.Flex
-    - OCPU: 6
-    - Memory: 16 GB
-    - Boot Volume
-        - Size: 1024 GB
-        - VPUs/GB: 30
+Create the OCI resources for a new OpenShift cluster.
 
 #### OCI Resources
 
@@ -48,11 +29,19 @@ A generic OpenShift cluster on OCI.
     - Tag Namespace
     - Defined Tags
         - "openshift-resource"
+            - "openshift-resource-{cluster_name}"
         - "instance-role"
+            - "control-plane"
+            - "compute"
         - "boot-volume-type"
+            - "PARAVIRTUALIZED"
+            - "ISCSI"
 - **IAM**
     - Dynamic groups
+        - "{cluster_name}_control_plane_nodes"
+        - "{cluster_name}_compute_nodes"
     - Policies
+        - "{cluster_name}_control_plane_nodes"
 - **Networking**
     - VCN (Virtual Cloud Network)
     - Internet Gateway
@@ -66,12 +55,13 @@ A generic OpenShift cluster on OCI.
         - Private Security List
         - Public Security List
     - Subnets
-        - Private Subnet
-        - Public Subnet
+        - "public"
+        - "private"
+        - "private_two"
     - NSGs (Network Security Groups)
-        - Load balancers NSG
-        - Cluster control plane NSG
-        - Compute nodes NSG
+        - "cluster-lb-nsg"
+        - "cluster-controlplane-nsg"
+        - "cluster-compute-nsg"
 - **DNS**
     - oci_dns_zone
     - oci_dns_rrset
@@ -90,6 +80,54 @@ A generic OpenShift cluster on OCI.
 - **Compute Instances**
     - Control Plane nodes
     - Compute nodes
+
+### Example Cluster Configurations
+---
+
+#### High-Availability VMs (Default)
+
+- **Control Plane**
+    - Count: 3
+    - Shape: VM.Standard.E4.Flex
+    - OCPU: 4
+    - Memory: 16 GB
+    - Boot Volume
+        - Size: 1024 GB
+        - VPUs/GB: 100
+- **Compute**
+    - Count: 3
+    - Shape: VM.Standard.E4.Flex
+    - OCPU: 6
+    - Memory: 16 GB
+    - Boot Volume
+        - Size: 100 GB
+        - VPUs/GB: 30
+
+#### Compact Bare Metal
+
+- **Control Plane**
+    - Count: 3
+    - Shape: BM.Standard3.64
+    - OCPU: 64
+    - Memory: 1024 GB
+    - Boot Volume
+        - Size: 1024 GB
+        - VPUs/GB: 100
+- **Compute**
+    - Count: 0
+
+#### Single Node OpenShift Bare Metal (SNO)
+
+- **Control Plane**
+    - Count: 1
+    - Shape: BM.Standard3.64
+    - OCPU: 64
+    - Memory: 1024 GB
+    - Boot Volume
+        - Size: 1024 GB
+        - VPUs/GB: 100
+- **Compute**
+    - Count: 0
 
 ## create-tags
 

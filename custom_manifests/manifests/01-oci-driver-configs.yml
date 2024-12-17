@@ -25,7 +25,6 @@ stringData:
 
 ---
 
-# oci-csi-01-config.yaml
 # TODO - configure before use
 apiVersion: v1
 kind: Secret

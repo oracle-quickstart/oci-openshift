@@ -194,13 +194,6 @@ variable "openshift_image_source_uri" {
   default     = "TODO"
 }
 
-# while a nice to have, we'd also have to modify other parts of the Deployment resource depending on the version like args, and we'd have to track those pieces here unless we want to have versioned files...
-# something to think about maybe
-# variable "ccm_csi_driver_image" {
-#   type = string
-#   default = "phx.ocir.io/axkcy3juscqn/openshift-ccm-csi:beta-v1"
-# }
-
 variable "enable_private_dns" {
   type        = bool
   description = "If the switch is enabled, a private DNS zone will be created, and users should edit the /etc/hosts file for resolution. Otherwise, a public DNS zone will be created based on the given domain."

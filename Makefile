@@ -1,7 +1,11 @@
 SHELL = bash
+
 PKG_VERSION ?= v1.0.0
+OCI_DRIVER_VERSION ?= v1.30.0
+
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
 PODMAN := $(shell command -v podman 2> /dev/null)
+OC := $(shell command -v oc 2> /dev/null)
 
 .PHONY: all
 all: pre-commit machineconfigs manifests zip
@@ -100,3 +104,15 @@ clean:
 	@echo "Cleaning up..."
 
 	rm -rvf dist
+
+# make update-drivers OCI_DRIVER_VERSION=v1.30.0
+# Please be sure your KUBECONFIG is set to the cluster you want to modify
+.PHONY: update-drivers
+update-drivers:
+ifdef OC
+	$(info "Updating OCI CCM and CSI drivers to ${OCI_DRIVER_VERSION}")
+	oc apply -f custom_manifests/oci-ccm-csi-drivers/${OCI_DRIVER_VERSION}/01-oci-ccm.yml
+	oc apply -f custom_manifests/oci-ccm-csi-drivers/${OCI_DRIVER_VERSION}/01-oci-csi.yml
+else
+	$(warning "'oc' not installed. Cancelling driver update...")
+endif

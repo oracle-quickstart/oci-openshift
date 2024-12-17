@@ -1,6 +1,6 @@
 # OpenShift on OCI (OSO)
 
-This repository contains Terraform stacks as well as OpenShift and Kubernetes manifest files to support the deployment, installation, and management of Red Hat OpenShift clusters on Oracle Cloud Infrastructure (OCI).
+This repository contains [Terraform stacks](/terraform-stacks/README.md) as well as OpenShift and Kubernetes [manifest files](/custom_manifests/README.md) to support the deployment, installation, and management of Red Hat OpenShift clusters on Oracle Cloud Infrastructure (OCI).
 
 ## Documentation and Installation Instructions
 

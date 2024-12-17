@@ -41,7 +41,11 @@ We are excited to introduce significant enhancements to the Container Storage In
 
 ### Driver Installation
 
-The driver can be installed on the cluster using the following manifest: [oci-csi.yml](https://github.com/oracle-quickstart/oci-openshift/blob/beta-v1/custom_manifests/manifests/oci-csi.yml). It contains the following components:
+The CSI driver is installed on the cluster using the [01-oci-csi.yml](/custom_manifests/manifests/01-oci-csi.yml) manifest.
+
+For updating driver versions, see [oci-ccm-csi-drivers](/custom_manifests/README.md#oci-ccm-csi-drivers).
+
+The manifest contains the following components:
 
 | **Component**           | **Description**                                                                                     | **Notes**                                      |
 |-------------------------|-----------------------------------------------------------------------------------------------------|------------------------------------------------|
@@ -53,9 +57,6 @@ The driver can be installed on the cluster using the following manifest: [oci-cs
 | **node-driver**         | DaemonSet that deploys the CSI node driver on worker nodes | Ensures CSI driver is running on each node.|
 | **rbac rules**        | Creates a ServiceAccount / ClusterRole / ClusterRoleBinding for driver components.| Provides necessary permissions for the CSI driver. |
 | **storage-classes**    | Defines StorageClasses for volumes with specified provisioning parameters.                    | Optional      |
-
-
-### Pre-requisites
 
 ## Pre-requisites
 
