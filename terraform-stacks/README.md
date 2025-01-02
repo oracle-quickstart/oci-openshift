@@ -131,7 +131,7 @@ Create the OCI resources for a new OpenShift cluster.
 
 ## create-tags
 
-OCI tagging resources that are used to tag other OpenShift cluster OCI resources. The tags are used to identify cluster-specific resources and should not be deleted while in use.
+OCI tagging resources that are used to tag OpenShift cluster OCI resources. The tags are used to identify cluster-specific resources and should not be deleted while in use.
 
 Please allow for ~10 minutes after creation before tagging resources with them. Some OCI Services take a lttle extra time to pick up newly created tags.
 
