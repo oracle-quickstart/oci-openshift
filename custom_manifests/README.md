@@ -14,8 +14,8 @@ View usage during [installation](/README.md#documentation-and-installation-instr
 **02-machineconfig-ccm.yml** | MachineConfig that fetches the provider (OCI) id for kubelet from the OCI metadata of the instance. | Always ✅
 **02-machineconfig-csi.yml** | MachineConfig that enables the iscsid.service to run. | Always ✅
 **03-machineconfig-consistent-device-path.yml** | MachineConfig that ensures consistent device paths when attaching paravirtualized volumes to instances. | Always ✅
-**04-cluster-network.yml** | Cluster resource that configures the default Network's internalMasqueradeSubnet to 169.254.64.0/18 to avoid collisions with iSCSI boot volumes. |Required when using Bare Metal instances with OpenShift versions >= 4.17
-**05-oci-eval-user-data.yml** | MachineConfig that evaluates and runs userdata scripts stored in the metadata of instances. | Required when using Bare Metal instances
+**04-cluster-network.yml** | Cluster resource that configures the default Network's internalMasqueradeSubnet xto 169.254.64.0/18 to avoid collisions with iSCSI boot volumes. |Required when using Bare Metal instances with OpenShift versions >= 4.17
+**05-oci-eval-user-data.yml** | MachineConfig that evaluates and runs [userdata scripts](/terraform-stacks/shared_modules/compute/userdata/) stored in the metadata of instances. | Required when using Bare Metal instances
 
 ## Dynamic Condensed Manifest Output
 Most of our terraform-stacks have an output called `dynamic_custom_manifest`. This output contains all required manifests, concatenated and pre-formatted with the configuration values for CCM and CSI. This output can be copied and used to create a single manifest file which can then be uploaded during the cluster installation process.
