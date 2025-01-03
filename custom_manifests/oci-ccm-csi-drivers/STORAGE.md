@@ -13,7 +13,7 @@
 
 ### Overview
 
-We are excited to introduce significant enhancements to the Container Storage Interface (CSI) drivers for OpenShift Clusters on Oracle Cloud Infrastructure (OCI). These improvements, available in Limited Availability mode, are designed to optimize storage management and deliver better performance for your OpenShift environments.
+We are excited to introduce significant enhancements to the Container Storage Interface (CSI) drivers for OpenShift Clusters on Oracle Cloud Infrastructure (OCI). These improvements are designed to optimize storage management and deliver better performance for your OpenShift environments.
 
 ### Available Feature Matrix
 
@@ -32,18 +32,11 @@ We are excited to introduce significant enhancements to the Container Storage In
 |                              | Cloning                        | ✔️                   | ✔️                         |
 
 
-### Scope
-
-| **Aspect**                 | **Details**                                            |
-|----------------------------|--------------------------------------------------------|
-| **Kubernetes Version**     | 1.28 onwards                                                |
-| **Supported OpenShift**    | v4.14 onwards [Red Hat OpenShift Kubernetes versions](https://access.redhat.com/solutions/4870701)|
-
 ### Driver Installation
 
-The CSI driver is installed on the cluster using the [01-oci-csi.yml](/custom_manifests/manifests/01-oci-csi.yml) manifest.
+After OCI cluster resource creation and during OpenShift installation, the [CSI driver manifest](/custom_manifests/manifests/01-oci-csi.yml) containing the Kubernetes/OpenShift resource definitions is applied. See the full [installation instructions](/README.md#documentation-and-installation-instructions). 
 
-For updating driver versions, see [oci-ccm-csi-drivers](/custom_manifests/README.md#oci-ccm-csi-drivers).
+For updating drivers on existing clusters, see [oci-ccm-csi-drivers](/custom_manifests/README.md#oci-ccm-csi-drivers).
 
 The manifest contains the following components:
 
