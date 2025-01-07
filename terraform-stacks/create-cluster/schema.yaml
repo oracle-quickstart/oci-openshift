@@ -1,0 +1,332 @@
+#
+# Copyright (c) 2019-2020 Oracle and/or its affiliates. All rights reserved.
+#
+
+title: OpenShift on OCI
+description: Terraform Stack for creating resources required for installing OpenShift on OCI
+schemaVersion: 1.1.0
+version: "20230524"
+locale: "en"
+
+variableGroups:
+- title: "OpenShift Cluster Configuration"
+  variables:
+  - tenancy_ocid
+  - compartment_ocid
+  - cluster_name
+  - installation_method
+  - create_openshift_instances
+
+- title: "Control Plane Node Configuration"
+  variables:
+  - openshift_image_source_uri
+  - control_plane_shape
+  - control_plane_count
+  - control_plane_ocpu
+  - control_plane_memory
+  - control_plane_boot_size
+  - control_plane_boot_volume_vpus_per_gb
+  visible: create_openshift_instances
+
+- title: "Compute Node Configuration"
+  variables:
+  - compute_shape
+  - compute_count
+  - compute_ocpu
+  - compute_memory
+  - compute_boot_size
+  - compute_boot_volume_vpus_per_gb
+  visible: create_openshift_instances
+
+- title: "Networking Configuration"
+  variables:
+  - enable_private_dns
+  - zone_dns
+  - vcn_dns_label
+  - vcn_cidr
+  - public_cidr
+  - private_cidr
+  - private_cidr_2
+  - rendezvous_ip
+  - load_balancer_shape_details_maximum_bandwidth_in_mbps
+  - load_balancer_shape_details_minimum_bandwidth_in_mbps
+
+- title: "Tagging Configuration"
+  variables:
+  - use_existing_tags
+  - tag_namespace_name
+  - tag_namespace_compartment_ocid
+  - wait_for_new_tag_consistency_wait_time
+
+###########
+# VARIABLES
+###########
+variables:
+  #
+  # Cluster Configuration Variables
+  #
+  cluster_name:
+    title: Cluster Name
+    description: The name of your OpenShift cluster. It should be the same as what was specified when creating the OpenShift ISO and it should be DNS compatible. The cluster_name value must be 1-54 characters. It can use lowercase alphanumeric characters or hyphen (-), but must start and end with a lowercase letter or a number.
+    type: string
+    default: ""
+    pattern: "^[a-z0-9-]{1,54}$"
+    required: true
+
+  tenancy_ocid:
+    title: Tenancy Ocid
+    description: The ocid of the current tenancy.
+    type: string
+    default: tenancy_ocid
+    required: true
+
+  compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Compartment
+    default: compartment_ocid
+    required: true
+
+  installation_method:
+    type: enum
+    title: Installation Method
+    description: "Assisted Installer (AI) or Agent-based Installer (ABI)"
+    enum:
+    - Assisted
+    - Agent-based
+    default: Assisted
+    required: true
+
+  create_openshift_instances:
+    type: boolean
+    title: Create OpenShift Image and Instances
+    description: Select the checkbox to enable the creation of OpenShift image and instances.
+    default: true
+    required: true
+
+  openshift_image_source_uri:
+    type: string
+    title: OpenShift Image Source URI
+    description: The OCI Object Storage URI for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a pre-authenticated requests (PAR) uri, and paste the uri to this block. For more detail regarding Object storage and PAR, please visit https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/objectstorageoverview.htm and https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/usingpreauthenticatedrequests.htm .
+    default: ""
+    required: true
+    visible: create_openshift_instances
+
+  #
+  # Control Plane Configuration Variables
+  #
+
+  control_plane_shape:
+    type: string
+    title: Control Plane Shape
+    description: Compute Instance shape of control plan nodes. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm .
+    default: "VM.Standard.E4.Flex"
+    required: true
+
+  control_plane_count:
+    type: integer
+    title: Control Plan Node Count
+    description: The number of control_plane nodes in the cluster. The default value is 3.
+    required: true
+    default: 3
+
+  control_plane_ocpu:
+    type: integer
+    title: Control Plan Node OCPU
+    description: The number of OCPUs available for the shape of each control_plane node.
+    default: 4
+    minimum: 1
+    maximum: 144
+    required: true
+
+  control_plane_memory:
+    type: integer
+    title: Control Plan Node Memory
+    description: The amount of memory available for the shape of each control_plane node, in gigabytes. The default value is 16.
+    default: 16
+    minimum: 1
+    maximum: 1760
+    required: true
+
+  control_plane_boot_size:
+    type: integer
+    title: Control Plan Boot Volume
+    description: The size of the boot volume of each control_plane node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 1024 GB.
+    default: 1024
+    minimum: 50
+    maximum: 32768
+    required: true
+
+  control_plane_boot_volume_vpus_per_gb:
+    type: integer
+    title: Control Plan Node VPU
+    description: The number of volume performance units (VPUs) that will be applied to this volume per GB of each control_plane node. The default value is 100.
+    default: 100
+    minimum: 10
+    maximum: 120
+    multipleOf: 10
+    required: true
+
+  #
+  # Compute Configuration Variables
+  #
+  compute_shape:
+    type: string
+    title: Compute Shape
+    description: Compute Instance shape of compute nodes. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm .
+    default: "VM.Standard.E4.Flex"
+    required: true
+
+  compute_count:
+    type: integer
+    title: Compute Node Count
+    description: The number of compute nodes in the cluster. The default value is 3.
+    required: true
+    default: 3
+
+  compute_ocpu:
+    type: integer
+    title: Compute Node OCPU
+    description: The number of OCPUs available for the shape of each compute node. The default value is 6.
+    default: 6
+    minimum: 1
+    maximum: 144
+    required: true
+
+  compute_memory:
+    type: integer
+    title: Compute Node Memory
+    description: The amount of memory available for the shape of each compute node, in gigabytes. The default value is 16.
+    default: 16
+    minimum: 1
+    maximum: 1760
+    required: true
+
+  compute_boot_size:
+    type: integer
+    title: Compute Node Boot Volume
+    description: The size of the boot volume of each compute node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB.
+    default: 100
+    minimum: 50
+    maximum: 32768
+    required: true
+
+  compute_boot_volume_vpus_per_gb:
+    type: integer
+    title: Compute Node VPU
+    description: The number of volume performance units (VPUs) that will be applied to this volume per GB of each compute node. The default value is 30.
+    default: 30
+    minimum: 10
+    maximum: 120
+    multipleOf: 10
+    required: true
+
+  #
+  # Networking Configuration Variables
+  #
+  enable_private_dns:
+    type: boolean
+    title: Enable Private DNS
+    description: If the switch is enabled, a private DNS zone will be created, and users should edit the /etc/hosts file for resolution. Otherwise, a public DNS zone will be created based on the given domain.
+    default: false
+
+  zone_dns:
+    type: string
+    title: Zone DNS
+    description: The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation. The zone_dns value must be a valid hostname.
+    default: ""
+    required: true
+
+  vcn_dns_label:
+    type: string
+    title: VCN DNS Label
+    description: A DNS label for the VCN, used in conjunction with the VNIC's hostname and subnet's DNS label to form a fully qualified domain name (FQDN) for each VNIC within this subnet (for example, bminstance1.subnet123.vcn1.oraclevcn.com). Must be an alphanumeric string that begins with a letter
+    default: "openshiftvcn"
+    required: true
+
+  vcn_cidr:
+    type: string
+    title: VCN CIDR
+    description: The IPv4 CIDR blocks for the VCN of your OpenShift Cluster. The default value is 10.0.0.0/16.
+    default: "10.0.0.0/16"
+    required: true
+
+  public_cidr:
+    type: string
+    title: Public Subnet CIDR
+    description: The IPv4 CIDR blocks for the public subnet of your OpenShift Cluster. The default value is 10.0.0.0/20.
+    default: "10.0.0.0/20"
+    required: true
+
+  private_cidr:
+    type: string
+    title: Private Subnet CIDR
+    description: The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.16.0/20.
+    default: "10.0.16.0/20"
+    required: true
+
+  private_cidr_2:
+    type: string
+    title: Secondary Private Subnet CIDR
+    description: The IPv4 CIDR blocks for the private subnet of OpenShift Bare Metal Clusters. The default value is 10.0.32.0/20.
+    default: "10.0.32.0/20"
+    required: false
+
+  rendezvous_ip:
+    type: string
+    title: Rendezvous IP
+    description: The IP used to bootstrap the cluster using the Agent-based Installer. Needs to match rendezvousIP value specified in agent-config.yaml. Note that when using Bare Metal instances, this IP should be within the private_two subnet CIDR.
+    default: "10.0.16.20"
+    required: true
+    visible:
+      eq:
+        - installation_method
+        - Agent-based
+
+  load_balancer_shape_details_maximum_bandwidth_in_mbps:
+    type: integer
+    title: Load Balancer Maximum Bandwidth
+    description: Bandwidth in Mbps that determines the maximum bandwidth (ingress plus egress) that the load balancer can achieve. The values must be between minimumBandwidthInMbps and 8000
+    default: 500
+    minimum: 10
+    maximum: 8000
+    required: true
+
+  load_balancer_shape_details_minimum_bandwidth_in_mbps:
+    type: integer
+    title: Load Balancer Minimum Bandwidth
+    description: Bandwidth in Mbps that determines the total pre-provisioned bandwidth (ingress plus egress). The values must be between 10 and the maximumBandwidthInMbps
+    default: 10
+    minimum: 10
+    maximum: 8000
+    required: true
+
+  #
+  # Tagging Configuration Variables
+  #
+  use_existing_tags:
+    type: boolean
+    title: Use Existing Tagging Resources
+    description: Indicates whether to reuse existing tag namespace and defined tags when tagging OCI resources. Tag namespace and defined tags are preserved when the stack is destroyed if reuse_tags is set to true. WARNING - Stack creation will fail if specifed tag namespace and defined tags do not exist as specified. Create stack with reuse_tags set to false to create tagging resources that are destroyed when the cluster is, or use the terraform from oci-openshift/tagging-resources to create tagging resources seperately. It's recommended you do not change this flag after cluster creation to preserve terraform state consistency.
+    default: false
+    required: true
+
+  tag_namespace_name:
+    type: string
+    title: Tag Namespace Name
+    description: Name of tag namespace to create or reuse for tagging OCI resources. Defaults to openshift-{cluster_name}
+    default: ""
+    required: false
+
+  tag_namespace_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Tag Namespace Compartment OCID
+    description: Compartment containing tag namespace. Defaults to current compartment
+    default: compartment_ocid
+    required: true
+
+  wait_for_new_tag_consistency_wait_time:
+    type: string
+    title: Tag Consistency Wait Duration
+    description: How long the creation process will wait before creating tagged resources while new tags propogate
+    default: "900s"
+    required: true
