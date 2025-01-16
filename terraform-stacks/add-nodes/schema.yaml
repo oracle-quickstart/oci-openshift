@@ -1,0 +1,201 @@
+#
+# Copyright (c) 2024 Oracle and/or its affiliates. Licensed under the Universal Permissive License (UPL), Version 1.0. See LICENSE for more details.
+#
+
+title: Adding Nodes to OpenShift Cluster on OCI
+description: OpenShift on OCI
+schemaVersion: 1.1.0
+version: "20241106"
+locale: "en"
+
+
+variableGroups:
+- title: "OpenShift Cluster Configuration"
+  variables:
+    - tenancy_ocid
+    - compartment_ocid
+    - cluster_name
+    - openshift_image_source_uri
+
+- title: "Control Plane Node Configuration"
+  variables:
+    - control_plane_shape
+    - control_plane_count
+    - control_plane_ocpu
+    - control_plane_memory
+    - control_plane_boot_size
+    - control_plane_boot_volume_vpus_per_gb
+    - cluster_control_plane_nsg
+    - starting_ad_name_cp
+
+- title: "Compute Node Configuration"
+  variables:
+    - compute_shape
+    - compute_count
+    - compute_ocpu
+    - compute_memory
+    - compute_boot_size
+    - compute_boot_volume_vpus_per_gb
+    - starting_ad_name_compute
+
+###########
+# VARIABLES
+###########
+variables:
+  #
+  # Cluster Configuration Variables
+  #
+  cluster_name:
+    title: Cluster Name
+    description: The name of your exisiting OpenShift cluster.
+    type: string
+    default: ""
+    pattern: "^[a-z0-9-]{1,54}$"
+    required: true
+
+  tenancy_ocid:
+    title: Tenancy Ocid
+    description: The ocid of the current tenancy.
+    type: string
+    default: tenancy_ocid
+    required: true
+
+  compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Compartment
+    default: compartment_ocid
+    required: true
+
+  openshift_image_source_uri:
+    type: string
+    title: OpenShift Image Source URI
+    description: The OCI Object Storage URI for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a pre-authenticated requests (PAR) uri, and paste the uri to this block. For more detail regarding Object storage and PAR, please visit https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/objectstorageoverview.htm and https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/usingpreauthenticatedrequests.htm .
+    default: ""
+    required: true
+
+
+  #
+  # Control Plane Configuration Variables
+  #
+
+  control_plane_shape:
+    type: string
+    title: Control Plane Shape
+    description: Compute Instance shape of control plan nodes. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm .
+    default: "VM.Standard.E4.Flex"
+    required: true
+
+  control_plane_count:
+    type: integer
+    title: Control Plan Node Count
+    description: The number of control plane nodes to add to the cluster. The default value is 0.
+    required: true
+    default: 0
+
+  control_plane_ocpu:
+    type: integer
+    title: Control Plan Node OCPU
+    description: The number of OCPUs available for the shape of each control_plane node.
+    default: 4
+    minimum: 1
+    maximum: 144
+    required: true
+
+  control_plane_memory:
+    type: integer
+    title: Control Plan Node Memory
+    description: The amount of memory available for the shape of each control_plane node, in gigabytes. The default value is 16.
+    default: 16
+    minimum: 1
+    maximum: 1760
+    required: true
+
+  control_plane_boot_size:
+    type: integer
+    title: Control Plan Boot Volume
+    description: The size of the boot volume of each control_plane node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 1024 GB.
+    default: 1024
+    minimum: 50
+    maximum: 32768
+    required: true
+
+  control_plane_boot_volume_vpus_per_gb:
+    type: integer
+    title: Control Plan Node VPU
+    description: The number of volume performance units (VPUs) that will be applied to this volume per GB of each control_plane node. The default value is 100.
+    default: 100
+    minimum: 10
+    maximum: 120
+    multipleOf: 10
+    required: true
+
+  starting_ad_name_cp:
+    type: oci:identity:availabilitydomain:name
+    title: Starting AD
+    description: Specify the Availability Domain (AD) for initial node placement. Additional nodes will be automatically distributed across ADs in a round-robin sequence starting from your selected AD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+    required: false
+
+
+  #
+  # Compute Configuration Variables
+  #
+  compute_shape:
+    type: string
+    title: Compute Shape
+    description: Compute Instance shape of compute nodes. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm .
+    default: "VM.Standard.E4.Flex"
+    required: true
+
+  compute_count:
+    type: integer
+    title: Compute Node Count
+    description: The number of compute nodes to add to the cluster. The default value is 1.
+    required: true
+    default: 1
+
+  compute_ocpu:
+    type: integer
+    title: Compute Node OCPU
+    description: The number of OCPUs available for the shape of each compute node. The default value is 6.
+    default: 6
+    minimum: 1
+    maximum: 144
+    required: true
+
+  compute_memory:
+    type: integer
+    title: Compute Node Memory
+    description: The amount of memory available for the shape of each compute node, in gigabytes. The default value is 16.
+    default: 16
+    minimum: 1
+    maximum: 1760
+    required: true
+
+  compute_boot_size:
+    type: integer
+    title: Compute Node Boot Volume
+    description: The size of the boot volume of each compute node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB.
+    default: 100
+    minimum: 50
+    maximum: 32768
+    required: true
+
+  compute_boot_volume_vpus_per_gb:
+    type: integer
+    title: Compute Node VPU
+    description: The number of volume performance units (VPUs) that will be applied to this volume per GB of each compute node. The default value is 30.
+    default: 30
+    minimum: 10
+    maximum: 120
+    multipleOf: 10
+    required: true
+
+  starting_ad_name_compute:
+    type: oci:identity:availabilitydomain:name
+    title: Starting AD
+    description: Specify the Availability Domain (AD) for initial node placement. Additional nodes will be automatically distributed across ADs in a round-robin sequence starting from your selected AD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+    required: false

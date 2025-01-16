@@ -1,10 +1,19 @@
-.idea/
+.target
+.vscode/
 .DS_Store
-.dev
+.classpath
+.idea/
+.project
+.settings/
+target/
+.DS_Store
 .secrets
+.dev
+**/*.zip
+dist/
 
 ### Terraform ###
 # Local .terraform directories
 **/.terraform/*
 **/.terrafor*
-!.terraform.lock.hcl
+.terraform.lock.hcl
