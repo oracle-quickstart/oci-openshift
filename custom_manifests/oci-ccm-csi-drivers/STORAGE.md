@@ -34,7 +34,7 @@ We are excited to introduce significant enhancements to the Container Storage In
 
 ### Driver Installation
 
-After OCI cluster resource creation and during OpenShift installation, the [CSI driver manifest](/custom_manifests/manifests/01-oci-csi.yml) containing the Kubernetes/OpenShift resource definitions is applied. See the full [installation instructions](/README.md#documentation-and-installation-instructions). 
+After OCI cluster resource creation and during OpenShift installation, the [CSI driver manifest](/custom_manifests/manifests/01-oci-csi.yml) containing the Kubernetes/OpenShift resource definitions is applied. See the full [installation instructions](/README.md#documentation-and-installation-instructions).
 
 For updating drivers on existing clusters, see [oci-ccm-csi-drivers](/custom_manifests/README.md#oci-ccm-csi-drivers).
 
