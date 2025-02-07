@@ -25,7 +25,7 @@ metadata:
   name: oci-volume-provisioner
   namespace: oci-csi
 stringData:
-  cloud-provider.yaml: |
+  config.yaml: |
     useInstancePrincipals: true
     compartment: $COMPARTMENT_ID
     vcn: $OCP_VCN_ID
