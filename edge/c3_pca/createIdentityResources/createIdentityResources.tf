@@ -12,12 +12,6 @@ terraform {
   }
 }
 
-# Home Region
-variable "home_region" {
-  type        = string
-  description = "The home region of the tenancy."
-}
-
 variable "tenancy_ocid" {
   type        = string
   description = "The ocid of the current tenancy."
@@ -44,11 +38,6 @@ variable "home_region_profile_name" {
 provider "oci" {
   alias               = "home"
   config_file_profile = var.home_region_profile_name
-}
-
-data "oci_identity_tenancy" "tenancy" {
-  tenancy_id = var.tenancy_ocid
-  provider   = oci.home
 }
 
 # Defined tag namespace. Use to mark instance roles and configure instance policy

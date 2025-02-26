@@ -214,17 +214,17 @@ stringData:
       rateLimitQPSWrite: 20.0
       rateLimitBucketWrite: 5
 ---
-# oci-ccm-C3-cert.yaml
+# oci-ccm-cert.yaml
 apiVersion: v1
 kind: Secret
 metadata:
   creationTimestamp: null
-  name: c3-cert
+  name: cert
   namespace: oci-cloud-controller-manager
 stringData:
-  c3-cert.pem: |
+  cert.pem: |
     -----BEGIN CERTIFICATE-----
-    your c3 cert content
+    your cert content
     -----END CERTIFICATE-----
 ---
 
@@ -275,13 +275,13 @@ spec:
             path: /etc/kubernetes
         - name: cert
           secret:
-            secretName: c3-cert
+            secretName: cert
       containers:
         - name: oci-cloud-controller-manager
           image: ghcr.io/oracle/cloud-provider-oci:v1.30.0
           env:
             - name: OCI_DEFAULT_CERTS_PATH
-              value: "/etc/pki/tls/c3/c3-cert.pem"
+              value: "/etc/pki/tls/cert/cert.pem"
           command:
             - /bin/bash
             - -c
@@ -300,6 +300,6 @@ spec:
               mountPath: /etc/kubernetes
               readOnly: true
             - name: cert
-              mountPath: /etc/pki/tls/c3
+              mountPath: /etc/pki/tls/cert
               readOnly: true
 ---
