@@ -23,19 +23,19 @@ variable "cluster_name" {
 }
 
 # C3 Region
-variable "c3_region" {
+variable "c3_or_pca_region" {
   type        = string
-  description = "The C3 region name."
+  description = "The C3 region name or PCA region name."
 }
 
-variable "c3_region_profile_name" {
+variable "c3_or_pca_region_profile_name" {
   type        = string
-  description = "The C3 region profile name configured in the ~/.oci/config"
+  description = "The C3 region or PCA region profile name configured in the ~/.oci/config"
 }
 
 provider "oci" {
-  region              = var.c3_region
-  config_file_profile = var.c3_region_profile_name
+  region              = var.c3_or_pca_region
+  config_file_profile = var.c3_or_pca_region_profile_name
 }
 
 variable "zone_dns" {
@@ -43,8 +43,8 @@ variable "zone_dns" {
   description = "The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation. The zone_dns value must be a valid hostname."
 }
 
-variable "image_id_manually_created_on_C3" {
-  description = "Manually created on C3 with .oci file with UEFI_64 firmware and launch option 'PARAVIRTUALIZED'"
+variable "image_ocid" {
+  description = "Manually created on C3 or PCA with .oci file with UEFI_64 firmware and launch option 'PARAVIRTUALIZED'"
   type        = string
 }
 
@@ -555,26 +555,26 @@ resource "oci_dns_rrset" "openshift_api_int" {
 variable "control_plane_shape" {
   default     = "VM.PCAStandard.E5.Flex" # C3 only support ONE shape
   type        = string
-  description = "Compute shape of the control_plane nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm ."
+  description = "Compute shape of the control_plane nodes. The default shape is VM.PCAStandard.E5.Flex for C3. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm ."
 }
 
 variable "compute_shape" {
   default     = "VM.PCAStandard.E5.Flex" # C3 only support ONE shape
   type        = string
-  description = "Compute shape of the compute nodes. The default shape is VM.Standard.E4.Flex. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm "
+  description = "Compute shape of the compute nodes. The default shape is VM.PCAStandard.E5.Flex for C3. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm "
 }
 
 resource "oci_core_shape_management" "imaging_control_plane_shape" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
-  image_id       = var.image_id_manually_created_on_C3
+  image_id       = var.image_ocid
   shape_name     = var.control_plane_shape
 }
 
 resource "oci_core_shape_management" "imaging_compute_shape" {
   count          = local.create_openshift_instance_pools ? 1 : 0
   compartment_id = var.compartment_ocid
-  image_id       = var.image_id_manually_created_on_C3
+  image_id       = var.image_ocid
   shape_name     = var.compute_shape
 }
 
@@ -678,7 +678,7 @@ resource "oci_core_instance_configuration" "control_plane_node_config" {
       }
       source_details {
         boot_volume_size_in_gbs = var.control_plane_boot_size
-        image_id                = var.image_id_manually_created_on_C3
+        image_id                = var.image_ocid
         source_type             = "image"
       }
     }
@@ -752,7 +752,7 @@ resource "oci_core_instance_configuration" "compute_node_config" {
       }
       source_details {
         boot_volume_size_in_gbs = var.compute_boot_size
-        image_id                = var.image_id_manually_created_on_C3
+        image_id                = var.image_ocid
         source_type             = "image"
       }
     }

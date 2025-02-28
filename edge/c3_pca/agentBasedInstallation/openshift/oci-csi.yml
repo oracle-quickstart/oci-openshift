@@ -40,17 +40,17 @@ stringData:
       rateLimitQPSWrite: 20.0
       rateLimitBucketWrite: 5
 ---
-# oci-csi-C3-cert.yaml
+# oci-csi-cert.yaml
 apiVersion: v1
 kind: Secret
 metadata:
   creationTimestamp: null
-  name: c3-cert
+  name: cert
   namespace: oci-csi
 stringData:
-  c3-cert.pem: |
+  cert.pem: |
     -----BEGIN CERTIFICATE-----
-    your c3 cert content
+    your cert content
     -----END CERTIFICATE-----
 ---
 
@@ -156,7 +156,7 @@ spec:
           image: ghcr.io/oracle/cloud-provider-oci:v1.30.0
           env:
             - name: OCI_DEFAULT_CERTS_PATH
-              value: "/etc/pki/tls/c3/c3-cert.pem"
+              value: "/etc/pki/tls/cert/cert.pem"
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: config
@@ -168,7 +168,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
             - name: cert
-              mountPath: /etc/pki/tls/c3
+              mountPath: /etc/pki/tls/cert
               readOnly: true
       volumes:
         - name: config
@@ -181,7 +181,7 @@ spec:
           emptyDir: {}
         - name: cert
           secret:
-            secretName: c3-cert
+            secretName: cert
       dnsPolicy: ClusterFirst
       hostNetwork: true
       restartPolicy: Always
