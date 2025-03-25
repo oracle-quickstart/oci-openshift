@@ -1,6 +1,8 @@
 # Terraform Defined Resources for OpenShift on OCI
 
-This directory contains Terraform stacks specifically designed for Red Hat OpenShift on Oracle Cloud Infrastructure. They can be used to provision OCI resources that support the creation and management of OpenShift clusters running on OCI. These stacks are typically applied using OCI Resource Manager Service (RMS). The most common use-case is to use the generic 'create-cluster' stack which defines all resources necessary to create an OpenShift cluster on OCI.
+This directory contains Terraform stacks specifically designed for Red Hat OpenShift on Oracle Cloud Infrastructure. They can be used to provision OCI resources that support the creation and management of OpenShift clusters running on OCI. These stacks are typically applied using OCI Resource Manager Service (RMS).
+
+⚠️ Important: You must run the create-attribution-tags stack before running any other stacks. This stack creates a tagNamespace and associated defined-tags (openshift-tags and openshift-resource) that are essential for all subsequent stacks to function correctly. Skipping this step may cause failures or unexpected behavior. You can skip this step if the tagNamespace and its associated defined-tags already exist.
 
 
 ## add-nodes
@@ -19,6 +21,19 @@ Create new instances to be added to an existing OpenShift cluster. Requires an O
     - Control Plane nodes
     - Compute nodes
 
+## create-resource-attribution-tags
+
+Openshift resource attribution tags used to categorize, organize, and track resource usage, ownership, billing, or compliance within OCI. These tags simplify resource management by providing clear metadata for reporting, auditing, and operational efficiency.  Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }.
+
+⚠️ Note: Execute this stack only if the required tags do not already exist within your tenancy.
+
+#### Default Attribution Tags
+
+- **Tag NameSpace**
+    - openshift-tags
+- **Defined Tag Name**
+    - openshift-resource
+
 ## create-cluster
 
 Create the OCI resources for a new OpenShift cluster.
@@ -28,8 +43,6 @@ Create the OCI resources for a new OpenShift cluster.
 - **Tag Namespace and Tags**
     - Tag Namespace
     - Defined Tags
-        - "openshift-resource"
-            - "openshift-resource-{cluster_name}"
         - "instance-role"
             - "control-plane"
             - "compute"
@@ -142,8 +155,6 @@ It is recommended but not required to create and reuse tags for your OpenShift c
 - **Tag Namespace and Tags**
     - Tag Namespace
     - Defined Tags
-        - "openshift-resource"
-            - "openshift-resource-{cluster_name}"
         - "instance-role"
             - "control-plane"
             - "compute"

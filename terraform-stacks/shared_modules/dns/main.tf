@@ -15,6 +15,7 @@ resource "oci_dns_zone" "openshift" {
   view_id        = var.enable_private_dns ? data.oci_dns_resolver.dns_resolver.default_view_id : null
   zone_type      = "PRIMARY"
   defined_tags   = var.defined_tags
+  depends_on     = [var.op_lb_openshift_api_apps_lb_ip_addr, var.op_lb_openshift_api_int_lb_ip_addr]
 }
 
 resource "oci_dns_rrset" "openshift_api" {

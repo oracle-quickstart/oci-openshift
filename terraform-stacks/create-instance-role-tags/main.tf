@@ -30,6 +30,5 @@ module "tags" {
   tag_namespace_compartment_ocid         = var.tag_namespace_compartment_ocid
   tag_namespace_name                     = var.tag_namespace_name
   cluster_name                           = ""
-  openshift_tag_openshift_resource_value = local.openshift_tag_openshift_resource_value
   wait_for_new_tag_consistency_wait_time = "5s"
 }

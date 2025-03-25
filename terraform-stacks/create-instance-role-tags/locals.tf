@@ -11,6 +11,5 @@ locals {
     r.key => r.name
   }
 
-  home_region                            = local.region_map[data.oci_identity_tenancy.tenancy.home_region_key]
-  openshift_tag_openshift_resource_value = "openshift-resource"
+  home_region = local.region_map[data.oci_identity_tenancy.tenancy.home_region_key]
 }

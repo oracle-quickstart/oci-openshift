@@ -7,8 +7,8 @@ resource "oci_core_vnic_attachment" "control_plane_secondary_vnic_attachment" {
     assign_private_dns_record = "true"
     assign_public_ip          = "false"
     defined_tags = {
-      "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_boot_volume_type}"   = "ISCSI"
-      "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_openshift_resource}" = var.openshift_tag_openshift_resource_value
+      "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_boot_volume_type}"      = "ISCSI"
+      "${var.openshift_attribution_tag_namespace}.${var.openshift_attribution_tag_key}" = var.openshift_tag_openshift_resource_value
     }
     display_name   = "vnic2"
     hostname_label = oci_core_instance.control_plane_node[each.key].display_name
@@ -32,8 +32,8 @@ resource "oci_core_vnic_attachment" "compute_secondary_vnic_attachment" {
     assign_private_dns_record = "true"
     assign_public_ip          = "false"
     defined_tags = {
-      "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_boot_volume_type}"   = "ISCSI"
-      "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_openshift_resource}" = var.openshift_tag_openshift_resource_value
+      "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_boot_volume_type}"      = "ISCSI"
+      "${var.openshift_attribution_tag_namespace}.${var.openshift_attribution_tag_key}" = var.openshift_tag_openshift_resource_value
     }
     display_name   = "vnic2"
     hostname_label = oci_core_instance.compute_node[each.key].display_name

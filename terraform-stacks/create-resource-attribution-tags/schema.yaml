@@ -1,0 +1,35 @@
+#
+# Copyright (c) 2019-2020 Oracle and/or its affiliates. All rights reserved.
+#
+
+title: OpenShift on OCI
+description: A Terraform stack designed to create and manage OpenShift resource tags for all OCI resources running OpenShift, ensuring consistent tagging across the environment for better organization and governance.
+schemaVersion: 1.1.0
+version: "20230524"
+locale: "en"
+
+variableGroups:
+  - title: "OpenShift Resources Attribution Tagging"
+    variables:
+      - tenancy_ocid
+      - tag_namespace_compartment_ocid_resource_tagging
+
+###########
+# VARIABLES
+###########
+variables:
+  tenancy_ocid:
+    title: Tenancy Ocid
+    description: The ocid of the current tenancy.
+    type: string
+    default: tenancy_ocid
+    required: true
+
+  tag_namespace_compartment_ocid_resource_tagging:
+    type: oci:identity:compartment:id
+    title: Tag Namespace Compartment For OpenShift Resource Attribution Tagging
+    description: The compartment where the tag namespace for resource tagging should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
+      If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
+      Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
+    default: tenancy_ocid
+    required: true

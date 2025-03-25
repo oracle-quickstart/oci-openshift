@@ -58,14 +58,6 @@ variable "op_openshift_tag_instance_role" {
   type = string
 }
 
-variable "op_openshift_tag_openshift_resource" {
-  type = string
-}
-
-variable "openshift_tag_openshift_resource_value" {
-  type = string
-}
-
 variable "is_control_plane_iscsi_type" {
   type = bool
 }
@@ -147,4 +139,20 @@ variable "compute_node_map" {
 
 variable "cp_node_map" {
   type = map(any)
+}
+
+
+variable "openshift_attribution_tag_namespace" {
+  type    = string
+  default = "openshift-tags"
+}
+
+variable "openshift_attribution_tag_key" {
+  type    = string
+  default = "openshift-resource"
+}
+
+variable "openshift_tag_openshift_resource_value" {
+  type    = string
+  default = "openshift-resource-infra"
 }

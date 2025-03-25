@@ -10,12 +10,6 @@ data "oci_identity_tag_namespaces" "openshift_tag_namespace" {
   }
 }
 
-data "oci_identity_tag" "openshift_tag_openshift_resource" {
-  count            = var.use_existing_tags ? 1 : 0
-  tag_name         = "openshift-resource"
-  tag_namespace_id = data.oci_identity_tag_namespaces.openshift_tag_namespace[0].tag_namespaces[0].id
-}
-
 data "oci_identity_tag" "openshift_tag_instance_role" {
   count            = var.use_existing_tags ? 1 : 0
   tag_name         = "instance-role"

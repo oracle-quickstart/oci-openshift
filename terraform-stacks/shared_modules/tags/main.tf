@@ -54,17 +54,7 @@ resource "oci_identity_tag" "openshift_tag_boot_volume_type" {
   depends_on = [oci_identity_tag.openshift_tag_instance_role]
 }
 
-resource "oci_identity_tag" "openshift_tag_openshift_resource" {
-  count            = var.use_existing_tags ? 0 : 1
-  description      = "OpenShift Resource"
-  is_cost_tracking = "true"
-  is_retired       = "false"
-  name             = "openshift-resource"
-  tag_namespace_id = oci_identity_tag_namespace.openshift_tag_namespace[0].id
-  depends_on       = [oci_identity_tag.openshift_tag_boot_volume_type]
-}
-
 resource "time_sleep" "wait_for_new_tag_consistency" {
-  depends_on      = [data.oci_identity_tag.openshift_tag_openshift_resource, oci_identity_tag.openshift_tag_openshift_resource]
+  depends_on      = [data.oci_identity_tag.openshift_tag_instance_role, data.oci_identity_tag.openshift_tag_boot_volume_type]
   create_duration = var.use_existing_tags ? "5s" : var.wait_for_new_tag_consistency_wait_time
 }

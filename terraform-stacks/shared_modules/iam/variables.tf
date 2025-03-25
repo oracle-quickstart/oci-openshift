@@ -18,14 +18,6 @@ variable "op_openshift_tag_instance_role" {
   type = string
 }
 
-variable "openshift_tag_openshift_resource_value" {
-  type = string
-}
-
-variable "op_openshift_tag_openshift_resource" {
-  type = string
-}
-
 variable "defined_tags" {
   type = map(string)
 }

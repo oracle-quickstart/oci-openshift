@@ -26,6 +26,8 @@ variableGroups:
   - control_plane_memory
   - control_plane_boot_size
   - control_plane_boot_volume_vpus_per_gb
+  - distribute_cp_instances_across_ads
+  - starting_ad_name_cp
   visible: create_openshift_instances
 
 - title: "Compute Node Configuration"
@@ -36,6 +38,8 @@ variableGroups:
   - compute_memory
   - compute_boot_size
   - compute_boot_volume_vpus_per_gb
+  - distribute_compute_instances_across_ads
+  - starting_ad_name_compute
   visible: create_openshift_instances
 
 - title: "Networking Configuration"
@@ -57,6 +61,10 @@ variableGroups:
   - tag_namespace_name
   - tag_namespace_compartment_ocid
   - wait_for_new_tag_consistency_wait_time
+
+- title: "OpenShift Resources Attribution Tagging"
+  variables:
+    - tag_namespace_compartment_ocid_resource_tagging
 
 ###########
 # VARIABLES
@@ -118,20 +126,20 @@ variables:
   control_plane_shape:
     type: string
     title: Control Plane Shape
-    description: Compute Instance shape of control plan nodes. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm .
+    description: Compute Instance shape of control plan nodes. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes
     default: "VM.Standard.E4.Flex"
     required: true
 
   control_plane_count:
     type: integer
-    title: Control Plan Node Count
+    title: Control Plane Node Count
     description: The number of control_plane nodes in the cluster. The default value is 3.
     required: true
     default: 3
 
   control_plane_ocpu:
     type: integer
-    title: Control Plan Node OCPU
+    title: Control Plane Node OCPU
     description: The number of OCPUs available for the shape of each control_plane node.
     default: 4
     minimum: 1
@@ -140,7 +148,7 @@ variables:
 
   control_plane_memory:
     type: integer
-    title: Control Plan Node Memory
+    title: Control Plane Node Memory
     description: The amount of memory available for the shape of each control_plane node, in gigabytes. The default value is 16.
     default: 16
     minimum: 1
@@ -149,7 +157,7 @@ variables:
 
   control_plane_boot_size:
     type: integer
-    title: Control Plan Boot Volume
+    title: Control Plane Boot Volume
     description: The size of the boot volume of each control_plane node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 1024 GB.
     default: 1024
     minimum: 50
@@ -158,7 +166,7 @@ variables:
 
   control_plane_boot_volume_vpus_per_gb:
     type: integer
-    title: Control Plan Node VPU
+    title: Control Plane Node VPU
     description: The number of volume performance units (VPUs) that will be applied to this volume per GB of each control_plane node. The default value is 100.
     default: 100
     minimum: 10
@@ -166,13 +174,28 @@ variables:
     multipleOf: 10
     required: true
 
+  distribute_cp_instances_across_ads:
+    type: boolean
+    title: Distribute Control Plane Instances Across ADs
+    description: Select the checkbox to enable control-plane instances to be automatically distributed across ADs in a round-robin sequence starting from your selected AD. If unselected, then all nodes will be created in the selected starting AD.
+    default: true
+    required: true
+
+  starting_ad_name_cp:
+    type: oci:identity:availabilitydomain:name
+    title: Starting AD
+    description: Specify the Availability Domain (AD) for initial node placement. Additional nodes will be automatically distributed across ADs in a round-robin sequence starting from your selected AD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+    required: false
+
   #
   # Compute Configuration Variables
   #
   compute_shape:
     type: string
     title: Compute Shape
-    description: Compute Instance shape of compute nodes. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm .
+    description: Compute Instance shape of compute nodes. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes
     default: "VM.Standard.E4.Flex"
     required: true
 
@@ -219,6 +242,21 @@ variables:
     maximum: 120
     multipleOf: 10
     required: true
+
+  distribute_compute_instances_across_ads:
+    type: boolean
+    title: Distribute Compute Instances Across ADs
+    description: Select the checkbox to enable compute instances to be automatically distributed across ADs in a round-robin sequence starting from your selected AD. If unselected, then all nodes will be created in the selected starting AD.
+    default: true
+    required: true
+
+  starting_ad_name_compute:
+    type: oci:identity:availabilitydomain:name
+    title: Starting AD
+    description: Specify the Availability Domain (AD) for initial node placement. Additional nodes will be automatically distributed across ADs in a round-robin sequence starting from your selected AD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+    required: false
 
   #
   # Networking Configuration Variables
@@ -329,4 +367,12 @@ variables:
     title: Tag Consistency Wait Duration
     description: How long the creation process will wait before creating tagged resources while new tags propogate
     default: "900s"
+    required: true
+
+  tag_namespace_compartment_ocid_resource_tagging:
+    type: oci:identity:compartment:id
+    title: Tag Namespace Compartment For OpenShift Resource Attribution Tagging
+    description: WARNING - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tagging should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
+      If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
+      Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
     required: true

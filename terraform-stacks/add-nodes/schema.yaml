@@ -26,6 +26,7 @@ variableGroups:
     - control_plane_boot_size
     - control_plane_boot_volume_vpus_per_gb
     - cluster_control_plane_nsg
+    - distribute_cp_instances_across_ads
     - starting_ad_name_cp
 
 - title: "Compute Node Configuration"
@@ -36,7 +37,12 @@ variableGroups:
     - compute_memory
     - compute_boot_size
     - compute_boot_volume_vpus_per_gb
+    - distribute_compute_instances_across_ads
     - starting_ad_name_compute
+
+- title: "OpenShift Resources Attribution Tagging"
+  variables:
+    - tag_namespace_compartment_ocid_resource_tagging
 
 ###########
 # VARIABLES
@@ -81,7 +87,7 @@ variables:
   control_plane_shape:
     type: string
     title: Control Plane Shape
-    description: Compute Instance shape of control plan nodes. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm .
+    description: Compute Instance shape of control plan nodes. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes
     default: "VM.Standard.E4.Flex"
     required: true
 
@@ -129,6 +135,13 @@ variables:
     multipleOf: 10
     required: true
 
+  distribute_cp_instances_across_ads:
+    type: boolean
+    title: Distribute Control Plane Instances Across ADs
+    description: Select the checkbox to enable control-plane instances to be automatically distributed across ADs in a round-robin sequence starting from your selected AD. If unselected, then all nodes will be created in the selected starting AD.
+    default: true
+    required: true
+
   starting_ad_name_cp:
     type: oci:identity:availabilitydomain:name
     title: Starting AD
@@ -144,7 +157,7 @@ variables:
   compute_shape:
     type: string
     title: Compute Shape
-    description: Compute Instance shape of compute nodes. For more detail regarding compute shapes, please visit https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm .
+    description: Compute Instance shape of compute nodes. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes
     default: "VM.Standard.E4.Flex"
     required: true
 
@@ -192,6 +205,13 @@ variables:
     multipleOf: 10
     required: true
 
+  distribute_compute_instances_across_ads:
+    type: boolean
+    title: Distribute Compute Instances Across ADs
+    description: Select the checkbox to enable compute instances to be automatically distributed across ADs in a round-robin sequence starting from your selected AD. If unselected, then all nodes will be created in the selected starting AD.
+    default: true
+    required: true
+
   starting_ad_name_compute:
     type: oci:identity:availabilitydomain:name
     title: Starting AD
@@ -199,3 +219,12 @@ variables:
     dependsOn:
       compartmentId: ${compartment_ocid}
     required: false
+
+  tag_namespace_compartment_ocid_resource_tagging:
+    type: oci:identity:compartment:id
+    title: Tag Namespace Compartment For OpenShift Resource Attribution Tagging
+    description: WARNING - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tagging should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
+      If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
+      Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
+    default: compartment_ocid
+    required: true

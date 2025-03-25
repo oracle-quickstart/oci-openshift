@@ -19,12 +19,15 @@ provider "oci" {
 }
 
 module "meta" {
-  source              = "./shared_modules/meta"
-  compartment_ocid    = var.compartment_ocid
-  control_plane_count = var.control_plane_count
-  compute_count       = var.compute_count
+  source                                  = "./shared_modules/meta"
+  compartment_ocid                        = var.compartment_ocid
+  starting_ad_name_cp                     = var.starting_ad_name_cp
+  starting_ad_name_compute                = var.starting_ad_name_compute
+  distribute_cp_instances_across_ads      = var.distribute_cp_instances_across_ads
+  distribute_compute_instances_across_ads = var.distribute_compute_instances_across_ads
+  control_plane_count                     = var.control_plane_count
+  compute_count                           = var.compute_count
 }
-
 module "tags" {
   source = "./shared_modules/tags"
 
@@ -37,7 +40,6 @@ module "tags" {
   tag_namespace_compartment_ocid         = var.tag_namespace_compartment_ocid
   tag_namespace_name                     = var.tag_namespace_name
   cluster_name                           = var.cluster_name
-  openshift_tag_openshift_resource_value = local.openshift_tag_openshift_resource_value
   wait_for_new_tag_consistency_wait_time = var.wait_for_new_tag_consistency_wait_time
 }
 
@@ -50,16 +52,14 @@ module "iam" {
 
   depends_on = [module.tags.wait_for_tag_consistency]
 
-  compartment_ocid                       = var.compartment_ocid
-  tenancy_ocid                           = var.tenancy_ocid
-  cluster_name                           = var.cluster_name
-  openshift_tag_openshift_resource_value = local.openshift_tag_openshift_resource_value
+  compartment_ocid = var.compartment_ocid
+  tenancy_ocid     = var.tenancy_ocid
+  cluster_name     = var.cluster_name
 
   // dependency on tags
-  op_openshift_tag_namespace          = module.tags.op_openshift_tag_namespace
-  op_openshift_tag_instance_role      = module.tags.op_openshift_tag_instance_role
-  op_openshift_tag_openshift_resource = module.tags.op_openshift_tag_openshift_resource
-  defined_tags                        = module.tags.op_openshift_defined_tags_openshift_resource
+  op_openshift_tag_namespace     = module.tags.op_openshift_tag_namespace
+  op_openshift_tag_instance_role = module.tags.op_openshift_tag_instance_role
+  defined_tags                   = module.resource_attribution_tags.openshift_resource_attribution_tag
 }
 
 
@@ -78,7 +78,7 @@ module "image" {
   compute_shape               = var.compute_shape
 
   // Depedency on tags
-  defined_tags = module.tags.op_openshift_defined_tags_openshift_resource
+  defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
 }
 
 module "network" {
@@ -96,7 +96,7 @@ module "network" {
   vcn_dns_label  = var.vcn_dns_label
 
   // Depedency on tags
-  defined_tags = module.tags.op_openshift_defined_tags_openshift_resource
+  defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
 }
 
 module "load_balancer" {
@@ -112,7 +112,7 @@ module "load_balancer" {
   load_balancer_shape_details_minimum_bandwidth_in_mbps = var.load_balancer_shape_details_minimum_bandwidth_in_mbps
 
   // Depedency on tags
-  defined_tags = module.tags.op_openshift_defined_tags_openshift_resource
+  defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
 
   // Depedency on networks
   op_subnet_private                        = module.network.op_subnet_private
@@ -150,12 +150,9 @@ module "compute" {
   compute_node_map = module.meta.compute_node_map
 
   // Depedency on tags
-  op_openshift_tag_boot_volume_type   = module.tags.op_openshift_tag_boot_volume_type
-  op_openshift_tag_namespace          = module.tags.op_openshift_tag_namespace
-  op_openshift_tag_instance_role      = module.tags.op_openshift_tag_instance_role
-  op_openshift_tag_openshift_resource = module.tags.op_openshift_tag_openshift_resource
-
-  openshift_tag_openshift_resource_value = local.openshift_tag_openshift_resource_value
+  op_openshift_tag_boot_volume_type = module.tags.op_openshift_tag_boot_volume_type
+  op_openshift_tag_namespace        = module.tags.op_openshift_tag_namespace
+  op_openshift_tag_instance_role    = module.tags.op_openshift_tag_instance_role
 
   // Depedency on image
   op_image_openshift_image = module.image.op_image_openshift_image
@@ -188,7 +185,7 @@ module "dns" {
   cluster_name       = var.cluster_name
 
   // Depedency on tags
-  defined_tags = module.tags.op_openshift_defined_tags_openshift_resource
+  defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
 
   // Depedency on load balancer
   op_lb_openshift_api_int_lb_ip_addr  = module.load_balancer.op_lb_openshift_api_int_lb_ip_addr
@@ -207,4 +204,9 @@ module "manifests" {
   op_vcn_openshift_vcn = module.network.op_vcn_openshift_vcn
   op_subnet            = local.subnet_id
   op_security_list     = "${local.subnet_id}: ${local.security_list_id}"
+}
+
+module "resource_attribution_tags" {
+  source                                          = "./shared_modules/resource_attribution_tags/find_resource_tags"
+  tag_namespace_compartment_ocid_resource_tagging = var.tag_namespace_compartment_ocid_resource_tagging
 }
