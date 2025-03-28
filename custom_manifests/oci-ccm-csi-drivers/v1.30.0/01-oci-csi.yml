@@ -13,7 +13,7 @@ metadata:
     "pod-security.kubernetes.io/warn": "privileged"
     "security.openshift.io/scc.podSecurityLabelSync": "false"
     "openshift.io/run-level": "0"
-    "pod-security.kubernetes.io/enforce-version": "v1.24"
+    "pod-security.kubernetes.io/enforce-version": "v1.30"
 
 ---
 

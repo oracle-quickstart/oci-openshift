@@ -31,3 +31,15 @@ variable "starting_ad_name_compute" {
   type        = string
   default     = null
 }
+
+variable "distribute_cp_instances_across_ads" {
+  description = "Whether control-plane instances should be distributed across ADs in a round-robin sequence starting from your selected AD. If false, then all nodes will be created in the selected starting AD."
+  type        = bool
+  default     = true
+}
+
+variable "distribute_compute_instances_across_ads" {
+  description = "Whether compute instances should be distributed across ADs in a round-robin sequence starting from your selected AD. If false, then all nodes will be created in the selected starting AD."
+  type        = bool
+  default     = true
+}

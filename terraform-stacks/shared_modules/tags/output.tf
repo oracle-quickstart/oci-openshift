@@ -4,8 +4,6 @@ locals {
   val_openshift_tag_instance_role = var.use_existing_tags ? data.oci_identity_tag.openshift_tag_instance_role[0].name : oci_identity_tag.openshift_tag_instance_role[0].name
 
   val_openshift_tag_boot_volume_type = var.use_existing_tags ? data.oci_identity_tag.openshift_tag_boot_volume_type[0].name : oci_identity_tag.openshift_tag_boot_volume_type[0].name
-
-  val_openshift_tag_openshift_resource = var.use_existing_tags ? data.oci_identity_tag.openshift_tag_openshift_resource[0].name : oci_identity_tag.openshift_tag_openshift_resource[0].name
 }
 
 output "op_openshift_tag_namespace" {
@@ -18,16 +16,6 @@ output "op_openshift_tag_instance_role" {
 
 output "op_openshift_tag_boot_volume_type" {
   value = local.val_openshift_tag_boot_volume_type
-}
-
-output "op_openshift_tag_openshift_resource" {
-  value = local.val_openshift_tag_openshift_resource
-}
-
-output "op_openshift_defined_tags_openshift_resource" {
-  value = {
-    "${local.val_openshift_tag_namespace}.${local.val_openshift_tag_openshift_resource}" = var.openshift_tag_openshift_resource_value
-  }
 }
 
 output "wait_for_tag_consistency" {

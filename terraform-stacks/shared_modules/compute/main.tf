@@ -16,8 +16,8 @@ resource "oci_core_instance" "control_plane_node" {
   display_name        = "${var.cluster_name}-cp-${each.value.index}"
   shape               = var.control_plane_shape
   defined_tags = {
-    "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_instance_role}"      = "control_plane"
-    "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_openshift_resource}" = var.openshift_tag_openshift_resource_value
+    "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_instance_role}"         = "control_plane"
+    "${var.openshift_attribution_tag_namespace}.${var.openshift_attribution_tag_key}" = var.openshift_tag_openshift_resource_value
   }
 
   create_vnic_details {
@@ -60,8 +60,8 @@ resource "oci_core_instance" "compute_node" {
   display_name        = "${var.cluster_name}-compute-${each.value.index}"
   shape               = var.compute_shape
   defined_tags = {
-    "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_instance_role}"      = "compute"
-    "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_openshift_resource}" = var.openshift_tag_openshift_resource_value
+    "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_instance_role}"         = "compute"
+    "${var.openshift_attribution_tag_namespace}.${var.openshift_attribution_tag_key}" = var.openshift_tag_openshift_resource_value
   }
 
   create_vnic_details {

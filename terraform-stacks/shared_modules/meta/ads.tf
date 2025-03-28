@@ -21,7 +21,9 @@ data "oci_identity_fault_domains" "fds" {
 
 locals {
   availability_domains = data.oci_identity_availability_domains.ads.availability_domains
-  total_ads            = length(local.availability_domains)
+
+  cp_ads      = var.distribute_cp_instances_across_ads ? length(local.availability_domains) : 1
+  compute_ads = var.distribute_compute_instances_across_ads ? length(local.availability_domains) : 1
 
   # Get FDs for each AD
   fault_domains = {
@@ -29,12 +31,12 @@ locals {
   }
 
   # Calculate base nodes per AD
-  cp_nodes_per_ad      = floor(var.control_plane_count / local.total_ads)
-  compute_nodes_per_ad = floor(var.compute_count / local.total_ads)
+  cp_nodes_per_ad      = floor(var.control_plane_count / local.cp_ads)
+  compute_nodes_per_ad = floor(var.compute_count / local.compute_ads)
 
   # Calculate extra nodes to distribute
-  cp_extra_nodes      = var.control_plane_count % local.total_ads
-  compute_extra_nodes = var.compute_count % local.total_ads
+  cp_extra_nodes      = var.control_plane_count % local.cp_ads
+  compute_extra_nodes = var.compute_count % local.compute_ads
 
   # This will extract just the number at the end after "AD-"
   starting_ad_index_cp      = var.starting_ad_name_cp != null ? (regex("AD-([0-9]+)$", var.starting_ad_name_cp)[0]) - 1 : 0 # Subtract 1 because AD indices typically start from 1
@@ -42,13 +44,13 @@ locals {
 
   # Create a map for node count per AD in round-robin fashion starting from AD specified from user
   cp_node_count_per_ad_map = {
-    for i in range(local.total_ads) :
-    local.availability_domains[(i + local.starting_ad_index_cp) % local.total_ads].name => local.cp_nodes_per_ad + (i < local.cp_extra_nodes ? 1 : 0)
+    for i in range(local.cp_ads) :
+    local.availability_domains[(i + local.starting_ad_index_cp) % local.cp_ads].name => local.cp_nodes_per_ad + (i < local.cp_extra_nodes ? 1 : 0)
   }
 
   compute_node_count_per_ad_map = {
-    for i in range(local.total_ads) :
-    local.availability_domains[(i + local.starting_ad_index_compute) % local.total_ads].name => local.compute_nodes_per_ad + (i < local.compute_extra_nodes ? 1 : 0)
+    for i in range(local.compute_ads) :
+    local.availability_domains[(i + local.starting_ad_index_compute) % local.compute_ads].name => local.compute_nodes_per_ad + (i < local.compute_extra_nodes ? 1 : 0)
   }
 
   cp_node_count_per_ad_flattened = flatten([
