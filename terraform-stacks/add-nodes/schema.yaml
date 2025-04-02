@@ -15,6 +15,7 @@ variableGroups:
     - tenancy_ocid
     - compartment_ocid
     - cluster_name
+    - cluster_instance_role_tag_namespace
     - openshift_image_source_uri
 
 - title: "Control Plane Node Configuration"
@@ -79,6 +80,10 @@ variables:
     default: ""
     required: true
 
+  cluster_instance_role_tag_namespace:
+    title: Tag Namespace For OpenShift Instance Role Tagging
+    description: To assign roles like control_plane or compute to instances, a Tag Namespace is required. If you're using the default format openshift-"$cluster_name", you can skip specifying the Tag Namespace—it's automatically detected using the cluster name. If your setup uses a custom format, be sure to provide the correct Tag Namespace explicitly.
+    type: string
 
   #
   # Control Plane Configuration Variables

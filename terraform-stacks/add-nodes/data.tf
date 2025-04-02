@@ -4,7 +4,7 @@ data "oci_identity_tag_namespaces" "openshift_tag_namespace" {
   state                   = "ACTIVE"
   filter {
     name   = "name"
-    values = [local.tag_namespace]
+    values = [local.cluster_instance_role_tag_namespace]
     regex  = true
   }
 }

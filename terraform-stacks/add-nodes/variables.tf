@@ -158,3 +158,9 @@ variable "distribute_compute_instances_across_ads" {
   type        = bool
   default     = true
 }
+
+variable "cluster_instance_role_tag_namespace" {
+  description = "To assign roles like control_plane or compute to instances, a Tag Namespace is required. If you're using the default format openshift-'$cluster_name', you can skip specifying the Tag Namespace—it's automatically detected using the cluster name. If your setup uses a custom format, be sure to provide the correct Tag Namespace explicitly."
+  type        = string
+  default     = ""
+}
