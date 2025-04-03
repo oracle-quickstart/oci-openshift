@@ -27,7 +27,7 @@ module "tags" {
   use_existing_tags                      = true
   compartment_ocid                       = var.compartment_ocid
   tag_namespace_compartment_ocid         = data.oci_identity_tag_namespaces.openshift_tag_namespace.tag_namespaces[0].compartment_id
-  tag_namespace_name                     = local.tag_namespace
+  tag_namespace_name                     = local.cluster_instance_role_tag_namespace
   cluster_name                           = var.cluster_name
   wait_for_new_tag_consistency_wait_time = "5s"
 }

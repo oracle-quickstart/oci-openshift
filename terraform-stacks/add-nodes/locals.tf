@@ -21,5 +21,5 @@ locals {
 
   day_2_image_name = format("%s-day-2", var.cluster_name)
 
-  tag_namespace = [for key, value in data.oci_core_vcns.cluster_vcn.virtual_networks[0].defined_tags : trimsuffix(key, ".openshift-resource") if value == format("openshift-resource-%s", var.cluster_name)][0]
+  cluster_instance_role_tag_namespace = var.cluster_instance_role_tag_namespace != "" ? var.cluster_instance_role_tag_namespace : format("openshift-%s", var.cluster_name)
 }
