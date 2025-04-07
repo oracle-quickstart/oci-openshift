@@ -17,7 +17,7 @@ We are pleased to inform you that we have further enhanced the OCI CSI driver fo
 This feature is currently only available as a Technical Preview in Limited Availability, but will be incorporated into a future version of the open source OCI CCM and CSI drivers we use for our OpenShift clusters today.
 
 For more information, please refer to the following documentation:
-- [Installing OpenShift Virtualization in OpenShift clusters on OCI]()
+- [Installing OpenShift Virtualization in OpenShift clusters on OCI](./openshift-virtualization.md)
 - [OCI Container Storage Interface](https://github.com/oracle/oci-cloud-controller-manager/blob/master/container-storage-interface.md)
 - [OCI Block Storage](https://docs.oracle.com/en-us/iaas/Content/Block/blockvolumes.htm)
 - [Kubernetes Persistant Storage Access Modes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)
