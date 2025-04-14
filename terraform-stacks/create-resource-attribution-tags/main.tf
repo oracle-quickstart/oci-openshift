@@ -19,6 +19,10 @@ provider "oci" {
 }
 
 module "resource_attribution_tags" {
-  source                                          = "./shared_modules/resource_attribution_tags/create_resource_tags"
+  source = "./shared_modules/resource_attribution_tags/create_resource_tags"
+
+  providers = {
+    oci = oci.home
+  }
   tag_namespace_compartment_ocid_resource_tagging = var.tag_namespace_compartment_ocid_resource_tagging
 }
