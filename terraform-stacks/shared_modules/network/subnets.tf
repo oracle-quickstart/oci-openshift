@@ -1,20 +1,20 @@
-resource "oci_core_subnet" "private" {
-  cidr_block     = var.private_cidr
-  display_name   = "private"
+resource "oci_core_subnet" "private_opc" {
+  cidr_block     = var.private_cidr_opc
+  display_name   = "private_opc"
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
   route_table_id = oci_core_route_table.private_routes.id
   security_list_ids = [
     oci_core_security_list.private.id,
   ]
-  dns_label                  = "private"
+  dns_label                  = "privateopc"
   prohibit_public_ip_on_vnic = true
   defined_tags               = var.defined_tags
 }
 
-resource "oci_core_subnet" "private2" {
-  cidr_block     = var.private_cidr_2
-  display_name   = "private_two"
+resource "oci_core_subnet" "private_bare_metal" {
+  cidr_block     = var.private_cidr_bare_metal
+  display_name   = "private_bare_metal"
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
   route_table_id = oci_core_route_table.private_routes.id
@@ -22,7 +22,7 @@ resource "oci_core_subnet" "private2" {
     oci_core_security_list.private.id,
   ]
 
-  dns_label                  = "private2"
+  dns_label                  = "privatebm"
   prohibit_public_ip_on_vnic = true
   defined_tags               = var.defined_tags
 }

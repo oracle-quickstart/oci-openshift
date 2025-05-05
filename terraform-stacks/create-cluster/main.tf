@@ -89,11 +89,11 @@ module "network" {
   compartment_ocid = var.compartment_ocid
   cluster_name     = var.cluster_name
 
-  vcn_cidr       = var.vcn_cidr
-  private_cidr   = var.private_cidr
-  private_cidr_2 = var.private_cidr_2
-  public_cidr    = var.public_cidr
-  vcn_dns_label  = var.vcn_dns_label
+  vcn_cidr                = var.vcn_cidr
+  private_cidr_opc        = var.private_cidr_opc
+  private_cidr_bare_metal = var.private_cidr_bare_metal
+  public_cidr             = var.public_cidr
+  vcn_dns_label           = var.vcn_dns_label
 
   // Depedency on tags
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
@@ -102,10 +102,8 @@ module "network" {
 module "load_balancer" {
   source = "./shared_modules/lb"
 
-  compartment_ocid            = var.compartment_ocid
-  cluster_name                = var.cluster_name
-  is_control_plane_iscsi_type = local.is_control_plane_iscsi_type
-  is_compute_iscsi_type       = local.is_compute_iscsi_type
+  compartment_ocid = var.compartment_ocid
+  cluster_name     = var.cluster_name
 
   enable_private_dns                                    = var.enable_private_dns
   load_balancer_shape_details_maximum_bandwidth_in_mbps = var.load_balancer_shape_details_maximum_bandwidth_in_mbps
@@ -115,8 +113,7 @@ module "load_balancer" {
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
 
   // Depedency on networks
-  op_subnet_private                        = module.network.op_subnet_private
-  op_subnet_private2                       = module.network.op_subnet_private2
+  op_subnet_private_opc                    = module.network.op_subnet_private_opc
   op_subnet_public                         = module.network.op_subnet_public
   op_network_security_group_cluster_lb_nsg = module.network.op_network_security_group_cluster_lb_nsg
 }
@@ -155,11 +152,12 @@ module "compute" {
   op_openshift_tag_instance_role    = module.tags.op_openshift_tag_instance_role
 
   // Depedency on image
-  op_image_openshift_image = module.image.op_image_openshift_image
+  op_image_openshift_image_native          = module.image.op_image_openshift_image_native
+  op_image_openshift_image_paravirtualized = module.image.op_image_openshift_image_paravirtualized
 
   // Depedency on networks
-  op_subnet_private                                  = module.network.op_subnet_private
-  op_subnet_private2                                 = module.network.op_subnet_private2
+  op_subnet_private_opc                              = module.network.op_subnet_private_opc
+  op_subnet_private_bare_metal                       = module.network.op_subnet_private_bare_metal
   op_network_security_group_cluster_controlplane_nsg = module.network.op_network_security_group_cluster_controlplane_nsg
   op_network_security_group_cluster_compute_nsg      = module.network.op_network_security_group_cluster_compute_nsg
 

@@ -34,15 +34,15 @@ data "oci_core_vcns" "cluster_vcn" {
   display_name   = var.cluster_name
 }
 
-data "oci_core_subnets" "private" {
+data "oci_core_subnets" "private_opc" {
   compartment_id = var.compartment_ocid
-  display_name   = "private"
+  display_name   = "private_opc"
   vcn_id         = data.oci_core_vcns.cluster_vcn.virtual_networks[0].id
 }
 
-data "oci_core_subnets" "private2" {
+data "oci_core_subnets" "private_bare_metal" {
   compartment_id = var.compartment_ocid
-  display_name   = "private_two"
+  display_name   = "private_bare_metal"
   vcn_id         = data.oci_core_vcns.cluster_vcn.virtual_networks[0].id
 }
 

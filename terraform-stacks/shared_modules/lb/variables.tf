@@ -22,19 +22,7 @@ variable "defined_tags" {
   type = map(string)
 }
 
-variable "is_control_plane_iscsi_type" {
-  type = bool
-}
-
-variable "is_compute_iscsi_type" {
-  type = bool
-}
-
-variable "op_subnet_private" {
-  type = string
-}
-
-variable "op_subnet_private2" {
+variable "op_subnet_private_opc" {
   type = string
 }
 

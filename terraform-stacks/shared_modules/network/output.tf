@@ -2,12 +2,12 @@ output "op_vcn_openshift_vcn" {
   value = try(oci_core_vcn.openshift_vcn.id, null)
 }
 
-output "op_subnet_private" {
-  value = try(oci_core_subnet.private.id, null)
+output "op_subnet_private_opc" {
+  value = try(oci_core_subnet.private_opc.id, null)
 }
 
-output "op_subnet_private2" {
-  value = try(oci_core_subnet.private2.id, null)
+output "op_subnet_private_bare_metal" {
+  value = try(oci_core_subnet.private_bare_metal.id, null)
 }
 
 output "op_subnet_public" {

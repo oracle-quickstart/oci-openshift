@@ -15,6 +15,7 @@ resource "oci_core_instance" "control_plane_node" {
   fault_domain        = each.value.fault_domain
   display_name        = "${var.cluster_name}-cp-${each.value.index}"
   shape               = var.control_plane_shape
+
   defined_tags = {
     "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_instance_role}"         = "control_plane"
     "${var.openshift_attribution_tag_namespace}.${var.openshift_attribution_tag_key}" = var.openshift_tag_openshift_resource_value
@@ -27,15 +28,15 @@ resource "oci_core_instance" "control_plane_node" {
     nsg_ids = [
       var.op_network_security_group_cluster_controlplane_nsg,
     ]
-    subnet_id  = var.op_subnet_private
-    private_ip = each.value.index == 1 && !(var.is_control_plane_iscsi_type || var.is_compute_iscsi_type) && local.is_abi ? var.rendezvous_ip : ""
+    subnet_id  = var.is_control_plane_iscsi_type ? var.op_subnet_private_bare_metal : var.op_subnet_private_opc
+    private_ip = each.value.index == 1 && !var.is_control_plane_iscsi_type && local.is_abi ? var.rendezvous_ip : ""
   }
 
   source_details {
     source_type             = "image"
     boot_volume_size_in_gbs = var.control_plane_boot_size
     boot_volume_vpus_per_gb = var.control_plane_boot_volume_vpus_per_gb
-    source_id               = var.op_image_openshift_image
+    source_id               = var.is_control_plane_iscsi_type ? var.op_image_openshift_image_native : var.op_image_openshift_image_paravirtualized
   }
 
   dynamic "shape_config" {
@@ -46,9 +47,9 @@ resource "oci_core_instance" "control_plane_node" {
     }
   }
 
-  metadata = var.is_control_plane_iscsi_type || var.is_compute_iscsi_type ? {
-    user_data = base64encode(file("./shared_modules/compute/userdata/iscsi-oci-configure-secondary-nic.sh"))
-  } : null
+  metadata = {
+    user_data = base64encode(file("${path.module}/userdata/iscsi-oci-configure-secondary-nic.sh"))
+  }
 }
 
 # compute nodes
@@ -59,6 +60,7 @@ resource "oci_core_instance" "compute_node" {
   fault_domain        = each.value.fault_domain
   display_name        = "${var.cluster_name}-compute-${each.value.index}"
   shape               = var.compute_shape
+
   defined_tags = {
     "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_instance_role}"         = "compute"
     "${var.openshift_attribution_tag_namespace}.${var.openshift_attribution_tag_key}" = var.openshift_tag_openshift_resource_value
@@ -68,7 +70,7 @@ resource "oci_core_instance" "compute_node" {
     display_name              = "${var.cluster_name}-compute-${each.value.index}"
     assign_private_dns_record = "true"
     assign_public_ip          = "false"
-    subnet_id                 = var.op_subnet_private
+    subnet_id                 = var.is_compute_iscsi_type ? var.op_subnet_private_bare_metal : var.op_subnet_private_opc
     nsg_ids = [
       var.op_network_security_group_cluster_compute_nsg,
     ]
@@ -78,7 +80,7 @@ resource "oci_core_instance" "compute_node" {
     source_type             = "image"
     boot_volume_size_in_gbs = var.compute_boot_size
     boot_volume_vpus_per_gb = var.compute_boot_volume_vpus_per_gb
-    source_id               = var.op_image_openshift_image
+    source_id               = var.is_compute_iscsi_type ? var.op_image_openshift_image_native : var.op_image_openshift_image_paravirtualized
   }
 
   dynamic "shape_config" {
@@ -89,7 +91,7 @@ resource "oci_core_instance" "compute_node" {
     }
   }
 
-  metadata = var.is_compute_iscsi_type ? {
-    user_data = base64encode(file("./shared_modules/compute/userdata/iscsi-oci-configure-secondary-nic.sh"))
-  } : null
+  metadata = {
+    user_data = base64encode(file("${path.module}/userdata/iscsi-oci-configure-secondary-nic.sh"))
+  }
 }
