@@ -5,7 +5,11 @@ variable "tag_namespace_compartment_ocid" {
 
 variable "tag_namespace_name" {
   type        = string
-  description = "Name of tag namespace to create for tagging OpenShift OCI resources. WARNING - Tag namespace name must be unique accross the tenancy."
+  description = "Name of tag namespace to create for tagging OpenShift OCI resources. WARNING - Tag namespace name must be unique accross the tenancy and must begin with openshift-."
+  validation {
+    condition     = var.tag_namespace_name == "" || can(regex("^openshift-", var.tag_namespace_name))
+    error_message = "The tag namespace name must start with 'openshift-'."
+  }
 }
 
 variable "tenancy_ocid" {

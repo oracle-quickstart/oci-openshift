@@ -226,6 +226,10 @@ variable "tag_namespace_name" {
   type        = string
   description = "Name of tag namespace to create or use for tagging OCI resources. Defaults to \"openshift-{cluster_name}\""
   default     = ""
+  validation {
+    condition     = var.tag_namespace_name == "" || can(regex("^openshift-", var.tag_namespace_name))
+    error_message = "The tag namespace name must start with 'openshift-'."
+  }
 }
 
 variable "tag_namespace_compartment_ocid" {
