@@ -3,7 +3,7 @@
 #
 
 title: OpenShift on OCI
-description: Terraform Stack for creating resources required for installing OpenShift on OCI
+description: A Terraform Stack for creating resources required for installing OpenShift on OCI
 schemaVersion: 1.1.0
 version: "20230524"
 locale: "en"
@@ -16,10 +16,14 @@ variableGroups:
   - cluster_name
   - installation_method
   - create_openshift_instances
+  - openshift_image_source_uri
+
+- title: "OpenShift Resource Attribution Tags"
+  variables:
+    - tag_namespace_compartment_ocid_resource_tagging
 
 - title: "Control Plane Node Configuration"
   variables:
-  - openshift_image_source_uri
   - control_plane_shape
   - control_plane_count
   - control_plane_ocpu
@@ -55,16 +59,12 @@ variableGroups:
   - load_balancer_shape_details_maximum_bandwidth_in_mbps
   - load_balancer_shape_details_minimum_bandwidth_in_mbps
 
-- title: "Tagging Configuration"
+- title: "OpenShift Instance Role Tags"
   variables:
   - use_existing_tags
   - tag_namespace_name
   - tag_namespace_compartment_ocid
   - wait_for_new_tag_consistency_wait_time
-
-- title: "OpenShift Resources Attribution Tagging"
-  variables:
-    - tag_namespace_compartment_ocid_resource_tagging
 
 ###########
 # VARIABLES
@@ -120,9 +120,19 @@ variables:
     visible: create_openshift_instances
 
   #
+  # OpenShift Resource Attribution Tag Variables
+  #
+  tag_namespace_compartment_ocid_resource_tagging:
+    type: oci:identity:compartment:id
+    title: Tag Namespace Compartment For OpenShift Resource Attribution Tags
+    description: WARNING - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tags should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
+      If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
+      Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
+    required: true
+
+  #
   # Control Plane Configuration Variables
   #
-
   control_plane_shape:
     type: string
     title: Control Plane Shape
@@ -339,7 +349,7 @@ variables:
     required: true
 
   #
-  # Tagging Configuration Variables
+  # OpenShift Instance Role Tag Variables
   #
   use_existing_tags:
     type: boolean
@@ -351,7 +361,7 @@ variables:
   tag_namespace_name:
     type: string
     title: Tag Namespace Name
-    description: Name of tag namespace to create or reuse for tagging OCI resources. Defaults to openshift-{cluster_name}
+    description: Name of tag namespace to create or reuse for OCI resources tags. Defaults to openshift-{cluster_name}
     default: ""
     required: false
 
@@ -367,12 +377,4 @@ variables:
     title: Tag Consistency Wait Duration
     description: How long the creation process will wait before creating tagged resources while new tags propogate
     default: "900s"
-    required: true
-
-  tag_namespace_compartment_ocid_resource_tagging:
-    type: oci:identity:compartment:id
-    title: Tag Namespace Compartment For OpenShift Resource Attribution Tagging
-    description: WARNING - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tagging should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
-      If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
-      Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
     required: true

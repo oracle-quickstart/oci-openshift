@@ -3,7 +3,7 @@
 #
 
 title: Adding Nodes to OpenShift Cluster on OCI
-description: OpenShift on OCI
+description: A Terraform Stack for creating resources required for adding nodes to OpenShift Cluster on OCI
 schemaVersion: 1.1.0
 version: "20241106"
 locale: "en"
@@ -17,6 +17,10 @@ variableGroups:
     - cluster_name
     - cluster_instance_role_tag_namespace
     - openshift_image_source_uri
+
+- title: "OpenShift Resource Attribution Tags"
+  variables:
+    - tag_namespace_compartment_ocid_resource_tagging
 
 - title: "Control Plane Node Configuration"
   variables:
@@ -40,10 +44,6 @@ variableGroups:
     - compute_boot_volume_vpus_per_gb
     - distribute_compute_instances_across_ads
     - starting_ad_name_compute
-
-- title: "OpenShift Resources Attribution Tagging"
-  variables:
-    - tag_namespace_compartment_ocid_resource_tagging
 
 ###########
 # VARIABLES
@@ -86,9 +86,20 @@ variables:
     type: string
 
   #
+  # OpenShift Resource Attribution Tag Variables
+  #
+  tag_namespace_compartment_ocid_resource_tagging:
+    type: oci:identity:compartment:id
+    title: Tag Namespace Compartment For OpenShift Resource Attribution Tagging
+    description: WARNING - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tagging should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
+      If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
+      Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
+    default: compartment_ocid
+    required: true
+
+  #
   # Control Plane Configuration Variables
   #
-
   control_plane_shape:
     type: string
     title: Control Plane Shape
@@ -224,12 +235,3 @@ variables:
     dependsOn:
       compartmentId: ${compartment_ocid}
     required: false
-
-  tag_namespace_compartment_ocid_resource_tagging:
-    type: oci:identity:compartment:id
-    title: Tag Namespace Compartment For OpenShift Resource Attribution Tagging
-    description: WARNING - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tagging should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
-      If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
-      Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
-    default: compartment_ocid
-    required: true

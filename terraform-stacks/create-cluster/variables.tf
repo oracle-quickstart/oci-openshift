@@ -224,7 +224,7 @@ variable "use_existing_tags" {
 
 variable "tag_namespace_name" {
   type        = string
-  description = "Name of tag namespace to create or use for tagging OCI resources. Defaults to \"openshift-{cluster_name}\""
+  description = "Name of tag namespace to create or use for OCI resources tags. Defaults to \"openshift-{cluster_name}\""
   default     = ""
   validation {
     condition     = var.tag_namespace_name == "" || can(regex("^openshift-", var.tag_namespace_name))
@@ -246,7 +246,7 @@ variable "wait_for_new_tag_consistency_wait_time" {
 
 variable "tag_namespace_compartment_ocid_resource_tagging" {
   type        = string
-  description = "The compartment where the tag namespace for OpenShift Resource Attribution tagging should be created."
+  description = "The compartment where the tag namespace for OpenShift Resource Attribution tags should be created."
 }
 
 variable "starting_ad_name_cp" {
