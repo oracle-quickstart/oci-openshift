@@ -69,8 +69,8 @@ Create the OCI resources for a new OpenShift cluster.
         - Public Security List
     - Subnets
         - "public"
-        - "private"
-        - "private_two"
+        - "private_opc"
+        - "private_bare_metal"
     - NSGs (Network Security Groups)
         - "cluster-lb-nsg"
         - "cluster-controlplane-nsg"
@@ -101,7 +101,7 @@ Create the OCI resources for a new OpenShift cluster.
 
 - **Control Plane**
     - Count: 3
-    - Shape: VM.Standard.E4.Flex
+    - Shape: VM.Standard.E5.Flex
     - OCPU: 4
     - Memory: 16 GB
     - Boot Volume
@@ -109,7 +109,7 @@ Create the OCI resources for a new OpenShift cluster.
         - VPUs/GB: 100
 - **Compute**
     - Count: 3
-    - Shape: VM.Standard.E4.Flex
+    - Shape: VM.Standard.E5.Flex
     - OCPU: 6
     - Memory: 16 GB
     - Boot Volume
@@ -142,7 +142,7 @@ Create the OCI resources for a new OpenShift cluster.
 - **Compute**
     - Count: 0
 
-## create-tags
+## create-instance-role-tags
 
 OCI tagging resources that are used to tag OpenShift cluster OCI resources. The tags are used to identify cluster-specific resources and should not be deleted while in use.
 

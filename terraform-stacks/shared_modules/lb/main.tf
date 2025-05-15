@@ -12,7 +12,7 @@ resource "oci_load_balancer_load_balancer" "openshift_api_int_lb" {
   compartment_id             = var.compartment_ocid
   display_name               = "${var.cluster_name}-openshift_api_int_lb"
   shape                      = "flexible"
-  subnet_ids                 = !var.is_control_plane_iscsi_type && !var.is_compute_iscsi_type ? [var.op_subnet_private] : [var.op_subnet_private2]
+  subnet_ids                 = [var.op_subnet_private_opc]
   is_private                 = true
   network_security_group_ids = [var.op_network_security_group_cluster_lb_nsg]
   shape_details {
@@ -26,7 +26,7 @@ resource "oci_load_balancer_load_balancer" "openshift_api_apps_lb" {
   compartment_id             = var.compartment_ocid
   display_name               = "${var.cluster_name}-openshift_api_apps_lb"
   shape                      = "flexible"
-  subnet_ids                 = var.enable_private_dns ? [var.op_subnet_private] : [var.op_subnet_public]
+  subnet_ids                 = var.enable_private_dns ? [var.op_subnet_private_opc] : [var.op_subnet_public]
   is_private                 = var.enable_private_dns ? true : false
   network_security_group_ids = [var.op_network_security_group_cluster_lb_nsg]
   shape_details {

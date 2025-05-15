@@ -2,14 +2,14 @@
 # Copyright (c) 2019-2020 Oracle and/or its affiliates. All rights reserved.
 #
 
-title: OpenShift on OCI Tagging Resources
-description: Terraform Stack for creating tagging resources
+title: OpenShift on OCI Instance Role Tags
+description: A Terraform Stack for creating OpenShift Instance Role Tags
 schemaVersion: 1.0.0
 version: "20241019"
 locale: "en"
 
 variableGroups:
-- title: "OpenShift Tagging Resources"
+- title: "OpenShift Instance Role Tags"
   variables:
   - tenancy_ocid
   - tag_namespace_name
@@ -29,7 +29,7 @@ variables:
   tag_namespace_name:
     type: string
     title: Tag Namespace Name
-    description: Name of tag namespace to create for tagging OpenShift OCI resources. WARNING - Tag namespace name must be unique accross the tenancy.
+    description: Name of tag namespace to create for OpenShift OCI resources tags. WARNING - Tag namespace name must be unique accross the tenancy and must begin with openshift-.
     default: ""
     required: true
 

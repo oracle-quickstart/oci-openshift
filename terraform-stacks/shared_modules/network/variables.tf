@@ -14,11 +14,11 @@ variable "cluster_name" {
   type = string
 }
 
-variable "private_cidr" {
+variable "private_cidr_opc" {
   type = string
 }
 
-variable "private_cidr_2" {
+variable "private_cidr_bare_metal" {
   type = string
 }
 

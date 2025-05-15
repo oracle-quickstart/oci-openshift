@@ -66,11 +66,11 @@ variable "is_compute_iscsi_type" {
   type = bool
 }
 
-variable "op_subnet_private" {
+variable "op_subnet_private_opc" {
   type = string
 }
 
-variable "op_subnet_private2" {
+variable "op_subnet_private_bare_metal" {
   type = string
 }
 
@@ -86,7 +86,11 @@ variable "op_network_security_group_cluster_compute_nsg" {
   type = string
 }
 
-variable "op_image_openshift_image" {
+variable "op_image_openshift_image_paravirtualized" {
+  type = string
+}
+
+variable "op_image_openshift_image_native" {
   type = string
 }
 

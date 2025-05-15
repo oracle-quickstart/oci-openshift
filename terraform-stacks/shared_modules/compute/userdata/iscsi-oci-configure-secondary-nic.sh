@@ -48,6 +48,18 @@ function get_secondary_if_name_by_prefix {
   return 1
 }
 
+# Ensure OCI DNS is configured on a given network connection
+function set_oci_dns {
+  local conn_name="$1"
+  dns_value=$(nmcli -g ipv4.dns connection show "$conn_name")
+  if [[ -z "$dns_value" || "$dns_value" == "--" ]]; then
+    echo "Setting OCI DNS for $conn_name"
+    nmcli connection modify "$conn_name" ipv4.dns "169.254.169.254"
+    nmcli connection modify "$conn_name" ipv4.ignore-auto-dns no
+    nmcli connection up "$conn_name"
+  fi
+}
+
 # /opc/v2/vnics endpoint returns something that will look like the following
 # structure:
 # [
@@ -101,6 +113,7 @@ if [[ -z "${secondary_if_name}" || "${secondary_if_name}" == "null" ]]; then
         for uuid in $(nmcli -t -f UUID,DEVICE connection show | grep ':--' | cut -d: -f1); do
           nmcli connection delete "$uuid"
         done
+        set_oci_dns "${secondary_if_name}.${secondary_if_vlan_tag}"
     fi
   else
     # Create a standard Ethernet connection if VLAN_ID is 0
@@ -111,6 +124,7 @@ if [[ -z "${secondary_if_name}" || "${secondary_if_name}" == "null" ]]; then
       nmcli connection modify "${secondary_if_name}" connection.autoconnect true
       nmcli connection reload
       nmcli connection up "${secondary_if_name}"
+      set_oci_dns "${secondary_if_name}"
     fi
   fi
 else
@@ -122,6 +136,7 @@ else
     nmcli connection modify "${secondary_if_name}" connection.autoconnect true
     nmcli connection reload
     nmcli connection up "${secondary_if_name}"
+    set_oci_dns "${secondary_if_name}"
   fi
 fi
 

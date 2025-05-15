@@ -10,9 +10,9 @@ variable "control_plane_count" {
 }
 
 variable "control_plane_shape" {
-  default     = "VM.Standard.E4.Flex"
+  default     = "VM.Standard.E5.Flex"
   type        = string
-  description = "Compute shape of the control_plane nodes. The default shape is VM.Standard.E4.Flex for VM setup and BM.Standard3.64 for BM setup. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes"
+  description = "Compute shape of the control_plane nodes. The default shape is VM.Standard.E5.Flex for VM setup and BM.Standard3.64 for BM setup. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes"
 }
 
 variable "control_plane_ocpu" {
@@ -66,7 +66,7 @@ variable "compute_count" {
 }
 
 variable "compute_shape" {
-  default     = "VM.Standard.E4.Flex"
+  default     = "VM.Standard.E5.Flex"
   type        = string
   description = "Compute shape of the compute nodes. The default shape is BM.Standard3.64. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes"
 }
@@ -170,13 +170,13 @@ variable "vcn_dns_label" {
   }
 }
 
-variable "private_cidr" {
+variable "private_cidr_opc" {
   default     = "10.0.16.0/20"
   type        = string
   description = "The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.16.0/20. "
 }
 
-variable "private_cidr_2" {
+variable "private_cidr_bare_metal" {
   default     = "10.0.32.0/20"
   type        = string
   description = "The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.32.0/20."
@@ -224,8 +224,12 @@ variable "use_existing_tags" {
 
 variable "tag_namespace_name" {
   type        = string
-  description = "Name of tag namespace to create or use for tagging OCI resources. Defaults to \"openshift-{cluster_name}\""
+  description = "Name of tag namespace to create or use for OCI resources tags. Defaults to \"openshift-{cluster_name}\""
   default     = ""
+  validation {
+    condition     = var.tag_namespace_name == "" || can(regex("^openshift-", var.tag_namespace_name))
+    error_message = "The tag namespace name must start with 'openshift-'."
+  }
 }
 
 variable "tag_namespace_compartment_ocid" {
@@ -242,7 +246,7 @@ variable "wait_for_new_tag_consistency_wait_time" {
 
 variable "tag_namespace_compartment_ocid_resource_tagging" {
   type        = string
-  description = "The compartment where the tag namespace for OpenShift Resource Attribution tagging should be created."
+  description = "The compartment where the tag namespace for OpenShift Resource Attribution tags should be created."
 }
 
 variable "starting_ad_name_cp" {
