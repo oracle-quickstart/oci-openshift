@@ -272,3 +272,15 @@ variable "distribute_compute_instances_across_ads" {
   type        = bool
   default     = true
 }
+
+variable "distribute_cp_instances_across_fds" {
+  description = "Whether control-plane instances should be distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will select one for you based on shape availability."
+  type        = bool
+  default     = true
+}
+
+variable "distribute_compute_instances_across_fds" {
+  description = "Whether compute instances should be distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will select one for you based on shape availability."
+  type        = bool
+  default     = true
+}

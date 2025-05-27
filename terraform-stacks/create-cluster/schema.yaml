@@ -32,6 +32,7 @@ variableGroups:
   - control_plane_boot_volume_vpus_per_gb
   - distribute_cp_instances_across_ads
   - starting_ad_name_cp
+  - distribute_cp_instances_across_fds
   visible: create_openshift_instances
 
 - title: "Compute Node Configuration"
@@ -44,6 +45,7 @@ variableGroups:
   - compute_boot_volume_vpus_per_gb
   - distribute_compute_instances_across_ads
   - starting_ad_name_compute
+  - distribute_compute_instances_across_fds
   visible: create_openshift_instances
 
 - title: "Networking Configuration"
@@ -199,6 +201,13 @@ variables:
       compartmentId: ${compartment_ocid}
     required: false
 
+  distribute_cp_instances_across_fds:
+    type: boolean
+    title: Distribute Control Plane Instances Across FDs
+    description: Select the checkbox to have control-plane instances distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will distribute them for you based on shape availability and other criteria.
+    default: true
+    required: true
+
   #
   # Compute Configuration Variables
   #
@@ -267,6 +276,13 @@ variables:
     dependsOn:
       compartmentId: ${compartment_ocid}
     required: false
+
+  distribute_compute_instances_across_fds:
+    type: boolean
+    title: Distribute Compute Instances Across FDs
+    description: Select the checkbox to have compute instances distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will distribute them for you based on shape availability and other criteria.
+    default: true
+    required: true
 
   #
   # Networking Configuration Variables

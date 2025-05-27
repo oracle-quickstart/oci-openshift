@@ -83,6 +83,9 @@ module "compute" {
   compute_memory                  = var.compute_memory
   compute_ocpu                    = var.compute_ocpu
 
+  distribute_cp_instances_across_fds      = var.distribute_cp_instances_across_fds
+  distribute_compute_instances_across_fds = var.distribute_compute_instances_across_fds
+
   // Dependency on AD placement
   cp_node_map      = module.meta.cp_node_map
   compute_node_map = module.meta.compute_node_map

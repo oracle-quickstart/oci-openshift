@@ -12,7 +12,7 @@ resource "oci_core_instance" "control_plane_node" {
   for_each            = var.create_openshift_instances ? var.cp_node_map : {}
   compartment_id      = var.compartment_ocid
   availability_domain = each.value.ad_name
-  fault_domain        = each.value.fault_domain
+  fault_domain        = var.distribute_cp_instances_across_fds ? each.value.fault_domain : null
   display_name        = "${var.cluster_name}-cp-${each.value.index}"
   shape               = var.control_plane_shape
 
@@ -57,7 +57,7 @@ resource "oci_core_instance" "compute_node" {
   for_each            = var.create_openshift_instances ? var.compute_node_map : {}
   compartment_id      = var.compartment_ocid
   availability_domain = each.value.ad_name
-  fault_domain        = each.value.fault_domain
+  fault_domain        = var.distribute_compute_instances_across_fds ? each.value.fault_domain : null
   display_name        = "${var.cluster_name}-compute-${each.value.index}"
   shape               = var.compute_shape
 
