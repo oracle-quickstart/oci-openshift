@@ -170,7 +170,7 @@ variable "vcn_dns_label" {
   }
 }
 
-variable "private_cidr_opc" {
+variable "private_cidr_ocp" {
   default     = "10.0.16.0/20"
   type        = string
   description = "The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.16.0/20. "
@@ -194,9 +194,28 @@ variable "openshift_image_source_uri" {
   default     = "TODO"
 }
 
-variable "enable_private_dns" {
+# while a nice to have, we'd also have to modify other parts of the Deployment resource depending on the version like args, and we'd have to track those pieces here unless we want to have versioned files...
+# something to think about maybe
+# variable "ccm_csi_driver_image" {
+#   type = string
+#   default = "phx.ocir.io/axkcy3juscqn/openshift-ccm-csi:beta-v1"
+# }
+
+variable "create_public_dns" {
   type        = bool
-  description = "If the switch is enabled, a private DNS zone will be created, and users should edit the /etc/hosts file for resolution. Otherwise, a public DNS zone will be created based on the given domain."
+  description = "If enabled, a public DNS zone will be created."
+  default     = true
+}
+
+variable "enable_public_lb" {
+  type        = bool
+  description = "If enabled, the api_apps load balancer will be created with a public IP. Otherwise, they will be created in the private_ocp subnet and be accessible only within the VCN."
+  default     = true
+}
+
+variable "create_private_dns" {
+  type        = bool
+  description = "If enabled, a private DNS zone will be created."
   default     = false
 }
 

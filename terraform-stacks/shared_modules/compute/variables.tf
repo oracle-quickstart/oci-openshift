@@ -66,7 +66,7 @@ variable "is_compute_iscsi_type" {
   type = bool
 }
 
-variable "op_subnet_private_opc" {
+variable "op_subnet_private_ocp" {
   type = string
 }
 

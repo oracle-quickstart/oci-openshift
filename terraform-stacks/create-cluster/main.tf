@@ -90,7 +90,7 @@ module "network" {
   cluster_name     = var.cluster_name
 
   vcn_cidr                = var.vcn_cidr
-  private_cidr_opc        = var.private_cidr_opc
+  private_cidr_ocp        = var.private_cidr_ocp
   private_cidr_bare_metal = var.private_cidr_bare_metal
   public_cidr             = var.public_cidr
   vcn_dns_label           = var.vcn_dns_label
@@ -105,7 +105,8 @@ module "load_balancer" {
   compartment_ocid = var.compartment_ocid
   cluster_name     = var.cluster_name
 
-  enable_private_dns                                    = var.enable_private_dns
+  enable_public_lb = var.enable_public_lb
+
   load_balancer_shape_details_maximum_bandwidth_in_mbps = var.load_balancer_shape_details_maximum_bandwidth_in_mbps
   load_balancer_shape_details_minimum_bandwidth_in_mbps = var.load_balancer_shape_details_minimum_bandwidth_in_mbps
 
@@ -113,7 +114,7 @@ module "load_balancer" {
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
 
   // Depedency on networks
-  op_subnet_private_opc                    = module.network.op_subnet_private_opc
+  op_subnet_private_ocp                    = module.network.op_subnet_private_ocp
   op_subnet_public                         = module.network.op_subnet_public
   op_network_security_group_cluster_lb_nsg = module.network.op_network_security_group_cluster_lb_nsg
 }
@@ -159,7 +160,7 @@ module "compute" {
   op_image_openshift_image_paravirtualized = module.image.op_image_openshift_image_paravirtualized
 
   // Depedency on networks
-  op_subnet_private_opc                              = module.network.op_subnet_private_opc
+  op_subnet_private_ocp                              = module.network.op_subnet_private_ocp
   op_subnet_private_bare_metal                       = module.network.op_subnet_private_bare_metal
   op_network_security_group_cluster_controlplane_nsg = module.network.op_network_security_group_cluster_controlplane_nsg
   op_network_security_group_cluster_compute_nsg      = module.network.op_network_security_group_cluster_compute_nsg
@@ -182,7 +183,8 @@ module "dns" {
   depends_on = [module.network.op_wait_for_vcn_creation]
 
   zone_dns           = var.zone_dns
-  enable_private_dns = var.enable_private_dns
+  create_public_dns  = var.create_public_dns
+  create_private_dns = var.create_private_dns
   compartment_ocid   = var.compartment_ocid
   cluster_name       = var.cluster_name
 

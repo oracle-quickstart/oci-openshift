@@ -50,12 +50,14 @@ variableGroups:
 
 - title: "Networking Configuration"
   variables:
-  - enable_private_dns
+  - create_public_dns
+  - enable_public_lb
+  - create_private_dns
   - zone_dns
   - vcn_dns_label
   - vcn_cidr
   - public_cidr
-  - private_cidr_opc
+  - private_cidr_ocp
   - private_cidr_bare_metal
   - rendezvous_ip
   - load_balancer_shape_details_maximum_bandwidth_in_mbps
@@ -287,10 +289,22 @@ variables:
   #
   # Networking Configuration Variables
   #
-  enable_private_dns:
+  create_public_dns:
     type: boolean
-    title: Enable Private DNS
-    description: If the switch is enabled, a private DNS zone will be created, and users should edit the /etc/hosts file for resolution. Otherwise, a public DNS zone will be created based on the given domain.
+    title: Public DNS
+    description: Create a public DNS zone with your Base domain specified in Zone DNS. If this is not created, it is advised that you create a private DNS zone unless you are bringing your own DNS solution. To resolve cluster hostnames without DNS, users should add entries to /etc/hosts mapping the cluster hostnames to the IP address of the api_apps Load Balancer. The etc_hosts_entry output can be used for this purpose.
+    default: true
+
+  enable_public_lb:
+    type: boolean
+    title: Public Load Balancer
+    description: Create the api_apps Load Balancer in the public subnet and assign it a public IP address. If the api_apps Load Balancer is private, then it will be created in the private subnet with a private IP address that will be accessible only from within the VCN. Also, when creating a cluster in an on-premise environment (C3/PCA), a "public" Load Balancer IP address might pulled from a pool of RFC 1918 IP addresses. These are still considered public IPs from within your on-premise network, but they will otherwise be inaccessible from the wider internet. Speak to your network administrator if necessary to get access to your cluster in these scenarios.
+    default: true
+
+  create_private_dns:
+    type: boolean
+    title: Private DNS
+    description: Create a private DNS zone with your Base domain specified in Zone DNS. It will contain the same records as a public DNS zone and will facilitate the cluster's hostname resolution within the VCN. If using an unregistered domain name as the Base domain for your cluster, you should create a private DNS zone if possible, or you will have to take other measures to help the instances resolve the cluster's hostname. For more details regarding Oracle Private DNS, please visit https://docs.oracle.com/en-us/iaas/Content/DNS/Tasks/privatedns.htm
     default: false
 
   zone_dns:
@@ -321,9 +335,9 @@ variables:
     default: "10.0.0.0/20"
     required: true
 
-  private_cidr_opc:
+  private_cidr_ocp:
     type: string
-    title: Private Subnet CIDR for OPC
+    title: Private Subnet CIDR for OCP
     description: The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.16.0/20.
     default: "10.0.16.0/20"
     required: true

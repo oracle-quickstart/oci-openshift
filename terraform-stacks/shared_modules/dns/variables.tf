@@ -2,7 +2,10 @@ variable "zone_dns" {
   type = string
 }
 
-variable "enable_private_dns" {
+variable "create_public_dns" {
+  type = bool
+}
+variable "create_private_dns" {
   type = bool
 }
 

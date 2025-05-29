@@ -18,6 +18,10 @@ output "dynamic_custom_manifest" {
   value = module.manifests.dynamic_custom_manifest
 }
 
+output "etc_hosts_entry" {
+  value = "${module.load_balancer.op_lb_openshift_api_apps_lb_ip_addr}  api.${var.cluster_name}.${var.zone_dns} console-openshift-console.apps.${var.cluster_name}.${var.zone_dns} oauth-openshift.apps.${var.cluster_name}.${var.zone_dns}"
+}
+
 output "stack_version" {
   value = local.stack_version
 }

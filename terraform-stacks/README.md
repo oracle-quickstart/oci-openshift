@@ -68,9 +68,10 @@ Create the OCI resources for a new OpenShift cluster.
         - Private Security List
         - Public Security List
     - Subnets
-        - "public"
-        - "private_opc"
-        - "private_bare_metal"
+        - Private Subnet
+            - Private Subnet for OCP
+            - Private Subnet for Bare Metal
+        - Public Subnet
     - NSGs (Network Security Groups)
         - "cluster-lb-nsg"
         - "cluster-controlplane-nsg"

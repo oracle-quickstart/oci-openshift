@@ -100,7 +100,7 @@ module "compute" {
   op_image_openshift_image_native          = module.image.op_image_openshift_image_native
 
   // Depedency on networks
-  op_subnet_private_opc                              = data.oci_core_subnets.private_opc.subnets[0].id
+  op_subnet_private_ocp                              = data.oci_core_subnets.private_ocp.subnets[0].id
   op_subnet_private_bare_metal                       = data.oci_core_subnets.private_bare_metal.subnets[0].id
   op_network_security_group_cluster_controlplane_nsg = data.oci_core_network_security_groups.cluster_controlplane_nsg.network_security_groups[0].id
   op_network_security_group_cluster_compute_nsg      = data.oci_core_network_security_groups.cluster_compute_nsg.network_security_groups[0].id

@@ -14,7 +14,7 @@ variable "cluster_name" {
   type = string
 }
 
-variable "private_cidr_opc" {
+variable "private_cidr_ocp" {
   type = string
 }
 

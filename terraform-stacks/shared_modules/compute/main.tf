@@ -28,7 +28,7 @@ resource "oci_core_instance" "control_plane_node" {
     nsg_ids = [
       var.op_network_security_group_cluster_controlplane_nsg,
     ]
-    subnet_id  = var.is_control_plane_iscsi_type ? var.op_subnet_private_bare_metal : var.op_subnet_private_opc
+    subnet_id  = var.is_control_plane_iscsi_type ? var.op_subnet_private_bare_metal : var.op_subnet_private_ocp
     private_ip = each.value.index == 1 && !var.is_control_plane_iscsi_type && local.is_abi ? var.rendezvous_ip : ""
   }
 
@@ -70,7 +70,7 @@ resource "oci_core_instance" "compute_node" {
     display_name              = "${var.cluster_name}-compute-${each.value.index}"
     assign_private_dns_record = "true"
     assign_public_ip          = "false"
-    subnet_id                 = var.is_compute_iscsi_type ? var.op_subnet_private_bare_metal : var.op_subnet_private_opc
+    subnet_id                 = var.is_compute_iscsi_type ? var.op_subnet_private_bare_metal : var.op_subnet_private_ocp
     nsg_ids = [
       var.op_network_security_group_cluster_compute_nsg,
     ]
