@@ -22,7 +22,11 @@ variable "op_lb_openshift_api_int_lb_ip_addr" {
   type = string
 }
 
-variable "op_lb_openshift_api_apps_lb_ip_addr" {
+variable "op_lb_openshift_api_lb_ip_addr" {
+  type = string
+}
+
+variable "op_lb_openshift_apps_lb_ip_addr" {
   type = string
 }
 
