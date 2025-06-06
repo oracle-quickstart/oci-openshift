@@ -31,6 +31,7 @@ zip: version checksums
 			cd $$stack ; \
 			echo "Building $$stack-${PKG_VERSION}.zip" ; \
 			zip -FS -r -q ../../dist/$$stack-${PKG_VERSION}.zip * -x **/.terraform/\* -x \.* ; \
+			zip -FS -r -q ../../dist/$$stack.zip * -x **/.terraform/\* -x \.* ; \
 			cd .. ; \
 		fi ; \
 	done
