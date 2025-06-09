@@ -40,7 +40,7 @@ module "tags" {
   tag_namespace_compartment_ocid         = var.tag_namespace_compartment_ocid
   tag_namespace_name                     = var.tag_namespace_name
   cluster_name                           = var.cluster_name
-  wait_for_new_tag_consistency_wait_time = var.wait_for_new_tag_consistency_wait_time
+  wait_for_new_tag_consistency_wait_time = local.wait_for_new_tag_consistency_wait_time
 }
 
 module "iam" {
@@ -203,7 +203,8 @@ module "dns" {
 module "manifests" {
   source = "./shared_modules/manifest"
 
-  compartment_ocid = var.compartment_ocid
+  compartment_ocid   = var.compartment_ocid
+  oci_driver_version = var.oci_driver_version
 
   // Depedency on networks
   op_vcn_openshift_vcn = module.network.op_vcn_openshift_vcn

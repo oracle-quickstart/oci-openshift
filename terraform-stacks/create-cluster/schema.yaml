@@ -4,8 +4,8 @@
 
 title: OpenShift on OCI
 description: A Terraform Stack for creating resources required for installing OpenShift on OCI
-schemaVersion: 1.1.0
-version: "20230524"
+schemaVersion: 1.2.0
+version: "20250602"
 locale: "en"
 
 variableGroups:
@@ -63,12 +63,12 @@ variableGroups:
   - load_balancer_shape_details_maximum_bandwidth_in_mbps
   - load_balancer_shape_details_minimum_bandwidth_in_mbps
 
-- title: "OpenShift Instance Role Tags"
+- title: "Advanced Configurations"
   variables:
-  - use_existing_tags
-  - tag_namespace_name
-  - tag_namespace_compartment_ocid
-  - wait_for_new_tag_consistency_wait_time
+    - oci_driver_version
+    - use_existing_tags
+    - tag_namespace_name
+    - tag_namespace_compartment_ocid
 
 ###########
 # VARIABLES
@@ -79,7 +79,7 @@ variables:
   #
   cluster_name:
     title: Cluster Name
-    description: The name of your OpenShift cluster. It should be the same as what was specified when creating the OpenShift ISO and it should be DNS compatible. The cluster_name value must be 1-54 characters. It can use lowercase alphanumeric characters or hyphen (-), but must start and end with a lowercase letter or a number.
+    description: <strong><em>(Required)</em></strong> - The name of your OpenShift cluster. It should be the same as what was specified when creating the OpenShift ISO and it should be DNS compatible. The cluster_name value must be 1-54 characters. It can use lowercase alphanumeric characters or hyphen (-), but must start and end with a lowercase letter or a number.
     type: string
     default: ""
     pattern: "^[a-z0-9-]{1,54}$"
@@ -118,7 +118,7 @@ variables:
   openshift_image_source_uri:
     type: string
     title: OpenShift Image Source URI
-    description: The OCI Object Storage URI for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a pre-authenticated requests (PAR) uri, and paste the uri to this block. For more detail regarding Object storage and PAR, please visit https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/objectstorageoverview.htm and https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/usingpreauthenticatedrequests.htm .
+    description: <strong><em>(Required)</em></strong> - The OCI Object Storage URI for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a pre-authenticated requests (PAR) uri, and paste the uri to this block. For more details, review <a href='https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/objectstorageoverview.htm'>Object Storage</a> and <a href='https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/usingpreauthenticatedrequests.htm'>PARs</a>.
     default: ""
     required: true
     visible: create_openshift_instances
@@ -129,7 +129,7 @@ variables:
   tag_namespace_compartment_ocid_resource_tagging:
     type: oci:identity:compartment:id
     title: Tag Namespace Compartment For OpenShift Resource Attribution Tags
-    description: WARNING - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tags should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
+    description: <strong><em>(Required)</em></strong> - <strong>WARNING</strong> - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tags should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
       If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
       Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
     required: true
@@ -140,7 +140,7 @@ variables:
   control_plane_shape:
     type: string
     title: Control Plane Shape
-    description: Compute Instance shape of control plan nodes. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes
+    description: Compute Instance shape of control plan nodes. For more details, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>
     default: "VM.Standard.E5.Flex"
     required: true
 
@@ -216,7 +216,7 @@ variables:
   compute_shape:
     type: string
     title: Compute Shape
-    description: Compute Instance shape of compute nodes. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes
+    description: Compute Instance shape of compute nodes. For more details, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>
     default: "VM.Standard.E5.Flex"
     required: true
 
@@ -304,13 +304,13 @@ variables:
   create_private_dns:
     type: boolean
     title: Private DNS
-    description: Create a private DNS zone with your Base domain specified in Zone DNS. It will contain the same records as a public DNS zone and will facilitate the cluster's hostname resolution within the VCN. If using an unregistered domain name as the Base domain for your cluster, you should create a private DNS zone if possible, or you will have to take other measures to help the instances resolve the cluster's hostname. For more details regarding Oracle Private DNS, please visit https://docs.oracle.com/en-us/iaas/Content/DNS/Tasks/privatedns.htm
+    description: Create a private DNS zone with your Base domain specified in Zone DNS. It will contain the same records as a public DNS zone and will facilitate the cluster's hostname resolution within the VCN. If using an unregistered domain name as the Base domain for your cluster, you should create a private DNS zone if possible, or you will have to take other measures to help the instances resolve the cluster's hostname. For more details, review <a href='https://docs.oracle.com/en-us/iaas/Content/DNS/Tasks/privatedns.htm'>Oracle Private DNS</a>
     default: false
 
   zone_dns:
     type: string
     title: Zone DNS
-    description: The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation. The zone_dns value must be a valid hostname.
+    description: <strong><em>(Required)</em></strong> - The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation. The zone_dns value must be a valid hostname.
     default: ""
     required: true
 
@@ -379,32 +379,38 @@ variables:
     required: true
 
   #
-  # OpenShift Instance Role Tag Variables
+  # Advanced configurations
   #
+  oci_driver_version:
+    type: enum
+    title: OCI CCM and CSI Driver Version
+    description: "Select what version of the OCI CCM and CSI driver to deploy."
+    enum:
+    - v1.25.0
+    - v1.30.0
+    - v1.30.0-RWX-LA
+    default: v1.30.0
+    required: true
+
   use_existing_tags:
     type: boolean
-    title: Use Existing Tagging Resources
-    description: Indicates whether to reuse existing tag namespace and defined tags when tagging OCI resources. Tag namespace and defined tags are preserved when the stack is destroyed if reuse_tags is set to true. WARNING - Stack creation will fail if specifed tag namespace and defined tags do not exist as specified. Create stack with reuse_tags set to false to create tagging resources that are destroyed when the cluster is, or use the terraform from oci-openshift/tagging-resources to create tagging resources seperately. It's recommended you do not change this flag after cluster creation to preserve terraform state consistency.
+    title: Use Existing Instance Role Tags
+    description: Indicates whether to reuse existing instance role tag namespace and defined tags when tagging OCI resources. By default, a new set of instance role tagging resources are created and destroyed with the rest of the cluster resources. If desired, create instance role tag resources seperately that can be reused with the the terraform from <a href='https://github.com/oracle-quickstart/oci-openshift/tree/main/terraform-stacks/create-instance-role-tags'>oci-openshift/terraform-stacks/create-instance-role-tags</a>. Existing instance role tagging resources will not be destroyed when the cluster is.
     default: false
     required: true
 
   tag_namespace_name:
     type: string
-    title: Tag Namespace Name
-    description: Name of tag namespace to create or reuse for OCI resources tags. Defaults to openshift-{cluster_name}
+    title: Instance Role Tag Namespace Name
+    description: Name of the instance role tag namespace to reuse. Defaults to openshift-{cluster_name} if unspecified.
     default: ""
     required: false
+    visible: use_existing_tags
 
   tag_namespace_compartment_ocid:
     type: oci:identity:compartment:id
-    title: Tag Namespace Compartment OCID
-    description: Compartment containing tag namespace. Defaults to current compartment
+    title: Instance Role Tag Namespace Compartment OCID
+    description: Compartment containing existing instance role tag namespace. Defaults to current compartment.
     default: compartment_ocid
     required: true
-
-  wait_for_new_tag_consistency_wait_time:
-    type: string
-    title: Tag Consistency Wait Duration
-    description: How long the creation process will wait before creating tagged resources while new tags propogate
-    default: "900s"
-    required: true
+    visible: use_existing_tags

@@ -194,12 +194,10 @@ variable "openshift_image_source_uri" {
   default     = "TODO"
 }
 
-# while a nice to have, we'd also have to modify other parts of the Deployment resource depending on the version like args, and we'd have to track those pieces here unless we want to have versioned files...
-# something to think about maybe
-# variable "ccm_csi_driver_image" {
-#   type = string
-#   default = "phx.ocir.io/axkcy3juscqn/openshift-ccm-csi:beta-v1"
-# }
+variable "oci_driver_version" {
+  type    = string
+  default = "v1.30.0"
+}
 
 variable "create_public_dns" {
   type        = bool
@@ -255,12 +253,6 @@ variable "tag_namespace_compartment_ocid" {
   type        = string
   description = "Compartment containing tag namespace. Defaults to current compartment."
   default     = ""
-}
-
-variable "wait_for_new_tag_consistency_wait_time" {
-  type        = string
-  description = "Describes how long resource creation will be paused to allow for newly created tagging resources to reach consistency."
-  default     = "900s"
 }
 
 variable "tag_namespace_compartment_ocid_resource_tagging" {
