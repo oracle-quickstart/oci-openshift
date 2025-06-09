@@ -163,7 +163,8 @@ module "compute" {
 
   // Depedency on loadbalancer
   op_lb_openshift_api_int_lb                           = module.load_balancer.op_lb_openshift_api_int_lb
-  op_lb_openshift_api_apps_lb                          = module.load_balancer.op_lb_openshift_api_apps_lb
+  op_lb_openshift_api_lb                               = module.load_balancer.op_lb_openshift_api_lb
+  op_lb_openshift_apps_lb                              = module.load_balancer.op_lb_openshift_apps_lb
   op_lb_bs_openshift_cluster_api_backend_set_external  = module.load_balancer.op_lb_bs_openshift_cluster_api_backend_set_external
   op_lb_bs_openshift_cluster_ingress_http_backend_set  = module.load_balancer.op_lb_bs_openshift_cluster_ingress_http_backend_set
   op_lb_bs_openshift_cluster_ingress_https_backend_set = module.load_balancer.op_lb_bs_openshift_cluster_ingress_https_backend_set
@@ -186,8 +187,9 @@ module "dns" {
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
 
   // Depedency on load balancer
-  op_lb_openshift_api_int_lb_ip_addr  = module.load_balancer.op_lb_openshift_api_int_lb_ip_addr
-  op_lb_openshift_api_apps_lb_ip_addr = module.load_balancer.op_lb_openshift_api_apps_lb_ip_addr
+  op_lb_openshift_api_int_lb_ip_addr = module.load_balancer.op_lb_openshift_api_int_lb_ip_addr
+  op_lb_openshift_api_lb_ip_addr     = module.load_balancer.op_lb_openshift_api_lb_ip_addr
+  op_lb_openshift_apps_lb_ip_addr    = module.load_balancer.op_lb_openshift_apps_lb_ip_addr
 
   // Depedency on networks
   op_vcn_openshift_vcn = module.network.op_vcn_openshift_vcn

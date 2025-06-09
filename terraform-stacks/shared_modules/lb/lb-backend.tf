@@ -9,14 +9,14 @@ resource "oci_load_balancer_backend_set" "openshift_cluster_api_backend_set_exte
     retries           = 3
   }
   name             = "openshift_cluster_api_backend"
-  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_lb.id
   policy           = "LEAST_CONNECTIONS"
 }
 
 resource "oci_load_balancer_listener" "openshift_cluster_api_listener_external" {
   default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_api_backend_set_external.name
   name                     = "openshift_cluster_api_listener"
-  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_lb.id
   port                     = 6443
   protocol                 = "TCP"
 }
@@ -30,14 +30,14 @@ resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_http_backend
     retries           = 3
   }
   name             = "openshift_cluster_ingress_http"
-  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_apps_lb.id
   policy           = "LEAST_CONNECTIONS"
 }
 
 resource "oci_load_balancer_listener" "openshift_cluster_ingress_http" {
   default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_http_backend_set.name
   name                     = "openshift_cluster_ingress_http"
-  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_apps_lb.id
   port                     = 80
   protocol                 = "TCP"
 }
@@ -51,14 +51,14 @@ resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_https_backen
     retries           = 3
   }
   name             = "openshift_cluster_ingress_https"
-  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_apps_lb.id
   policy           = "LEAST_CONNECTIONS"
 }
 
 resource "oci_load_balancer_listener" "openshift_cluster_ingress_https" {
   default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_ingress_https_backend_set.name
   name                     = "openshift_cluster_ingress_https"
-  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_apps_lb.id
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_apps_lb.id
   port                     = 443
   protocol                 = "TCP"
 }
