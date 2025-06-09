@@ -187,9 +187,9 @@ module "dns" {
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
 
   // Depedency on load balancer
-  op_lb_openshift_api_int_lb_ip_addr  = module.load_balancer.op_lb_openshift_api_int_lb_ip_addr
-  op_lb_openshift_api_lb_ip_addr = module.load_balancer.op_lb_openshift_api_lb_ip_addr
-  op_lb_openshift_apps_lb_ip_addr = module.load_balancer.op_lb_openshift_apps_lb_ip_addr
+  op_lb_openshift_api_int_lb_ip_addr = module.load_balancer.op_lb_openshift_api_int_lb_ip_addr
+  op_lb_openshift_api_lb_ip_addr     = module.load_balancer.op_lb_openshift_api_lb_ip_addr
+  op_lb_openshift_apps_lb_ip_addr    = module.load_balancer.op_lb_openshift_apps_lb_ip_addr
 
   // Depedency on networks
   op_vcn_openshift_vcn = module.network.op_vcn_openshift_vcn

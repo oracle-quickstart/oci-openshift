@@ -105,7 +105,7 @@ module "compute" {
   // Depedency on loadbalancer
   op_lb_openshift_api_int_lb                           = data.oci_load_balancer_load_balancers.openshift_api_int_lb.load_balancers[0].id
   op_lb_openshift_api_lb                               = data.oci_load_balancer_load_balancers.openshift_api_lb.load_balancers[0].id
-  op_lb_openshift_apps_lb                               = data.oci_load_balancer_load_balancers.openshift_apps_lb.load_balancers[0].id
+  op_lb_openshift_apps_lb                              = data.oci_load_balancer_load_balancers.openshift_apps_lb.load_balancers[0].id
   op_lb_bs_openshift_cluster_api_backend_set_external  = "openshift_cluster_api_backend"
   op_lb_bs_openshift_cluster_ingress_http_backend_set  = "openshift_cluster_ingress_http"
   op_lb_bs_openshift_cluster_ingress_https_backend_set = "openshift_cluster_ingress_https"
