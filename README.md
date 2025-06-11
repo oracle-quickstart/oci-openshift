@@ -1,6 +1,5 @@
 # OpenShift on OCI (OSO)
 
-<<<<<<< HEAD
 This repository provides the tools and configuration needed to deploy and manage Red Hat OpenShift Container Platform clusters on Oracle Cloud Infrastructure (OCI). It includes:
 * [Terraform stacks](/terraform-stacks/README.md) for provisioning the required OCI infrastructure.
 * OpenShift and Kubernetes [manifest files](/custom_manifests/README.md) for installing and configuring clusters.
@@ -8,13 +7,11 @@ This repository provides the tools and configuration needed to deploy and manage
 ## Overview
 
 Installing OpenShift clusters on OCI involves two main stages:
-=======
 This repository provides the tools and configuration you need to deploy and manage Red Hat OpenShift Container Platform clusters on Oracle Cloud Infrastructure (OCI). It contains the [Terraform stacks](/terraform-stacks/README.md) for provisioning infrastructure and OpenShift and Kubernetes [manifest files](/custom_manifests/README.md) for installating and configuring your clusters
 
 ## Getting Started
 
 Follow these high-level steps to get started with OpenShift Container Platform on OCI.
->>>>>>> 42d4057 (Readme edits)
 
 **1. Provisioning Infrastructure**
 
