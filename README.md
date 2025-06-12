@@ -64,3 +64,21 @@ Before you begin, ensure you have:
 **Red Hat Documentation**
 - [Installing a cluster on Oracle Cloud Infrastructure (OCI) by using the Assisted Installer](https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-assisted-installer.html)
 - [Installing a cluster on Oracle Cloud Infrastructure (OCI) by using the Agent-based Installer](https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-agent-based-installer.html)
+- [OSO Overview](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm)
+- [Connected deployments using Assisted Installer](https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-assisted-installer.html)
+- [Disconnected or air gapped deployments using Agent-based Installer](https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-agent-based-installer.html)
+
+## Contributing
+
+This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md)
+
+## Security
+
+Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
+
+## License
+
+Copyright (c) 2022 Oracle and/or its affiliates.
+
+Released under the Universal Permissive License v1.0 as shown at
+<https://oss.oracle.com/licenses/upl/>.
