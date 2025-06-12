@@ -14,7 +14,7 @@ Before installing OpenShift clusters, you must set up the required OCI infrastru
 
 * **Using Terraform:** Create OCI resources using the Terraform stack provided in this repo or available via the OCI Console. This method is recommended for connected environments.
 
-* **Manual Provisioning:** Manually create the resources using OCI Console and CLI. Use this method for disconnected or air-gapped environment, or if you can't use the OCI-provided Terraform due to policy restrictions.
+* **Manual Provisioning:** Manually create the resources using OCI Console and CLI. Use this method for disconnected or air-gapped environments, or if you can't use the OCI-provided Terraform due to policy restrictions.
 
 **2. Installing and Configuring Cluster**
 
@@ -59,8 +59,8 @@ Before you begin, ensure you have:
 
 ## Reference
 **Oracle Documentation**
-- [Overview of OpenShift Container Platform on OCI (Oracle documentation)](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm)
+- [Overview of OpenShift Container Platform on OCI](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm)
 
 **Red Hat Documentation**
-- [Installing a cluster on Oracle Cloud Infrastructure (OCI) by using the Assisted Installer (Red Hat documentation)](https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-assisted-installer.html)
-- [Installing a cluster on Oracle Cloud Infrastructure (OCI) by using the Agent-based Installer (Red Hat documentation)](https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-agent-based-installer.html)
+- [Installing a cluster on Oracle Cloud Infrastructure (OCI) by using the Assisted Installer](https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-assisted-installer.html)
+- [Installing a cluster on Oracle Cloud Infrastructure (OCI) by using the Agent-based Installer](https://docs.openshift.com/container-platform/latest/installing/installing_oci/installing-oci-agent-based-installer.html)
