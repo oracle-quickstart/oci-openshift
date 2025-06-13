@@ -31,7 +31,7 @@ For more information, please refer to the following documentation:
 |                              | Expansion                      | ✔️                   | ✔️                         |
 | **Volume Attachment Types**  | iSCSI                          | ✔️                   | ✔️                         |
 |                              | Paravirtualized                | ✔️                   | ✔️                         |
-| **Performance Tiers - vpusPerGB**        | Ultra High Performance - 30+        | ✔️                   | Not Available             |
+| **Performance Tiers - vpusPerGB**        | Ultra High Performance - 30+        | ✔️                   | ✔️             |
 |                              | Higher Performance - 20             | ✔️                   | ✔️                         |
 |                              | Balanced (Default)  - 10                     | ✔️                   | ✔️                         |
 |                              | Lower Cost - 0                 | ✔️                   | ✔️                         |
@@ -58,7 +58,7 @@ Be aware that the following limitations apply when using ReadWriteMany Raw Block
 
 ### Driver Installation
 
-The RWX-enabled OCI CSI driver manifests can be found in [01-oci-csi.yml](01-oci-csi.yml), and can be used to upgrade the OCI CSI driver on an existing OpenShift cluster. Apply the manifests manually or with the following command:
+Set the oci_driver_version variable to **v1.30.0-RWX-LA** when creating a cluster using the create-cluster stack to generate the dynamic_custom_manifest output with the RWX-enabled driver. To upgrade/change the OCI drivers on an existing OpenShift custer, apply the RWX-enabled OCI CSI driver manifests can be found in [01-oci-csi.yml](01-oci-csi.yml) manually or with the following command from within oci-openshift:
 
 ```bash
 export KUBECONFIG=<your_cluster_kubeconfig>

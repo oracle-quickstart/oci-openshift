@@ -17,7 +17,7 @@ We are excited to introduce significant enhancements to the Container Storage In
 
 ### Available Feature Matrix
 
-| **Category**                 | **Options**                    | **File Volume Mode** | **Block Volume Mode (LA)** |
+| **Category**                 | **Options**                    | **File System Mode** | **Raw Block Device Mode** |
 |------------------------------|--------------------------------|----------------------|----------------------------|
 | **Lifecycle Management**     | Creation & Deletion of Volumes | ✔️                   | ✔️                         |
 |                              | Expansion                      | ✔️                   | ✔️                         |

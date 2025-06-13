@@ -1,13 +1,13 @@
-resource "oci_core_subnet" "private_opc" {
-  cidr_block     = var.private_cidr_opc
-  display_name   = "private_opc"
+resource "oci_core_subnet" "private_ocp" {
+  cidr_block     = var.private_cidr_ocp
+  display_name   = "private_ocp"
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.openshift_vcn.id
   route_table_id = oci_core_route_table.private_routes.id
   security_list_ids = [
     oci_core_security_list.private.id,
   ]
-  dns_label                  = "privateopc"
+  dns_label                  = "privateocp"
   prohibit_public_ip_on_vnic = true
   defined_tags               = var.defined_tags
 }

@@ -4,9 +4,9 @@ locals {
     compartment: ${var.compartment_ocid}
     vcn: ${var.op_vcn_openshift_vcn}
     loadBalancer:
-      subnet1: ${var.op_subnet}
+      subnet1: ${var.op_apps_subnet}
       securityListManagementMode: Frontend
-      securityLists: ${var.op_security_list}
+      securityLists: ${var.op_apps_security_list}
     rateLimiter:
       rateLimitQPSRead: 20.0
       rateLimitBucketRead: 5
@@ -28,10 +28,10 @@ stringData:
     compartment: ${var.compartment_ocid}
     vcn: ${var.op_vcn_openshift_vcn}
     loadBalancer:
-      subnet1: ${var.op_subnet}
+      subnet1: ${var.op_apps_subnet}
       securityListManagementMode: Frontend
       securityLists:
-        ${var.op_security_list}
+        ${var.op_apps_security_list}
     rateLimiter:
       rateLimitQPSRead: 20.0
       rateLimitBucketRead: 5
@@ -54,10 +54,10 @@ stringData:
     compartment: ${var.compartment_ocid}
     vcn: ${var.op_vcn_openshift_vcn}
     loadBalancer:
-      subnet1: ${var.op_subnet}
+      subnet1: ${var.op_apps_subnet}
       securityListManagementMode: Frontend
       securityLists:
-        ${var.op_security_list}
+        ${var.op_apps_security_list}
     rateLimiter:
       rateLimitQPSRead: 20.0
       rateLimitBucketRead: 5

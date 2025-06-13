@@ -11,8 +11,8 @@ output "oci_ccm_config" {
 output "dynamic_custom_manifest" {
   description = "The custom manifests to be applied during OpenShift cluster installation process."
   value       = <<-EOT
-    ${file("${path.module}/manifests/01-oci-ccm.yml")}
-    ${file("${path.module}/manifests/01-oci-csi.yml")}
+    ${file("${path.module}/oci-ccm-csi-drivers/${var.oci_driver_version}/01-oci-ccm.yml")}
+    ${file("${path.module}/oci-ccm-csi-drivers/${var.oci_driver_version}/01-oci-csi.yml")}
     ${local.oci_ccm_config_secret}
     ${local.oci_csi_config_secret}
     ${file("${path.module}/manifests/02-machineconfig-ccm.yml")}

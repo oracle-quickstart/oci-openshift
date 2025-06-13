@@ -9,16 +9,16 @@ resource "oci_core_vnic_attachment" "control_plane_secondary_vnic_attachment" {
       "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_boot_volume_type}"      = "ISCSI"
       "${var.openshift_attribution_tag_namespace}.${var.openshift_attribution_tag_key}" = var.openshift_tag_openshift_resource_value
     }
-    display_name   = "vnic_opc"
+    display_name   = "vnic_ocp"
     hostname_label = oci_core_instance.control_plane_node[each.key].display_name
     nsg_ids        = [var.op_network_security_group_cluster_controlplane_nsg, ] #tbd
-    subnet_id      = var.op_subnet_private_opc
+    subnet_id      = var.op_subnet_private_ocp
     private_ip     = each.value.index == 1 && var.is_control_plane_iscsi_type && local.is_abi ? var.rendezvous_ip : ""
   }
   instance_id = oci_core_instance.control_plane_node[each.key].id
 
   #Optional
-  display_name = "vnic_opc"
+  display_name = "vnic_ocp"
   nic_index    = 1
 }
 
@@ -34,14 +34,14 @@ resource "oci_core_vnic_attachment" "compute_secondary_vnic_attachment" {
       "${var.op_openshift_tag_namespace}.${var.op_openshift_tag_boot_volume_type}"      = "ISCSI"
       "${var.openshift_attribution_tag_namespace}.${var.openshift_attribution_tag_key}" = var.openshift_tag_openshift_resource_value
     }
-    display_name   = "vnic_opc"
+    display_name   = "vnic_ocp"
     hostname_label = oci_core_instance.compute_node[each.key].display_name
     nsg_ids        = [var.op_network_security_group_cluster_compute_nsg, ]
-    subnet_id      = var.op_subnet_private_opc
+    subnet_id      = var.op_subnet_private_ocp
   }
   instance_id = oci_core_instance.compute_node[each.key].id
 
   #Optional
-  display_name = "vnic_opc"
+  display_name = "vnic_ocp"
   nic_index    = 1
 }

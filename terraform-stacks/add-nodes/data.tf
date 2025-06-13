@@ -39,9 +39,9 @@ data "oci_core_vcns" "cluster_vcn" {
   display_name   = var.cluster_name
 }
 
-data "oci_core_subnets" "private_opc" {
+data "oci_core_subnets" "private_ocp" {
   compartment_id = var.compartment_ocid
-  display_name   = "private_opc"
+  display_name   = "private_ocp"
   vcn_id         = data.oci_core_vcns.cluster_vcn.virtual_networks[0].id
 }
 

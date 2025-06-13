@@ -9,6 +9,8 @@ This directory contains Terraform stacks specifically designed for Red Hat OpenS
 
 Create new instances to be added to an existing OpenShift cluster. Requires an OpenShift image file generated specifically for adding nodes.
 
+[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/oci-openshift/releases/latest/download/add-nodes.zip)
+
 #### OCI Resources
 
 - **Load Balancers**
@@ -27,6 +29,8 @@ Openshift resource attribution tags used to categorize, organize, and track reso
 
 ⚠️ Note: Execute this stack only if the required tags do not already exist within your tenancy.
 
+[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/oci-openshift/releases/latest/download/create-resource-attribution-tags.zip)
+
 #### Default Attribution Tags
 
 - **Tag NameSpace**
@@ -36,7 +40,28 @@ Openshift resource attribution tags used to categorize, organize, and track reso
 
 ## create-cluster
 
-Create the OCI resources for a new OpenShift cluster.
+A generic OpenShift cluster on OCI.
+
+[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/oci-openshift/releases/latest/download/create-cluster.zip)
+
+#### Default Node Configuration
+
+- **Control Plane**
+    - Count: 3
+    - Shape: VM.Standard.E5.Flex
+    - OCPU: 4
+    - Memory: 16 GB
+    - Boot Volume
+        - Size: 1024 GB
+        - VPUs/GB: 100
+- **Compute**
+    - Count: 3
+    - Shape: VM.Standard.E5.Flex
+    - OCPU: 6
+    - Memory: 16 GB
+    - Boot Volume
+        - Size: 1024 GB
+        - VPUs/GB: 30
 
 #### OCI Resources
 
@@ -68,9 +93,10 @@ Create the OCI resources for a new OpenShift cluster.
         - Private Security List
         - Public Security List
     - Subnets
-        - "public"
-        - "private_opc"
-        - "private_bare_metal"
+        - Private Subnet
+            - Private Subnet for OCP
+            - Private Subnet for Bare Metal
+        - Public Subnet
     - NSGs (Network Security Groups)
         - "cluster-lb-nsg"
         - "cluster-controlplane-nsg"
@@ -149,6 +175,9 @@ OCI tagging resources that are used to tag OpenShift cluster OCI resources. The 
 Please allow for ~10 minutes after creation before tagging resources with them. Some OCI Services take a lttle extra time to pick up newly created tags.
 
 It is recommended but not required to create and reuse tags for your OpenShift clusters. All 'cluster' terraform stacks provision new tagging resources specific to your cluster by default, but can be configured to use existing tags.
+
+[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/oci-openshift/releases/latest/download/create-instance-role-tags.zip)
+
 
 #### OCI Resources
 

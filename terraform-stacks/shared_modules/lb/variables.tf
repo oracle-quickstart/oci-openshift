@@ -1,4 +1,8 @@
-variable "enable_private_dns" {
+variable "enable_public_apps_lb" {
+  type = bool
+}
+
+variable "enable_public_api_lb" {
   type = bool
 }
 
@@ -22,7 +26,7 @@ variable "defined_tags" {
   type = map(string)
 }
 
-variable "op_subnet_private_opc" {
+variable "op_subnet_private_ocp" {
   type = string
 }
 

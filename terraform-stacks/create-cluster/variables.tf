@@ -170,7 +170,7 @@ variable "vcn_dns_label" {
   }
 }
 
-variable "private_cidr_opc" {
+variable "private_cidr_ocp" {
   default     = "10.0.16.0/20"
   type        = string
   description = "The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.16.0/20. "
@@ -194,9 +194,32 @@ variable "openshift_image_source_uri" {
   default     = "TODO"
 }
 
-variable "enable_private_dns" {
+variable "oci_driver_version" {
+  type    = string
+  default = "v1.30.0"
+}
+
+variable "create_public_dns" {
   type        = bool
-  description = "If the switch is enabled, a private DNS zone will be created, and users should edit the /etc/hosts file for resolution. Otherwise, a public DNS zone will be created based on the given domain."
+  description = "If enabled, a public DNS zone will be created."
+  default     = true
+}
+
+variable "enable_public_api_lb" {
+  type        = bool
+  description = "If enabled, the api load balancer will be created with a public IP. Otherwise, they will be created in the private_ocp subnet and be accessible only within the VCN."
+  default     = false
+}
+
+variable "enable_public_apps_lb" {
+  type        = bool
+  description = "If enabled, the apps load balancer will be created with a public IP. Otherwise, they will be created in the private_ocp subnet and be accessible only within the VCN."
+  default     = true
+}
+
+variable "create_private_dns" {
+  type        = bool
+  description = "If enabled, a private DNS zone will be created."
   default     = false
 }
 
@@ -238,12 +261,6 @@ variable "tag_namespace_compartment_ocid" {
   default     = ""
 }
 
-variable "wait_for_new_tag_consistency_wait_time" {
-  type        = string
-  description = "Describes how long resource creation will be paused to allow for newly created tagging resources to reach consistency."
-  default     = "900s"
-}
-
 variable "tag_namespace_compartment_ocid_resource_tagging" {
   type        = string
   description = "The compartment where the tag namespace for OpenShift Resource Attribution tags should be created."
@@ -269,6 +286,18 @@ variable "distribute_cp_instances_across_ads" {
 
 variable "distribute_compute_instances_across_ads" {
   description = "Whether compute instances should be distributed across ADs in a round-robin sequence starting from your selected AD. If false, then all nodes will be created in the selected starting AD."
+  type        = bool
+  default     = true
+}
+
+variable "distribute_cp_instances_across_fds" {
+  description = "Whether control-plane instances should be distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will select one for you based on shape availability."
+  type        = bool
+  default     = true
+}
+
+variable "distribute_compute_instances_across_fds" {
+  description = "Whether compute instances should be distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will select one for you based on shape availability."
   type        = bool
   default     = true
 }
