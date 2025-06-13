@@ -14,7 +14,7 @@ resource "oci_dns_zone" "openshift-public" {
   name           = var.zone_dns
   zone_type      = "PRIMARY"
   defined_tags   = var.defined_tags
-  depends_on     = [var.op_lb_openshift_api_apps_lb_ip_addr, var.op_lb_openshift_api_int_lb_ip_addr]
+  depends_on     = [var.op_lb_openshift_api_lb_ip_addr, var.op_lb_openshift_apps_lb_ip_addr, var.op_lb_openshift_api_int_lb_ip_addr]
 }
 
 # TODO - will need to be disabled (with some other variable(s)) in C3/PCA because private zones are not supported
@@ -79,7 +79,7 @@ resource "oci_dns_rrset" "openshift_api_private" {
 
   items {
     domain = "api.${var.cluster_name}.${var.zone_dns}"
-    rdata  = var.op_lb_openshift_api_apps_lb_ip_addr
+    rdata  = var.op_lb_openshift_api_lb_ip_addr
     rtype  = "A"
     ttl    = "3600"
   }
@@ -93,7 +93,7 @@ resource "oci_dns_rrset" "openshift_apps_private" {
 
   items {
     domain = "*.apps.${var.cluster_name}.${var.zone_dns}"
-    rdata  = var.op_lb_openshift_api_apps_lb_ip_addr
+    rdata  = var.op_lb_openshift_apps_lb_ip_addr
     rtype  = "A"
     ttl    = "3600"
   }

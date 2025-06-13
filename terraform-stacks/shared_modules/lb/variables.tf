@@ -1,4 +1,8 @@
-variable "enable_public_lb" {
+variable "enable_public_apps_lb" {
+  type = bool
+}
+
+variable "enable_public_api_lb" {
   type = bool
 }
 

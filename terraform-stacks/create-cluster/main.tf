@@ -105,7 +105,8 @@ module "load_balancer" {
   compartment_ocid = var.compartment_ocid
   cluster_name     = var.cluster_name
 
-  enable_public_lb = var.enable_public_lb
+  enable_public_api_lb  = var.enable_public_api_lb
+  enable_public_apps_lb = var.enable_public_apps_lb
 
   load_balancer_shape_details_maximum_bandwidth_in_mbps = var.load_balancer_shape_details_maximum_bandwidth_in_mbps
   load_balancer_shape_details_minimum_bandwidth_in_mbps = var.load_balancer_shape_details_minimum_bandwidth_in_mbps
@@ -207,9 +208,9 @@ module "manifests" {
   oci_driver_version = var.oci_driver_version
 
   // Depedency on networks
-  op_vcn_openshift_vcn = module.network.op_vcn_openshift_vcn
-  op_subnet            = local.subnet_id
-  op_security_list     = "${local.subnet_id}: ${local.security_list_id}"
+  op_vcn_openshift_vcn  = module.network.op_vcn_openshift_vcn
+  op_apps_subnet        = local.apps_subnet_id
+  op_apps_security_list = "${local.apps_subnet_id}: ${local.apps_security_list_id}"
 }
 
 module "resource_attribution_tags" {

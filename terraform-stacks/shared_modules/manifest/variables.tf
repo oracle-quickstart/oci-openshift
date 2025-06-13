@@ -16,10 +16,11 @@ variable "op_vcn_openshift_vcn" {
   type = string
 }
 
-variable "op_subnet" {
+
+variable "op_apps_subnet" {
   type = string
 }
 
-variable "op_security_list" {
+variable "op_apps_security_list" {
   type = string
 }

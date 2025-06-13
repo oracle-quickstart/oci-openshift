@@ -205,9 +205,15 @@ variable "create_public_dns" {
   default     = true
 }
 
-variable "enable_public_lb" {
+variable "enable_public_api_lb" {
   type        = bool
-  description = "If enabled, the api_apps load balancer will be created with a public IP. Otherwise, they will be created in the private_ocp subnet and be accessible only within the VCN."
+  description = "If enabled, the api load balancer will be created with a public IP. Otherwise, they will be created in the private_ocp subnet and be accessible only within the VCN."
+  default     = false
+}
+
+variable "enable_public_apps_lb" {
+  type        = bool
+  description = "If enabled, the apps load balancer will be created with a public IP. Otherwise, they will be created in the private_ocp subnet and be accessible only within the VCN."
   default     = true
 }
 

@@ -51,7 +51,8 @@ variableGroups:
 - title: "Networking Configuration"
   variables:
   - create_public_dns
-  - enable_public_lb
+  - enable_public_api_lb
+  - enable_public_apps_lb
   - create_private_dns
   - zone_dns
   - vcn_dns_label
@@ -291,19 +292,25 @@ variables:
   #
   create_public_dns:
     type: boolean
-    title: Public DNS
+    title: Create Public DNS
     description: Create a public DNS zone with your Base domain specified in Zone DNS. If this is not created, it is advised that you create a private DNS zone unless you are bringing your own DNS solution. To resolve cluster hostnames without DNS, users should add entries to /etc/hosts mapping the cluster hostnames to the IP address of the api_apps Load Balancer. The etc_hosts_entry output can be used for this purpose.
     default: true
 
-  enable_public_lb:
+  enable_public_api_lb:
     type: boolean
-    title: Public Load Balancer
-    description: Create the api_apps Load Balancer in the public subnet and assign it a public IP address. If the api_apps Load Balancer is private, then it will be created in the private subnet with a private IP address that will be accessible only from within the VCN. Also, when creating a cluster in an on-premise environment (C3/PCA), a "public" Load Balancer IP address might pulled from a pool of RFC 1918 IP addresses. These are still considered public IPs from within your on-premise network, but they will otherwise be inaccessible from the wider internet. Speak to your network administrator if necessary to get access to your cluster in these scenarios.
+    title: Enable Public API Load Balancer
+    description: Create a Load Balancer for the OpenShift API endpoint (`api.<cluster>.<base_domain>`) in the public subnet with a public IP address. This allows users and administrators to access the OpenShift control plane over the internet. If disabled, the API Load Balancer will be created in a private subnet with a private IP, limiting access to within the VCN or through a connected VPN/private network. Public API access is useful for remote cluster management, automation, and CI/CD pipelines. In on-premise environments (e.g., C3/PCA), "public" IPs may refer to RFC 1918 addresses that are only routable within your internal network. Consult your network administrator to confirm external access.
+    default: false
+
+  enable_public_apps_lb:
+    type: boolean
+    title: Enable Public Apps Load Balancer
+    description: Create a Load Balancer for OpenShift applications (`*.apps.<cluster>.<base_domain>`) in the public subnet with a public IP address. This allows external users to access workloads and services deployed in the cluster. If disabled, the Apps Load Balancer will be created in a private subnet with a private IP, making application routes accessible only within the VCN or over a VPN/private network. Public access is useful for exposing applications to the internet, customer-facing services, or multi-tenant workloads. In on-premise setups (e.g., C3/PCA), "public" IPs may be RFC 1918 addresses that are still treated as public within the internal network. Coordinate with your network team for proper exposure.
     default: true
 
   create_private_dns:
     type: boolean
-    title: Private DNS
+    title: Create Private DNS
     description: Create a private DNS zone with your Base domain specified in Zone DNS. It will contain the same records as a public DNS zone and will facilitate the cluster's hostname resolution within the VCN. If using an unregistered domain name as the Base domain for your cluster, you should create a private DNS zone if possible, or you will have to take other measures to help the instances resolve the cluster's hostname. For more details, review <a href='https://docs.oracle.com/en-us/iaas/Content/DNS/Tasks/privatedns.htm'>Oracle Private DNS</a>
     default: false
 
