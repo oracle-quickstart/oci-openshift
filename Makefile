@@ -1,5 +1,6 @@
 SHELL = bash
-PKG_VERSION ?= v1.3.0
+
+PKG_VERSION ?= v1.4.0
 OCI_DRIVER_VERSION ?= v1.30.0
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
 PODMAN := $(shell command -v podman 2> /dev/null)
