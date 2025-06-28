@@ -40,7 +40,7 @@ Before you begin, ensure you have:
 Follow the installation instructions for your preferred method:
 
 - **Assisted Installer**(https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/installing-assisted.htm): A fully-automated installation method using the Red Hat Assisted Installer for connected environments.
-- **[Agent-based Installer]**(https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/agent-installer.htm): An advanced installation method that requires you to provision the infrastructure in one of the two ways:   
+- **Agent-based Installer**(https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/agent-installer.htm): An advanced installation method that requires you to provision the infrastructure in one of the two ways:   
   - **Terraform Provisioning**(https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/agent-installer-using-stack.htm) - For connected environments.
   - **Manual Provisioning**(https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/installing-agent.htm) - For disconnected or air-gapped environments.
 
