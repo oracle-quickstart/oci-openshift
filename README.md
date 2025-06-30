@@ -11,7 +11,7 @@ Installing OpenShift clusters on OCI involves two main stages:
 
 **1. Provisioning Infrastructure**
 
-Before installing OpenShift clusters, you must set up the required OCI infrastructure including Virtual Cloud Netwoorks (VCNs), public and private subnets, compute instances (control plane and worker nodes), load balancers, IAM policies, and object storage buckets. You can provision infrastructure in two ways:
+Before installing OpenShift clusters, you must set up the required OCI infrastructure including Virtual Cloud Networks (VCNs), public and private subnets, compute instances (control plane and worker nodes), load balancers, IAM policies, and object storage buckets. You can provision infrastructure in two ways:
 
 * **Using Terraform:** Create OCI resources using the Terraform stack provided in this repo or available via the OCI Console. This method is recommended for connected environments.
 
