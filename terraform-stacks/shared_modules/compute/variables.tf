@@ -66,7 +66,7 @@ variable "is_compute_iscsi_type" {
   type = bool
 }
 
-variable "op_subnet_private_opc" {
+variable "op_subnet_private_ocp" {
   type = string
 }
 
@@ -149,6 +149,15 @@ variable "cp_node_map" {
   type = map(any)
 }
 
+variable "distribute_cp_instances_across_fds" {
+  description = "Whether control-plane instances should be distributed across Fault Domains in a round-robin sequence. If false, then the system will select one for you based on shape availability."
+  type        = bool
+}
+
+variable "distribute_compute_instances_across_fds" {
+  description = "Whether compute instances should be distributed across Fault Domains in a round-robin sequence. If false, then the system will select one for you based on shape availability."
+  type        = bool
+}
 
 variable "openshift_attribution_tag_namespace" {
   type    = string

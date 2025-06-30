@@ -38,7 +38,7 @@ locals {
     "Storage.Iscsi.MultipathDeviceSupported" = jsonencode({
       descriptorType = "boolean"
       source         = "IMAGE"
-      defaultValue   = true
+      defaultValue   = false
     })
   }
 

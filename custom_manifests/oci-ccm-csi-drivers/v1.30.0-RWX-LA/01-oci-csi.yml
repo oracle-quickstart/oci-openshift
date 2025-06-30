@@ -116,7 +116,7 @@ spec:
             - --fss-csi-endpoint=unix://var/run/shared-tmpfs/csi-fss.sock
           command:
             - /usr/local/bin/oci-csi-controller-driver
-          image: ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.30.0-rwx
+          image: ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.30.0-rwx-uhp
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: config
@@ -284,7 +284,7 @@ spec:
                   fieldPath: spec.nodeName
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/host/usr/bin:/host/sbin
-          image: ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.30.0-rwx
+          image: ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.30.0-rwx-uhp
           securityContext:
             privileged: true
           volumeMounts:
@@ -495,6 +495,21 @@ kind: StorageClass
 metadata:
   name: oci-bv
 provisioner: blockvolume.csi.oraclecloud.com
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+
+---
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: oci-bv-uhp
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: blockvolume.csi.oraclecloud.com
+parameters:
+  vpusPerGB: "120"
 volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 reclaimPolicy: Delete
