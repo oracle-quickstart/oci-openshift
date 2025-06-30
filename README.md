@@ -42,7 +42,7 @@ Follow the installation instructions for your preferred method:
 - [**Assisted Installer**](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/installing-assisted.htm): An automated installation method using the Red Hat Assisted Installer for connected environments. 
 - [**Agent-based Installer**](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/agent-installer.htm): An advanced installation method that requires you to provision the infrastructure in one of the two ways:   
   - [**Terraform Provisioning**](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/agent-installer-using-stack.htm) - For connected environments.
-  - [**Manual Provisioning**](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/installing-agent.htm)- For disconnected or air-gapped environments.
+  - [**Manual Provisioning**](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/installing-agent.htm) - For disconnected or air-gapped environments.
 
 ⚠️ **Important**: Before creating the cluster, ensure you've executed the latest version of [create-attribution-tags](https://github.com/oracle-quickstart/oci-openshift/tree/main/terraform-stacks/create-resource-attribution-tags) stack. This ensures all necessary tags are available prior to cluster provisioning. You only need to run this for the `first cluster deployment`. Subsequent cluster deployments will not require this step, as the tags will already exist.
 
