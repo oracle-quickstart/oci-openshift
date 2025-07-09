@@ -66,4 +66,52 @@ stringData:
 ---
   EOT
 
+  agent_config = <<EOT
+apiVersion: v1alpha1
+metadata:
+  name: ${var.cluster_name}
+  namespace: ${var.cluster_name}
+rendezvousIP: ${var.rendezvous_ip}
+${var.is_disconnected_installation ? "bootArtifactsBaseURL: http://${var.webserver_private_ip}" : ""}
+  EOT
+
+  install_config = <<EOT
+apiVersion: v1
+metadata:
+  name: ${var.cluster_name}
+baseDomain: ${var.zone_dns}
+networking:
+  clusterNetwork:
+    - cidr: 10.128.0.0/14
+      hostPrefix: 23
+  networkType: OVNKubernetes
+  machineNetwork:
+    - cidr: ${var.vcn_cidr}
+  serviceNetwork:
+    - 172.30.0.0/16
+compute:
+  - architecture: amd64
+    hyperthreading: Enabled
+    name: worker
+    replicas: ${var.compute_count}
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  replicas: ${var.control_plane_count}
+platform:
+  external:
+    platformName: oci
+    cloudControllerManager: External
+${trimspace(var.set_proxy ? <<-PROXY
+proxy:
+  httpProxy: ${var.http_proxy}
+  httpsProxy: ${var.https_proxy}
+  noProxy: ${var.no_proxy},${var.vcn_cidr}
+PROXY
+: "")}
+sshKey: '${var.public_ssh_key}'
+pullSecret: '${var.redhat_pull_secret}'
+  EOT
+
 }

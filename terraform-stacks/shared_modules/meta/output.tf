@@ -6,6 +6,10 @@ output "cp_node_map" {
   value = local.cp_node_map
 }
 
+output "ad_name" {
+  value = local.availability_domains[0].name
+}
+
 output "node_distribution_summary" {
   description = "Summary of total node distribution across all Availability Domains"
   value = {

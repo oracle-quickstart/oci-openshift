@@ -236,7 +236,7 @@ variable "installation_method" {
 variable "rendezvous_ip" {
   default     = "10.0.16.20"
   type        = string
-  description = "RendezvousIP from ABI"
+  description = "The IP used to bootstrap the cluster using the Agent-based installer. Must be in the private_ocp subnet."
 }
 
 variable "use_existing_tags" {
@@ -300,4 +300,81 @@ variable "distribute_compute_instances_across_fds" {
   description = "Whether compute instances should be distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will select one for you based on shape availability."
   type        = bool
   default     = true
+}
+
+variable "openshift_installer_version" {
+  type        = string
+  description = "The version of openshift-installer. You can find the published version in <a href='https://mirror.openshift.com/pub/openshift-v4/clients/ocp/'>published version</a>"
+  default     = "latest"
+}
+
+variable "is_disconnected_installation" {
+  type        = bool
+  description = "Indicates whether the cluster will be installed in a disconnected (air-gapped) environment."
+  default     = false
+}
+
+variable "public_ssh_key" {
+  type        = string
+  description = "Public ssh key for web server to use."
+}
+
+variable "redhat_pull_secret" {
+  type        = string
+  default     = "PULL SECRET"
+  description = "The pull secret that you need for authenticate purposes when downloading container images for OpenShift Container Platform components and services, such as Quay.io. See Install OpenShift Container Platform 4 from the Red Hat Hybrid Cloud Console."
+}
+
+variable "webserver_private_ip" {
+  default     = "10.0.0.200"
+  type        = string
+  description = "The Private IP of the server where you want to upload the rootfs image. This parameter is required only for disconnected environments. This IP should be included in the bootArtifactsBaseURL value in your agent-config file."
+}
+
+variable "webserver_shape" {
+  default     = "VM.Standard.E5.Flex"
+  type        = string
+  description = "Compute shape of the web server. The default shape is VM.Standard.E5.Flex for VM setup and BM.Standard3.64 for BM setup. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes"
+}
+
+variable "webserver_image_source_id" {
+  default     = "ocid1.image.oc1.us-sanjose-1.aaaaaaaawgtwtqmz5j2kbvwgk6lm5yx2bnom456skma7q62jb5ltw7zoac4a"
+  type        = string
+  description = "The source_id of image to use for webserver instance, default is an OEL 9 instance"
+}
+
+variable "webserver_memory_in_gbs" {
+  type        = number
+  description = "Memory size of webserver instance"
+  default     = 8
+}
+
+variable "webserver_ocpus" {
+  type        = number
+  description = "Number of ocpus for webserver instance"
+  default     = 2
+}
+
+variable "set_proxy" {
+  type        = bool
+  default     = false
+  description = "If hosts are behind a firewall that requires the use of a proxy, provide additional information about the proxy."
+}
+
+variable "http_proxy" {
+  type        = string
+  description = "The HTTP Proxy URL."
+  default     = "Fake http_proxy"
+}
+
+variable "https_proxy" {
+  type        = string
+  description = "The HTTPS Proxy URL."
+  default     = "Fake https_proxy"
+}
+
+variable "no_proxy" {
+  type        = string
+  description = "The No Proxy Domains."
+  default     = "Fake no_proxy"
 }

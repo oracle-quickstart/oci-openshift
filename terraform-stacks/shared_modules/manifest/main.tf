@@ -22,3 +22,11 @@ output "dynamic_custom_manifest" {
     ${file("${path.module}/manifests/05-oci-eval-user-data.yml")}
   EOT
 }
+
+output "agent_config" {
+  value = local.agent_config
+}
+
+output "install_config" {
+  value = local.install_config
+}

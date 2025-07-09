@@ -120,6 +120,32 @@ module "load_balancer" {
   op_network_security_group_cluster_lb_nsg = module.network.op_network_security_group_cluster_lb_nsg
 }
 
+## Web Server for creating OCP install images and hosting rootfs and ignition files
+module "webserver" {
+  source = "./shared_modules/webserver"
+
+  is_disconnected_installation = var.is_disconnected_installation
+  set_proxy                    = var.set_proxy
+  http_proxy                   = var.http_proxy
+  https_proxy                  = var.https_proxy
+  no_proxy                     = var.no_proxy
+
+  webserver_availability_domain = module.meta.ad_name
+  webserver_compartment_ocid    = var.compartment_ocid
+  webserver_shape               = var.webserver_shape
+  webserver_image_source_id     = var.webserver_image_source_id
+  webserver_display_name        = "${var.cluster_name}-webserver"
+  webserver_private_ip          = var.webserver_private_ip
+  webserver_assign_public_ip    = true # variable
+  webserver_memory_in_gbs       = var.webserver_memory_in_gbs
+  webserver_ocpus               = var.webserver_ocpus
+  public_ssh_key                = var.public_ssh_key
+  openshift_installer_version   = var.openshift_installer_version
+
+  // Dependency on networks
+  webserver_subnet_id = module.network.op_subnet_public # depend on variable
+}
+
 module "compute" {
   source = "./shared_modules/compute"
 
@@ -207,10 +233,26 @@ module "manifests" {
   compartment_ocid   = var.compartment_ocid
   oci_driver_version = var.oci_driver_version
 
+  redhat_pull_secret           = var.redhat_pull_secret
+  is_disconnected_installation = var.is_disconnected_installation
+  set_proxy                    = var.set_proxy
+  http_proxy                   = var.http_proxy
+  https_proxy                  = var.https_proxy
+  no_proxy                     = var.no_proxy
+
+
   // Depedency on networks
   op_vcn_openshift_vcn  = module.network.op_vcn_openshift_vcn
   op_apps_subnet        = local.apps_subnet_id
   op_apps_security_list = "${local.apps_subnet_id}: ${local.apps_security_list_id}"
+  vcn_cidr              = var.vcn_cidr
+  zone_dns              = var.zone_dns
+  rendezvous_ip         = var.rendezvous_ip
+  control_plane_count   = var.control_plane_count
+  compute_count         = var.compute_count
+  public_ssh_key        = var.public_ssh_key
+  cluster_name          = var.cluster_name
+  webserver_private_ip  = var.webserver_private_ip
 }
 
 module "resource_attribution_tags" {

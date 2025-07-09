@@ -18,6 +18,24 @@ variableGroups:
   - create_openshift_instances
   - openshift_image_source_uri
 
+- title: "Agent Based Installation Advanced Configurations"
+  variables:
+    - rendezvous_ip
+    - set_openshift_installer_version
+    - openshift_installer_version
+    - is_disconnected_installation
+    - public_ssh_key
+    - redhat_pull_secret
+    - webserver_private_ip
+    - webserver_shape
+    - webserver_image_source_id
+    - webserver_ocpus
+    - webserver_memory_in_gbs
+    - set_proxy
+    - http_proxy
+    - https_proxy
+    - no_proxy
+
 - title: "OpenShift Resource Attribution Tags"
   variables:
     - tag_namespace_compartment_ocid_resource_tagging
@@ -60,7 +78,6 @@ variableGroups:
   - public_cidr
   - private_cidr_ocp
   - private_cidr_bare_metal
-  - rendezvous_ip
   - load_balancer_shape_details_maximum_bandwidth_in_mbps
   - load_balancer_shape_details_minimum_bandwidth_in_mbps
 
@@ -356,17 +373,6 @@ variables:
     default: "10.0.32.0/20"
     required: true
 
-  rendezvous_ip:
-    type: string
-    title: Rendezvous IP
-    description: The IP used to bootstrap the cluster using the Agent-based Installer. Needs to match rendezvousIP value specified in agent-config.yaml. Note that when using Bare Metal instances, this IP should be within the private_two subnet CIDR.
-    default: "10.0.16.20"
-    required: true
-    visible:
-      eq:
-        - installation_method
-        - Agent-based
-
   load_balancer_shape_details_maximum_bandwidth_in_mbps:
     type: integer
     title: Load Balancer Maximum Bandwidth
@@ -421,3 +427,149 @@ variables:
     default: compartment_ocid
     required: true
     visible: use_existing_tags
+
+  #
+  # Agent Based Installation Advanced Configurations
+  #
+  rendezvous_ip:
+    type: string
+    title: Rendezvous IP
+    description: The IP used to bootstrap the cluster using the Agent-based installer. Must be in the private_ocp subnet.
+    default: "10.0.16.20"
+    required: true
+    visible:
+      eq:
+        - installation_method
+        - Agent-based
+
+  set_openshift_installer_version:
+    type: boolean
+    title: Set Openshift Installer Version
+    description: If you don't want to use the latest version of openshift-installer, specify a specific supported version. For example, "4.19.1".
+    default: false
+    required: true
+    visible:
+      eq:
+        - installation_method
+        - Agent-based
+
+  openshift_installer_version:
+    type: string
+    title: Openshift Installer Version
+    description: The version of openshift-installer. You can find the published version in <a href='https://mirror.openshift.com/pub/openshift-v4/clients/ocp/'>published version</a>
+    default: "latest"
+    visible:
+      set_openshift_installer_version
+
+  is_disconnected_installation:
+    type: boolean
+    title: Is Disconnected Agent-based Installation
+    description: Indicates whether the cluster will be installed in a disconnected (air-gapped) environment.
+    default: false
+    required: true
+    visible:
+      eq:
+        - installation_method
+        - Agent-based
+
+  public_ssh_key:
+    type: string
+    title: Public ssh key
+    description: Public ssh key for web server to use.
+    default: Specify your SSH public key.
+    required: true
+    visible:
+      is_disconnected_installation
+
+  redhat_pull_secret:
+    type: string
+    title: RedHat Pull Secret
+    description: The pull secret that you need for authenticate purposes when downloading container images for OpenShift Container Platform components and services, such as Quay.io. See Install OpenShift Container Platform 4 from the Red Hat Hybrid Cloud Console.
+    default: Specify your redhat pull secret. The default value is "PULL SECRET".
+    visible:
+      is_disconnected_installation
+
+  webserver_private_ip:
+    type: string
+    title: Webserver Private IP
+    description: The Private IP of the server where you want to upload the rootfs image. This parameter is required only for disconnected environments. This IP should be included in the bootArtifactsBaseURL value in your agent-config file.
+    default: "10.0.0.200"
+    required: true
+    visible:
+      is_disconnected_installation
+
+  webserver_shape:
+    type: string
+    title: Webserver Shape
+    description: Compute Instance shape of webserver instance. For more details, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>
+    default: "VM.Standard.E5.Flex"
+    required: true
+    visible:
+      is_disconnected_installation
+
+  webserver_image_source_id:
+    title: Webserver Image
+    description: Image of webserver instance.
+    type: oci:core:image:id
+    required: true
+    visible:
+      is_disconnected_installation
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      operatingSystem: "Oracle Linux"
+      shape: ${webserver_shape}
+
+  webserver_ocpus:
+    type: integer
+    title: Webserver OCPU
+    description: The number of OCPUs available for the shape of webserver instance. The default value is 2.
+    default: 2
+    minimum: 1
+    maximum: 144
+    required: true
+    visible:
+      is_disconnected_installation
+
+  webserver_memory_in_gbs:
+    type: integer
+    title: Webserver Memory
+    description: The amount of memory available for the shape of webserver instance, in gigabytes. The default value is 8.
+    default: 8
+    minimum: 1
+    maximum: 1760
+    required: true
+    visible:
+      is_disconnected_installation
+
+  set_proxy:
+    type: boolean
+    title: Config Proxy Settings
+    description: If hosts are behind a firewall that requires the use of a proxy, provide additional information about the proxy.
+    default: false
+    required: true
+    visible:
+      is_disconnected_installation
+
+  http_proxy:
+    type: string
+    title: HTTP Proxy URL
+    description: The HTTP Proxy URL.
+    default: Specify your HTTP Proxy URL. For example "http://my.proxy.server"
+    visible:
+      set_proxy
+
+  https_proxy:
+    type: string
+    title: HTTPS Proxy URL
+    description: The HTTPS Proxy URL.
+    default: Specify your HTTPS Proxy URL. For example "https://my.proxy.server"
+    visible:
+      set_proxy
+
+  no_proxy:
+    type: string
+    title: No Proxy Domains
+    description: The No Proxy Domains.
+    default: Specify your No Proxy Domains. For example "localhost,127.0.0.1,{basedomain}"
+    visible:
+      set_proxy
