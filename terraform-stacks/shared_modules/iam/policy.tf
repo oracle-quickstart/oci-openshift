@@ -11,3 +11,13 @@ resource "oci_identity_policy" "policy_openshift_control_plane_nodes" {
   ]
   defined_tags = var.defined_tags
 }
+
+resource "oci_identity_policy" "policy_openshift_control_plane_nodes_tags" {
+  compartment_id = var.tenancy_ocid
+  description    = "Give OpenShift control_plane nodes access to use tag-namespaces for cluster resources"
+  name           = "${var.cluster_name}_control_plane_nodes_tags"
+  statements = [
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to use tag-namespaces in tenancy",
+  ]
+  defined_tags = var.defined_tags
+}

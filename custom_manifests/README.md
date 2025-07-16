@@ -9,7 +9,7 @@ View usage during [installation](/README.md#documentation-and-installation-instr
 | File | Description | When to Use |
 --- | --- | ---
 **01-oci-ccm.yml** | Cluster resources for OCI Cloud Controller Manager (CCM). | Always ✅
-**01-oci-csi.yml** | Cluster resources for OCI Cloud Storage Interface (CSI). See [STORAGE.md](./oci-ccm-csi-drivers/STORAGE.md) | Always ✅
+**01-oci-csi.yml** | Cluster resources for OCI Container Storage Interface (CSI). See [STORAGE.md](/STORAGE.md) | Always ✅
 **01-oci-driver-configs.yml** | Configuration Secrets for CCM and CSI drivers. ❗**Contains placeholder values that need to be replaced before use.** | Always ✅
 **02-machineconfig-ccm.yml** | MachineConfig that fetches the provider (OCI) id for kubelet from the OCI metadata of the instance. | Always ✅
 **02-machineconfig-csi.yml** | MachineConfig that enables the iscsid.service to run. | Always ✅

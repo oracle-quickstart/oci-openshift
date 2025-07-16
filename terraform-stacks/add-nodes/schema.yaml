@@ -96,7 +96,6 @@ variables:
     description: WARNING - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tagging should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
       If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
       Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
-    default: compartment_ocid
     required: true
 
   #

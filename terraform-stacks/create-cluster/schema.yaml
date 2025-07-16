@@ -402,7 +402,8 @@ variables:
     - v1.25.0
     - v1.30.0
     - v1.30.0-RWX-LA
-    default: v1.30.0
+    - v1.32.0
+    default: v1.32.0
     required: true
 
   use_existing_tags:

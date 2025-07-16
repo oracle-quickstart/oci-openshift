@@ -196,7 +196,7 @@ variable "openshift_image_source_uri" {
 
 variable "oci_driver_version" {
   type    = string
-  default = "v1.30.0"
+  default = "v1.32.0"
 }
 
 variable "create_public_dns" {

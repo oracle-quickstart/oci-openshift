@@ -4,7 +4,7 @@ terraform {
 }
 
 output "oci_ccm_config" {
-  description = "Contains resource OCIDs of OCI cluster resources for use by OCI Cloud Controller Manager and Cloud Storage Interface. This block is to be copied to the OCI and CCM manifest files before use during cluster installation."
+  description = "Contains resource OCIDs of OCI cluster resources for use by OCI Cloud Controller Manager and Container Storage Interface. This block is to be copied to the OCI and CCM manifest files before use during cluster installation."
   value       = local.common_config
 }
 
