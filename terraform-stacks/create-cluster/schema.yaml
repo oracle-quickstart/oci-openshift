@@ -399,10 +399,9 @@ variables:
     title: OCI CCM and CSI Driver Version
     description: "Select what version of the OCI CCM and CSI driver to deploy."
     enum:
-    - v1.25.0
     - v1.30.0
-    - v1.30.0-RWX-LA
     - v1.32.0
+    - v1.32.0-UHP
     default: v1.32.0
     required: true
 

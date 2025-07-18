@@ -37,6 +37,15 @@ stringData:
       rateLimitBucketRead: 5
       rateLimitQPSWrite: 20.0
       rateLimitBucketWrite: 5
+    tags:
+      loadBalancer:
+        defined:
+          openshift-tags:
+            openshift-resource: openshift-resource-infra
+      blockVolume:
+        defined:
+          openshift-tags:
+            openshift-resource: openshift-resource-infra
 ---
   EOT
 
@@ -63,6 +72,15 @@ stringData:
       rateLimitBucketRead: 5
       rateLimitQPSWrite: 20.0
       rateLimitBucketWrite: 5
+    tags:
+      loadBalancer:
+        defined:
+          openshift-tags:
+            openshift-resource: openshift-resource-infra
+      blockVolume:
+        defined:
+          openshift-tags:
+            openshift-resource: openshift-resource-infra
 ---
   EOT
 

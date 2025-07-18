@@ -316,7 +316,8 @@ variable "is_disconnected_installation" {
 
 variable "public_ssh_key" {
   type        = string
-  description = "Public ssh key for web server to use."
+  description = "Public SSH key for access to your OpenShift instances and webserver."
+  default     = ""
 }
 
 variable "redhat_pull_secret" {

@@ -9,7 +9,7 @@ View usage during [installation](/README.md#documentation-and-installation-instr
 | File | Description | When to Use |
 --- | --- | ---
 **01-oci-ccm.yml** | Cluster resources for OCI Cloud Controller Manager (CCM). | Always ✅
-**01-oci-csi.yml** | Cluster resources for OCI Container Storage Interface (CSI). See [STORAGE.md](/STORAGE.md) | Always ✅
+**01-oci-csi.yml** | Cluster resources for OCI Container Storage Interface (CSI). See [STORAGE.md](~/docs/STORAGE.md) | Always ✅
 **01-oci-driver-configs.yml** | Configuration Secrets for CCM and CSI drivers. ❗**Contains placeholder values that need to be replaced before use.** | Always ✅
 **02-machineconfig-ccm.yml** | MachineConfig that fetches the provider (OCI) id for kubelet from the OCI metadata of the instance. | Always ✅
 **02-machineconfig-csi.yml** | MachineConfig that enables the iscsid.service to run. | Always ✅
@@ -21,18 +21,3 @@ View usage during [installation](/README.md#documentation-and-installation-instr
 Most of our terraform-stacks have an output called `dynamic_custom_manifest`. This output contains all required manifests, concatenated and pre-formatted with the configuration values for CCM and CSI. This output can be copied and used to create a single manifest file which can then be uploaded during the cluster installation process.
 
 There is also a non-dynamic [condensed-manifest.yml](./condensed-manifest.yml) which contains all manifests (for easier upload), but still requires the sections for CCM and CSI configuration values to be replaced by the RMS job output `oci_ccm_config`, or manually formatted with OCI resource OCID's from your existing cluster infrastructure. These sections have been marked with a `TODO` so they can be easily located and replaced. See oci-cloud-controller-manager [example](https://github.com/oracle/oci-cloud-controller-manager/blob/master/manifests/provider-config-instance-principals-example.yaml) for more information.
-
-
-## oci-ccm-csi-drivers
-
-Each folder in `oci-ccm-csi-drivers` contains manifest files corresponding to a release version of the OCI CCM and CSI drivers. These files can be applied to an existing cluster to update the driver resources on the cluster to a specific version.
-
-If you have `oc` installed and your `KUBECONFIG` is pointing at your cluster, you can use the command
-```
-make update-drivers
-```
-to update the drivers on your cluster to the latest version, or run the command with a specific `OCI_DRIVER_VERSION` to downgrade/upgrade as necessary e.g.
-
-```
-make update-drivers OCI_DRIVER_VERSION=v1.25.0
-```
