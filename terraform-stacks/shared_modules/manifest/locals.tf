@@ -132,4 +132,57 @@ sshKey: '${var.public_ssh_key}'
 pullSecret: '${var.redhat_pull_secret}'
   EOT
 
+  oca_yaml = <<EOT
+# oci-oca-00-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oci-agent
+  labels:
+    "pod-security.kubernetes.io/enforce": "privileged"
+    "pod-security.kubernetes.io/audit": "privileged"
+    "pod-security.kubernetes.io/warn": "privileged"
+    "openshift.io/run-level": "0"
+---
+# oci-oca-01-service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: oci-agent
+  namespace: oci-agent
+---
+# oci-oca-02-daemon-set.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: oci-agent-ds
+  namespace: oci-agent
+spec:
+  selector:
+    matchLabels:
+      name: oci-agent
+  template:
+    metadata:
+      labels:
+        name: oci-agent
+    spec:
+      hostNetwork: true
+      serviceAccountName: oci-agent
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "node.kubernetes.io/not-ready"
+          operator: "Exists"
+          effect: "NoSchedule"
+      containers:
+      - image: ${var.oca_image_pull_link}
+        name: oci-agent-pod-01
+        securityContext:
+          privileged: true
+---
+  EOT
 }

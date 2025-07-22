@@ -11,6 +11,11 @@ locals {
     r.key => r.name
   }
 
+  current_region_key = [
+    for r in data.oci_identity_regions.regions.regions :
+    r.key if r.name == var.region
+  ][0]
+
   home_region = local.region_map[data.oci_identity_tenancy.tenancy.home_region_key]
 
   is_control_plane_iscsi_type = can(regex("^BM\\..*$", var.control_plane_shape))

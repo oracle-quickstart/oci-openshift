@@ -379,3 +379,19 @@ variable "no_proxy" {
   description = "The No Proxy Domains."
   default     = "Fake no_proxy"
 }
+
+variable "use_oracle_cloud_agent" {
+  description = "Check to enable Oracle Cloud Agent in the cluster."
+  type        = bool
+  default     = false
+}
+
+variable "oracle_cloud_agent_repo_name" {
+  description = "Repository that contains the Oracle Cloud Agent container image."
+  type        = string
+  default     = "openshift-oca"
+}
+
+variable "region" {
+  type = string
+}

@@ -227,6 +227,14 @@ module "dns" {
   op_vcn_openshift_vcn = module.network.op_vcn_openshift_vcn
 }
 
+module "ocir" {
+  source = "./shared_modules/ocir"
+
+  compartment_ocid = var.compartment_ocid
+  oca_repo_name    = var.oracle_cloud_agent_repo_name
+  region           = local.current_region_key
+}
+
 module "manifests" {
   source = "./shared_modules/manifest"
 
@@ -253,6 +261,10 @@ module "manifests" {
   public_ssh_key        = var.public_ssh_key
   cluster_name          = var.cluster_name
   webserver_private_ip  = var.webserver_private_ip
+
+  // Dependency on ocir
+  use_oracle_cloud_agent  = var.use_oracle_cloud_agent
+  oca_image_pull_link = module.ocir.image_pull_command
 }
 
 module "resource_attribution_tags" {

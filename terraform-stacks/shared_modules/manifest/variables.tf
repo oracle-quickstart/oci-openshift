@@ -11,7 +11,6 @@ variable "oci_driver_version" {
   }
 }
 
-
 variable "op_vcn_openshift_vcn" {
   type = string
 }
@@ -24,7 +23,6 @@ variable "op_apps_subnet" {
 variable "op_apps_security_list" {
   type = string
 }
-
 
 variable "cluster_name" {
   type = string
@@ -85,4 +83,14 @@ variable "is_disconnected_installation" {
 variable "set_proxy" {
   type    = bool
   default = false
+}
+
+variable "use_oracle_cloud_agent" {
+  type    = bool
+  default = false
+}
+
+variable "oca_image_pull_link" {
+  type    = string
+  default = ""
 }
