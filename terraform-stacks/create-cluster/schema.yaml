@@ -87,12 +87,9 @@ variableGroups:
     - use_existing_tags
     - tag_namespace_name
     - tag_namespace_compartment_ocid
-
-- title: "Oracle Cloud Agent"
-  variables:
-  - use_oracle_cloud_agent
-  - oracle_cloud_agent_repo_name
-  - region
+    - use_oracle_cloud_agent
+    - oracle_cloud_agent_repo_name
+    - region
 
 ###########
 # VARIABLES
@@ -586,7 +583,7 @@ variables:
 
   use_oracle_cloud_agent:
     type: boolean
-    title: Enable Oracle Cloud Agent
+    title: Enable Oracle Cloud Agent (beta)
     description: Select the option to enable Oracle Cloud Agent in the cluster. To use Oracle Cloud Agent, you must first <strong>accept the terms and conditions</strong> of the <a href='https://cloud.oracle.com/marketplace/application/ocid1.mktpublisting.oc1.phx.amaaaaaabg7vt6ia6vyockkduxg2jvwmxzef7nliwilshjavyjrybs66g57q'>Oracle Cloud Marketplace listing</a>. Export the container image to the Oracle Cloud Infrastructure Registry (OCIR) in your tenancy. Ensure the repository access is set to <strong>public</strong>. Enter the repository name in the textbox below.
     default: false
 
