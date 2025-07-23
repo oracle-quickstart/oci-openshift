@@ -193,15 +193,16 @@ module "compute" {
   op_network_security_group_cluster_compute_nsg      = module.network.op_network_security_group_cluster_compute_nsg
 
   // Depedency on loadbalancer
-  op_lb_openshift_api_int_lb                           = module.load_balancer.op_lb_openshift_api_int_lb
-  op_lb_openshift_api_lb                               = module.load_balancer.op_lb_openshift_api_lb
-  op_lb_openshift_apps_lb                              = module.load_balancer.op_lb_openshift_apps_lb
-  op_lb_bs_openshift_cluster_api_backend_set_external  = module.load_balancer.op_lb_bs_openshift_cluster_api_backend_set_external
-  op_lb_bs_openshift_cluster_ingress_http_backend_set  = module.load_balancer.op_lb_bs_openshift_cluster_ingress_http_backend_set
-  op_lb_bs_openshift_cluster_ingress_https_backend_set = module.load_balancer.op_lb_bs_openshift_cluster_ingress_https_backend_set
-  op_lb_bs_openshift_cluster_api_backend_set_internal  = module.load_balancer.op_lb_bs_openshift_cluster_api_backend_set_internal
-  op_lb_bs_openshift_cluster_infra-mcs_backend_set     = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set
-  op_lb_bs_openshift_cluster_infra-mcs_backend_set_2   = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set_2
+  op_lb_openshift_api_int_lb                             = module.load_balancer.op_lb_openshift_api_int_lb
+  op_lb_openshift_api_lb                                 = module.load_balancer.op_lb_openshift_api_lb
+  op_lb_openshift_apps_lb                                = module.load_balancer.op_lb_openshift_apps_lb
+  op_lb_bs_openshift_cluster_api_backend_set_external    = module.load_balancer.op_lb_bs_openshift_cluster_api_backend_set_external
+  op_lb_bs_openshift_cluster_ingress_http_backend_set    = module.load_balancer.op_lb_bs_openshift_cluster_ingress_http_backend_set
+  op_lb_bs_openshift_cluster_ingress_https_backend_set   = module.load_balancer.op_lb_bs_openshift_cluster_ingress_https_backend_set
+  op_lb_bs_openshift_cluster_api_backend_set_internal    = module.load_balancer.op_lb_bs_openshift_cluster_api_backend_set_internal
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set       = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set_2     = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set_2
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set_api_2 = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set_api_2
 }
 
 module "dns" {
@@ -263,8 +264,8 @@ module "manifests" {
   webserver_private_ip  = var.webserver_private_ip
 
   // Dependency on ocir
-  use_oracle_cloud_agent  = var.use_oracle_cloud_agent
-  oca_image_pull_link = module.ocir.image_pull_command
+  use_oracle_cloud_agent = var.use_oracle_cloud_agent
+  oca_image_pull_link    = module.ocir.image_pull_command
 }
 
 module "resource_attribution_tags" {

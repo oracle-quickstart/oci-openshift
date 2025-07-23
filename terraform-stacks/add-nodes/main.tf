@@ -106,15 +106,16 @@ module "compute" {
   op_network_security_group_cluster_compute_nsg      = data.oci_core_network_security_groups.cluster_compute_nsg.network_security_groups[0].id
 
   // Depedency on loadbalancer
-  op_lb_openshift_api_int_lb                           = data.oci_load_balancer_load_balancers.openshift_api_int_lb.load_balancers[0].id
-  op_lb_openshift_api_lb                               = data.oci_load_balancer_load_balancers.openshift_api_lb.load_balancers[0].id
-  op_lb_openshift_apps_lb                              = data.oci_load_balancer_load_balancers.openshift_apps_lb.load_balancers[0].id
-  op_lb_bs_openshift_cluster_api_backend_set_external  = "openshift_cluster_api_backend"
-  op_lb_bs_openshift_cluster_ingress_http_backend_set  = "openshift_cluster_ingress_http"
-  op_lb_bs_openshift_cluster_ingress_https_backend_set = "openshift_cluster_ingress_https"
-  op_lb_bs_openshift_cluster_api_backend_set_internal  = "openshift_cluster_api_backend"
-  op_lb_bs_openshift_cluster_infra-mcs_backend_set     = "openshift_cluster_infra-mcs"
-  op_lb_bs_openshift_cluster_infra-mcs_backend_set_2   = "openshift_cluster_infra-mcs_2"
+  op_lb_openshift_api_int_lb                             = data.oci_load_balancer_load_balancers.openshift_api_int_lb.load_balancers[0].id
+  op_lb_openshift_api_lb                                 = data.oci_load_balancer_load_balancers.openshift_api_lb.load_balancers[0].id
+  op_lb_openshift_apps_lb                                = data.oci_load_balancer_load_balancers.openshift_apps_lb.load_balancers[0].id
+  op_lb_bs_openshift_cluster_api_backend_set_external    = "openshift_cluster_api_backend"
+  op_lb_bs_openshift_cluster_ingress_http_backend_set    = "openshift_cluster_ingress_http"
+  op_lb_bs_openshift_cluster_ingress_https_backend_set   = "openshift_cluster_ingress_https"
+  op_lb_bs_openshift_cluster_api_backend_set_internal    = "openshift_cluster_api_backend"
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set       = "openshift_cluster_infra-mcs"
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set_2     = "openshift_cluster_infra-mcs_2"
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set_api_2 = "openshift_cluster_infra-mcs_2"
 }
 
 module "resource_attribution_tags" {

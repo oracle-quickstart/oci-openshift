@@ -109,9 +109,11 @@ A generic OpenShift cluster on OCI.
         - *.apps
 - **Load Balancers**
     - API Internal
-        - serves "api-int"
-    - API and Applications
-        - serves "api" and "*.apps"
+        - "api-int"
+    - API
+        - "api"
+    - Application
+        - "*.apps"
 - **Compute Image**
     - Global Image Capability Schemas
     - Image Capability Schema for OpenShift

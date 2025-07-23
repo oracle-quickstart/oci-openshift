@@ -17,7 +17,8 @@ View usage during [installation](/README.md#documentation-and-installation-instr
 **04-cluster-network.yml** | Cluster resource that configures the default Network's internalMasqueradeSubnet xto 169.254.64.0/18 to avoid collisions with iSCSI boot volumes. |Required when using Bare Metal instances with OpenShift versions >= 4.17
 **05-oci-eval-user-data.yml** | MachineConfig that evaluates and runs [userdata scripts](/terraform-stacks/shared_modules/compute/userdata/) stored in the metadata of instances. | Required when using Bare Metal instances
 
-## Dynamic Condensed Manifest Output
-Most of our terraform-stacks have an output called `dynamic_custom_manifest`. This output contains all required manifests, concatenated and pre-formatted with the configuration values for CCM and CSI. This output can be copied and used to create a single manifest file which can then be uploaded during the cluster installation process.
+Previously, the `oci_ccm_config` output from the OCI Resource Manager Stack (RMS) job was used to replace configuration values in `manifests/01-oci-ccm.yml` and `manifests/01-oci-csi.yml`, and then all required manifests were uploaded individually during cluster creation. This workflow is still valid, but the configuration values to be replaced are now located in [manifests/01-oci-driver-configs.yml](./manifests/01-oci-driver-configs.yml).
 
-There is also a non-dynamic [condensed-manifest.yml](./condensed-manifest.yml) which contains all manifests (for easier upload), but still requires the sections for CCM and CSI configuration values to be replaced by the RMS job output `oci_ccm_config`, or manually formatted with OCI resource OCID's from your existing cluster infrastructure. These sections have been marked with a `TODO` so they can be easily located and replaced. See oci-cloud-controller-manager [example](https://github.com/oracle/oci-cloud-controller-manager/blob/master/manifests/provider-config-instance-principals-example.yaml) for more information.
+### Dynamic Custom Manifest Output
+---
+Most of our terraform-stacks have an output called `dynamic_custom_manifest`. This output contains all required manifests, concatenated and pre-formatted with the configuration values for CCM and CSI. This output can be copied and used to create a single manifest file which can then be uploaded during the cluster installation process.
