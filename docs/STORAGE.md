@@ -1,8 +1,8 @@
 # Cloud Storage for OpenShift Clusters on OCI
 
-Your containers and virtual machines in OpenShift require an seamless, optimized, and performant persistent storage solution. To this end, we provide our **OCI Container Storage Interface (CSI) driver**. The OCI CSI driver can dynamically provision cloud storage and make it available to applications running in your cluster.
+Your containers and virtual machines in OpenShift require a seamless, optimized, and performant persistent storage solution. To this end, we provide our **OCI Container Storage Interface (CSI) driver**. The OCI CSI driver can dynamically provision cloud storage and make it available to applications running in your cluster.
 
-In collaboration with the Oracle Kubernetes Engine (OKE) team who own and maintain the open source [oci-cloud-controller-manager](https://github.com/oracle/oci-cloud-controller-manager) repository (which includes the OCI CSI driver), we have adapted the drivers for OpenShift on OCI, and we are continuing to add new features and enhancements for both teams.
+In collaboration with the Oracle Kubernetes Engine (OKE) team who own and maintain the open source [oci-cloud-controller-manager](https://github.com/oracle/oci-cloud-controller-manager) repository (which includes the OCI CSI driver), we have adapted the drivers for OpenShift on OCI and we are continuing to add new features and enhancements for both teams.
 
 The default storage option is the [OCI Block Volume Service](https://docs.oracle.com/en-us/iaas/Content/Block/Concepts/overview.htm), but the driver is also compatible with [OCI File Storage](https://docs.oracle.com/en-us/iaas/Content/File/Concepts/filestorageoverview.htm) (FSS).
 
@@ -27,7 +27,7 @@ Read more about the OCI CSI driver in the context of Oracle Kubernetes Engine be
 |                              | Cloning                        | ✅                   | ✅                         |
 | **[Access Modes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)**          | ReadWriteOnce | ✅ |✅ |
 | | ReadOnlyMany | 🔳 | ✅ |
-| | ReadyWriteMany | 🔳 | ✅ |
+| | ReadWriteMany | 🔳 | ✅ |
 
 ## OCI CSI Driver Components
 
@@ -35,13 +35,13 @@ The [manifests](/custom_manifests/manifests/01-oci-csi.yml) for the OCI CSI driv
 
 | **Resource**           | **Name**              |**Description**                           | **Notes** |
 |-------------------------|------------------------------|------------------------------------| --|
-| ⭐ **Namespace**           | `oci-csi` | Isolates OCI CSI components within the cluster.  | Has specific security and labeling to enable certain cluster operations. |
+| ⭐ **Namespace**           | `oci-csi` | Isolates OCI CSI components within the cluster.  | It has specific security and labeling to enable certain cluster operations. |
 | ⭐ **Deployment** | `csi-oci-controller` | Deploys the `oci-csi-controller-driver` and other CSI-related containers. | Responsible for storage provisioning, attachment, resizing, and snapshotting. |
 | ⭐ **DaemonSet** | `csi-oci-node` | Deploys the `oci-csi-node-driver` to all worker nodes. | Responsible for mounting storage and making it available to worker nodes. |
 | ⭐ **Secret** | `oci-volume-provisioner` | Contains OCI configuration, including instance principals and rate limits. | ❗Contains [placeholder values](https://github.com/oracle-quickstart/oci-openshift/blob/main/custom_manifests/manifests/01-oci-driver-configs.yml)❗ (view [Prerequisites](#prerequisites))          |
 | ⭐ **StorageClass**    | `oci-bv` (default)| Defines the default OCI Block Volume storage option. | |
 | | `oci-bv-encrypted`| An Encrypted OCI Block Volume storage option. | Paravirtualized attachments only. Requires extra customer setup. |
-| **VolumeSnapshotClass** | `oci-snapshot` (default) | Basic OCI Block Volume Snapshot. | |
+| **VolumeSnapshotClass** | `oci-snapshot` *Disabled by default* | The CSI driver supports basic OCI Block Volume Snapshotting, but the `VolumeSnapshotClass` is **not installed by default** for compatibility reasons. If you require volume snapshots or VM cloning, you must create the `VolumeSnapshotClass` manually after installation. See [Enabling VolumeSnapshotClass](#enabling-volumesnapshotclass) below. |
 | **CSIDriver** | `blockvolume.csi.oraclecloud.com` | Declares support for OCI Block Volumes. | |
 | | `fss.csi.oraclecloud.com` | Declares support for File Storage Service (FSS). |
 | **ServiceAccount** | `csi-oci-node-sa` | Cluster RBAC for the driver. | |
@@ -50,6 +50,7 @@ The [manifests](/custom_manifests/manifests/01-oci-csi.yml) for the OCI CSI driv
 | **ConfigMap** | `oci-csi-iscsiadm` | A script for managing `iscsiadm` operations. |
 | | `oci-fss-csi` | A script for FSS mounting operations. |
 
+---
 ## Limitations and Considerations
 
 Be aware of the following when using the OCI CSI driver:
@@ -66,7 +67,7 @@ Be aware of the following when using the OCI CSI driver:
 3. Block Volumes have an Availability Domain (AD) and can only be attached to instances within the same AD.
 4. The maximum number of different instances a Block Volume can be attached to is **32**.
 5. A Block Volume's performance (vpusPerGB) is shared between all attachments.
-6. The OCI CSI driver can provision, attach, and mount Block Volumes to instances - it **doesn't** manage read/write events between your workloads and the underlying storage. Other software layers manage concurrent access and maintain data integrity.
+6. The OCI CSI driver can provision, attach, and mount Block Volumes to instances - it **does not** manage read/write events between your workloads and the underlying storage. Other software layers manage concurrent access and maintain data integrity.
 
 Review the Block Volume documentation below for more information:
 - [OCI - Capabilities and Limits](https://docs.oracle.com/en-us/iaas/Content/Block/Concepts/overview.htm#Capabil)
@@ -110,6 +111,33 @@ View the supported driver versions in [custom_manifests/oci-ccm-csi-drivers](/cu
     ```bash
     oc apply -f custom_manifests/oci-ccm-csi-drivers/v1.32.0/01-oci-csi.yml
     ```
+
+#### Enabling VolumeSnapshotClass
+
+The OCI CSI driver supports snapshotting via `VolumeSnapshotClass`, but this class is **not installed by default**.
+
+**To use features that require volume snapshots (such as VM cloning with OpenShift Virtualization)**, you must create the following manifest post-installation:
+
+```yaml
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: oci-snapshot
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+driver: blockvolume.csi.oraclecloud.com
+parameters:
+  backupType: full
+deletionPolicy: Delete
+```
+
+Apply it with:
+
+```bash
+oc apply -f <your-volumesnapshotclass-file>.yaml
+```
+
+If you are using OpenShift Virtualization, please also see the relevant step in [openshift-virtualization.md](/docs/openshift-virtualization.md).
 
 ## Examples
 

@@ -18,7 +18,7 @@ For optimal performance, Openshift Virtualization should be used on clusters wit
 
 OpenShift Virtualization features such as Live Migration (node to node migration) require the underlying storage to have RWX capabilities. OCI CSI drivers [**v1.32.0**](https://github.com/oracle/oci-cloud-controller-manager/releases/tag/v1.32.0) and later have this capability.
 
-We also recommend that you use Ultra High Performance Raw Block Volumes (UHP RBVs). UHP means a performance level of 30+ VPUs/GB, which means more IOPS and throughput (up to 50,000 IOPS and 680 MB/s) than the default Balanced setting for Block Volumes (10 VPUs/GB). A Raw Block Volume is an volume that has been attached as a block device. The volume is not formatted or mounted with a filesytem, but the lack of a filesystem results in more performant storage (if the application is designed to work with it).
+We also recommend that you use Ultra High Performance Raw Block Volumes (UHP RBVs). UHP means a performance level of 30+ VPUs/GB, which means more IOPS and throughput (up to 50,000 IOPS and 680 MB/s) than the default Balanced setting for Block Volumes (10 VPUs/GB). A Raw Block Volume is a volume that has been attached as a block device. The volume is not formatted or mounted with a filesystem, but the lack of a filesystem results in higher performance storage (if the application is designed to work with it).
 
 > [!NOTE]
 > UHP RBVs are only available in a [forked](https://github.com/dfoster-oracle/oci-cloud-controller-manager/tree/dfoster/v1.32.0-beta) version of the [latest oci-cloud-controller-manager Release](https://github.com/oracle/oci-cloud-controller-manager/releases/latest), but the feature will be incorporated into the official driver at a later time.
@@ -45,13 +45,13 @@ Also be aware of the following with respect to OpenShift Virtualization:
     - If your VM image is less than 50 GB, a 50 GB Block Volume will be used.
 
 4. The maximum number of Block Volume attachments a single instance can have is **32***.
-    - Since each VM is backed by a single Block Volume, you can only have up to 32 VMs running on a single instance at a time since each VM needs it's Block Volume attached to the instance it's running on.
+    - Since each VM is backed by a single Block Volume, you can only have up to 32 VMs running on a single instance at a time since each VM needs its Block Volume attached to the instance it is running on.
     - You can use a different storage solution such as [OpenShift Data Foundation](https://www.redhat.com/en/technologies/cloud-computing/openshift-data-foundation) (ODF) for your OpenShift Virtualization environment to circumvent this limitation, but using ODF to support OpenShift Virtualization on OCI has not been certified by the Red Hat Virtualization team.
 
 5. Block Volumes can only be attached to instances within the same Availability Domain (AD).
     - At least 2 instances in the same AD are required for the Live Migration feature of OpenShift Virtualization. This is a consideration when creating your cluster in a multi-AD region.
         - (Recommended) - Specify a [Node Selection or Affinity](https://www.redhat.com/en/blog/node-selection-and-affinity-for-virtual-machines-in-openshift) for infra and workloads when configuring your OpenShift Virtualization HyperConverged Operator to force OpenShift Virtualization to only use instances in the same AD e.g. `topology.kubernetes.io/zone=PHX-AD-1`
-        - Set `Distribute Compute Instances Across ADs` to false in the Terraform variables when provisioning your instances.
+        - Set `distribute_compute_instances_across_ads` to false in the Terraform variables when provisioning your instances.
 
 ## Installation
 
@@ -98,3 +98,28 @@ reclaimPolicy: Delete
     ```
     oc patch storageclass oci-bv-uhp -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'
     ```
+
+4. **If you want to be able to clone VMs or use snapshot/restore operations, you must manually create the `VolumeSnapshotClass` resource after installation.**
+The OCI CSI driver supports snapshotting, but the `VolumeSnapshotClass` is **not installed by default** for compatibility reasons.
+Create the following manifest and apply it to your cluster:
+
+```yaml
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: oci-snapshot
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+driver: blockvolume.csi.oraclecloud.com
+parameters:
+  backupType: full
+deletionPolicy: Delete
+```
+
+Apply it with:
+
+```bash
+oc apply -f <your-volumesnapshotclass-file>.yaml
+```
+
+For more details, see [STORAGE.md - Enabling VolumeSnapshotClass](/docs/STORAGE.md#enabling-volumesnapshotclass).

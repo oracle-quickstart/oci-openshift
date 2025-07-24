@@ -93,3 +93,53 @@ variable "no_proxy" {
   type    = string
   default = "fake no_proxy"
 }
+
+variable "object_storage_namespace" {
+  type        = string
+  description = "OCI Object Storage namespace for the tenancy (required for uploading ISO and creating PAR)."
+}
+
+variable "object_storage_bucket" {
+  type        = string
+  description = "Name of the OCI Object Storage bucket to upload the OpenShift agent ISO image."
+}
+
+variable "cluster_name" {
+  type        = string
+  description = "Name of the OpenShift cluster."
+}
+
+variable "openshift_tag_namespace" {
+  type = string
+}
+
+variable "openshift_tag_instance_role" {
+  type = string
+}
+
+variable "openshift_attribution_tag_namespace" {
+  type    = string
+  default = "openshift-tags"
+}
+
+variable "openshift_attribution_tag_key" {
+  type    = string
+  default = "openshift-resource"
+}
+
+variable "openshift_tag_openshift_resource_value" {
+  type    = string
+  default = "openshift-resource-infra"
+}
+
+variable "agent_config" {
+  type = string
+}
+
+variable "install_config" {
+  type = string
+}
+
+variable "dynamic_custom_manifest" {
+  type = string
+}

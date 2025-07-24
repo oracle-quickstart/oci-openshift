@@ -120,8 +120,7 @@ controlPlane:
 platform:
   external:
     platformName: oci
-    cloudControllerManager: External
-${trimspace(var.set_proxy ? <<-PROXY
+    cloudControllerManager: External${trimspace(var.set_proxy ? <<-PROXY
 proxy:
   httpProxy: ${var.http_proxy}
   httpsProxy: ${var.https_proxy}
@@ -132,7 +131,7 @@ sshKey: '${var.public_ssh_key}'
 pullSecret: '${var.redhat_pull_secret}'
   EOT
 
-  oca_yaml = <<EOT
+oca_yaml = <<EOT
 # oci-oca-00-namespace.yaml
 apiVersion: v1
 kind: Namespace

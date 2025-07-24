@@ -18,27 +18,29 @@ variableGroups:
   - create_openshift_instances
   - openshift_image_source_uri
 
-- title: "Agent Based Installation Advanced Configurations"
-  variables:
-    - rendezvous_ip
-    - set_openshift_installer_version
-    - openshift_installer_version
-    - is_disconnected_installation
-    - public_ssh_key
-    - redhat_pull_secret
-    - webserver_private_ip
-    - webserver_shape
-    - webserver_image_source_id
-    - webserver_ocpus
-    - webserver_memory_in_gbs
-    - set_proxy
-    - http_proxy
-    - https_proxy
-    - no_proxy
-
 - title: "OpenShift Resource Attribution Tags"
   variables:
-    - tag_namespace_compartment_ocid_resource_tagging
+  - tag_namespace_compartment_ocid_resource_tagging
+
+- title: "Agent Based Installation Advanced Configurations"
+  variables:
+  - rendezvous_ip
+  - is_disconnected_installation
+  - set_openshift_installer_version
+  - openshift_installer_version
+  - public_ssh_key
+  - redhat_pull_secret
+  - object_storage_namespace
+  - object_storage_bucket
+  - webserver_private_ip
+  - webserver_shape
+  - webserver_image_source_id
+  - webserver_ocpus
+  - webserver_memory_in_gbs
+  - set_proxy
+  - http_proxy
+  - https_proxy
+  - no_proxy
 
 - title: "Control Plane Node Configuration"
   variables:
@@ -69,10 +71,16 @@ variableGroups:
 - title: "Networking Configuration"
   variables:
   - create_public_dns
+  - create_private_dns
   - enable_public_api_lb
   - enable_public_apps_lb
-  - create_private_dns
   - zone_dns
+  - use_existing_network
+  - networking_compartment_ocid
+  - existing_vcn_id
+  - existing_private_ocp_subnet_id
+  - existing_private_bare_metal_subnet_id
+  - existing_public_subnet_id
   - vcn_dns_label
   - vcn_cidr
   - public_cidr
@@ -98,17 +106,8 @@ variables:
   #
   # Cluster Configuration Variables
   #
-  cluster_name:
-    title: Cluster Name
-    description: <strong><em>(Required)</em></strong> - The name of your OpenShift cluster. It should be the same as what was specified when creating the OpenShift ISO and it should be DNS compatible. The cluster_name value must be 1-54 characters. It can use lowercase alphanumeric characters or hyphen (-), but must start and end with a lowercase letter or a number.
-    type: string
-    default: ""
-    pattern: "^[a-z0-9-]{1,54}$"
-    required: true
-
   tenancy_ocid:
     title: Tenancy Ocid
-    description: The ocid of the current tenancy.
     type: string
     default: tenancy_ocid
     required: true
@@ -119,10 +118,16 @@ variables:
     default: compartment_ocid
     required: true
 
+  cluster_name:
+    title: Cluster Name
+    type: string
+    default: ""
+    pattern: "^[a-z0-9-]{1,54}$"
+    required: true
+
   installation_method:
     type: enum
     title: Installation Method
-    description: "Assisted Installer (AI) or Agent-based Installer (ABI)"
     enum:
     - Assisted
     - Agent-based
@@ -132,14 +137,12 @@ variables:
   create_openshift_instances:
     type: boolean
     title: Create OpenShift Image and Instances
-    description: Select the checkbox to enable the creation of OpenShift image and instances.
     default: true
     required: true
 
   openshift_image_source_uri:
     type: string
     title: OpenShift Image Source URI
-    description: <strong><em>(Required)</em></strong> - The OCI Object Storage URI for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a pre-authenticated requests (PAR) uri, and paste the uri to this block. For more details, review <a href='https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/objectstorageoverview.htm'>Object Storage</a> and <a href='https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/usingpreauthenticatedrequests.htm'>PARs</a>.
     default: ""
     required: true
     visible: create_openshift_instances
@@ -150,10 +153,148 @@ variables:
   tag_namespace_compartment_ocid_resource_tagging:
     type: oci:identity:compartment:id
     title: Tag Namespace Compartment For OpenShift Resource Attribution Tags
-    description: <strong><em>(Required)</em></strong> - <strong>WARNING</strong> - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tags should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
-      If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
-      Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
     required: true
+
+  #
+  # Agent Based Installation Advanced Configurations
+  #
+  rendezvous_ip:
+    type: string
+    title: Rendezvous IP
+    default: "10.0.16.20"
+    required: true
+    visible:
+      eq:
+        - installation_method
+        - Agent-based
+
+  is_disconnected_installation:
+    type: boolean
+    title: Is Disconnected Agent-based Installation
+    default: false
+    required: true
+    visible:
+      eq:
+        - installation_method
+        - Agent-based
+
+  set_openshift_installer_version:
+    type: boolean
+    title: Set Openshift Installer Version
+    default: false
+    required: true
+    visible:
+      is_disconnected_installation
+
+  openshift_installer_version:
+    type: string
+    title: Openshift Installer Version
+    default: "latest"
+    visible:
+      set_openshift_installer_version
+
+  public_ssh_key:
+    type: oci:core:ssh:publickey
+    title: Public SSH Key
+    required: true
+    visible:
+      is_disconnected_installation
+
+  redhat_pull_secret:
+    type: string
+    title: RedHat Pull Secret
+    default: Specify your redhat pull secret. The default value is "PULL SECRET".
+    visible:
+      is_disconnected_installation
+
+  object_storage_namespace:
+    type: string
+    title: Object Storage Namespace
+    required: true
+    visible:
+      is_disconnected_installation
+
+  object_storage_bucket:
+    type: string
+    title: Object Storage Bucket
+    required: true
+    visible:
+      is_disconnected_installation
+
+  webserver_private_ip:
+    type: string
+    title: Webserver Private IP
+    required: true
+    visible:
+      is_disconnected_installation
+
+  webserver_shape:
+    type: string
+    title: Webserver Shape
+    default: "VM.Standard.E5.Flex"
+    required: true
+    visible:
+      is_disconnected_installation
+
+  webserver_image_source_id:
+    title: Webserver Image
+    type: oci:core:image:id
+    required: true
+    visible:
+      is_disconnected_installation
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      operatingSystem: "Oracle Linux"
+      shape: ${webserver_shape}
+
+  webserver_ocpus:
+    type: integer
+    title: Webserver OCPU
+    default: 2
+    minimum: 1
+    maximum: 144
+    required: true
+    visible:
+      is_disconnected_installation
+
+  webserver_memory_in_gbs:
+    type: integer
+    title: Webserver Memory
+    default: 8
+    minimum: 1
+    maximum: 1760
+    required: true
+    visible:
+      is_disconnected_installation
+
+  set_proxy:
+    type: boolean
+    title: Config Proxy Settings
+    default: false
+    required: true
+    visible:
+      is_disconnected_installation
+
+  http_proxy:
+    type: string
+    title: HTTP Proxy URL
+    default: Specify your HTTP Proxy URL. For example "http://my.proxy.server"
+    visible:
+      set_proxy
+
+  https_proxy:
+    type: string
+    title: HTTPS Proxy URL
+    default: Specify your HTTPS Proxy URL. For example "https://my.proxy.server"
+    visible:
+      set_proxy
+
+  no_proxy:
+    type: string
+    title: No Proxy Domains
+    default: Specify your No Proxy Domains. For example "localhost,127.0.0.1,{basedomain}"
+    visible:
+      set_proxy
 
   #
   # Control Plane Configuration Variables
@@ -161,21 +302,17 @@ variables:
   control_plane_shape:
     type: string
     title: Control Plane Shape
-    description: Compute Instance shape of control plan nodes. For more details, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>
-    default: "VM.Standard.E5.Flex"
     required: true
 
   control_plane_count:
     type: integer
     title: Control Plane Node Count
-    description: The number of control_plane nodes in the cluster. The default value is 3.
     required: true
     default: 3
 
   control_plane_ocpu:
     type: integer
     title: Control Plane Node OCPU
-    description: The number of OCPUs available for the shape of each control_plane node.
     default: 4
     minimum: 1
     maximum: 144
@@ -184,7 +321,6 @@ variables:
   control_plane_memory:
     type: integer
     title: Control Plane Node Memory
-    description: The amount of memory available for the shape of each control_plane node, in gigabytes. The default value is 16.
     default: 16
     minimum: 1
     maximum: 1760
@@ -193,7 +329,6 @@ variables:
   control_plane_boot_size:
     type: integer
     title: Control Plane Boot Volume
-    description: The size of the boot volume of each control_plane node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 1024 GB.
     default: 1024
     minimum: 50
     maximum: 32768
@@ -202,7 +337,6 @@ variables:
   control_plane_boot_volume_vpus_per_gb:
     type: integer
     title: Control Plane Node VPU
-    description: The number of volume performance units (VPUs) that will be applied to this volume per GB of each control_plane node. The default value is 100.
     default: 100
     minimum: 10
     maximum: 120
@@ -211,23 +345,20 @@ variables:
 
   distribute_cp_instances_across_ads:
     type: boolean
-    title: Distribute Control Plane Instances Across ADs
-    description: Select the checkbox to enable control-plane instances to be automatically distributed across ADs in a round-robin sequence starting from your selected AD. If unselected, then all nodes will be created in the selected starting AD.
+    title: Distribute Control Plane Instances Across Availability Domains
     default: true
     required: true
 
   starting_ad_name_cp:
     type: oci:identity:availabilitydomain:name
     title: Starting AD
-    description: Specify the Availability Domain (AD) for initial node placement. Additional nodes will be automatically distributed across ADs in a round-robin sequence starting from your selected AD.
     dependsOn:
       compartmentId: ${compartment_ocid}
     required: false
 
   distribute_cp_instances_across_fds:
     type: boolean
-    title: Distribute Control Plane Instances Across FDs
-    description: Select the checkbox to have control-plane instances distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will distribute them for you based on shape availability and other criteria.
+    title: Distribute Control Plane Instances Across Fault Domains
     default: true
     required: true
 
@@ -313,73 +444,145 @@ variables:
   create_public_dns:
     type: boolean
     title: Create Public DNS
-    description: Create a public DNS zone with your Base domain specified in Zone DNS. If this is not created, it is advised that you create a private DNS zone unless you are bringing your own DNS solution. To resolve cluster hostnames without DNS, users should add entries to /etc/hosts mapping the cluster hostnames to the IP address of the api_apps Load Balancer. The etc_hosts_entry output can be used for this purpose.
-    default: true
-
-  enable_public_api_lb:
-    type: boolean
-    title: Enable Public API Load Balancer
-    description: Create a Load Balancer for the OpenShift API endpoint (`api.<cluster>.<base_domain>`) in the public subnet with a public IP address. This allows users and administrators to access the OpenShift control plane over the internet. If disabled, the API Load Balancer will be created in a private subnet with a private IP, limiting access to within the VCN or through a connected VPN/private network. Public API access is useful for remote cluster management, automation, and CI/CD pipelines. In on-premise environments (e.g., C3/PCA), "public" IPs may refer to RFC 1918 addresses that are only routable within your internal network. Consult your network administrator to confirm external access.
-    default: false
-
-  enable_public_apps_lb:
-    type: boolean
-    title: Enable Public Apps Load Balancer
-    description: Create a Load Balancer for OpenShift applications (`*.apps.<cluster>.<base_domain>`) in the public subnet with a public IP address. This allows external users to access workloads and services deployed in the cluster. If disabled, the Apps Load Balancer will be created in a private subnet with a private IP, making application routes accessible only within the VCN or over a VPN/private network. Public access is useful for exposing applications to the internet, customer-facing services, or multi-tenant workloads. In on-premise setups (e.g., C3/PCA), "public" IPs may be RFC 1918 addresses that are still treated as public within the internal network. Coordinate with your network team for proper exposure.
     default: true
 
   create_private_dns:
     type: boolean
     title: Create Private DNS
-    description: Create a private DNS zone with your Base domain specified in Zone DNS. It will contain the same records as a public DNS zone and will facilitate the cluster's hostname resolution within the VCN. If using an unregistered domain name as the Base domain for your cluster, you should create a private DNS zone if possible, or you will have to take other measures to help the instances resolve the cluster's hostname. For more details, review <a href='https://docs.oracle.com/en-us/iaas/Content/DNS/Tasks/privatedns.htm'>Oracle Private DNS</a>
     default: false
+
+  enable_public_api_lb:
+    type: boolean
+    title: Enable Public API Load Balancer
+    default: false
+
+  enable_public_apps_lb:
+    type: boolean
+    title: Enable Public Apps Load Balancer
+    default: true
 
   zone_dns:
     type: string
     title: Zone DNS
-    description: <strong><em>(Required)</em></strong> - The name of cluster's DNS zone. This name must be the same as what was specified during OpenShift ISO creation. The zone_dns value must be a valid hostname.
     default: ""
     required: true
+
+  use_existing_network:
+    type: boolean
+    title: Use Existing Networking Infrastructure
+    default: false
+    required: true
+
+  networking_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Networking Compartment
+    default: compartment_ocid
+    required: true
+    visible:
+      eq:
+        - use_existing_network
+        - true
+
+  existing_vcn_id:
+    type: oci:core:vcn:id
+    title: Existing VCN
+    dependsOn:
+      compartmentId: ${networking_compartment_ocid}
+    required: true
+    visible:
+      eq:
+        - use_existing_network
+        - true
+
+  existing_private_ocp_subnet_id:
+    type: oci:core:subnet:id
+    title: Existing Private Subnet for OPC
+    dependsOn:
+      compartmentId: ${networking_compartment_ocid}
+      vcnId: ${existing_vcn_id}
+    required: true
+    visible:
+      eq:
+        - use_existing_network
+        - true
+
+  existing_private_bare_metal_subnet_id:
+    type: oci:core:subnet:id
+    title: Existing Private Subnet for Bare Metal
+    dependsOn:
+      compartmentId: ${networking_compartment_ocid}
+      vcnId: ${existing_vcn_id}
+    required: true
+    visible:
+      eq:
+        - use_existing_network
+        - true
+
+  existing_public_subnet_id:
+    type: oci:core:subnet:id
+    title: Existing Public Subnet
+    dependsOn:
+      compartmentId: ${networking_compartment_ocid}
+      vcnId: ${existing_vcn_id}
+    required: true
+    visible:
+      eq:
+        - use_existing_network
+        - true
 
   vcn_dns_label:
     type: string
     title: VCN DNS Label
-    description: A DNS label for the VCN, used in conjunction with the VNIC's hostname and subnet's DNS label to form a fully qualified domain name (FQDN) for each VNIC within this subnet (for example, bminstance1.subnet123.vcn1.oraclevcn.com). Must be an alphanumeric string that begins with a letter
     default: "openshiftvcn"
     required: true
+    visible:
+      eq:
+        - use_existing_network
+        - false
 
   vcn_cidr:
     type: string
     title: VCN CIDR
-    description: The IPv4 CIDR blocks for the VCN of your OpenShift Cluster. The default value is 10.0.0.0/16.
     default: "10.0.0.0/16"
     required: true
+    visible:
+      eq:
+        - use_existing_network
+        - false
 
   public_cidr:
     type: string
     title: Public Subnet CIDR
-    description: The IPv4 CIDR blocks for the public subnet of your OpenShift Cluster. The default value is 10.0.0.0/20.
     default: "10.0.0.0/20"
     required: true
+    visible:
+      eq:
+        - use_existing_network
+        - false
 
   private_cidr_ocp:
     type: string
     title: Private Subnet CIDR for OCP
-    description: The IPv4 CIDR blocks for the private subnet of your OpenShift Cluster. The default value is 10.0.16.0/20.
     default: "10.0.16.0/20"
     required: true
+    visible:
+      eq:
+        - use_existing_network
+        - false
 
   private_cidr_bare_metal:
     type: string
     title: Reserved Private Subnet CIDR for Bare Metal
-    description: The IPv4 CIDR blocks for the private subnet of OpenShift Bare Metal Clusters. The default value is 10.0.32.0/20.
     default: "10.0.32.0/20"
     required: true
+    visible:
+      eq:
+        - use_existing_network
+        - false
 
   load_balancer_shape_details_maximum_bandwidth_in_mbps:
     type: integer
     title: Load Balancer Maximum Bandwidth
-    description: Bandwidth in Mbps that determines the maximum bandwidth (ingress plus egress) that the load balancer can achieve. The values must be between minimumBandwidthInMbps and 8000
     default: 500
     minimum: 10
     maximum: 8000
@@ -388,7 +591,6 @@ variables:
   load_balancer_shape_details_minimum_bandwidth_in_mbps:
     type: integer
     title: Load Balancer Minimum Bandwidth
-    description: Bandwidth in Mbps that determines the total pre-provisioned bandwidth (ingress plus egress). The values must be between 10 and the maximumBandwidthInMbps
     default: 10
     minimum: 10
     maximum: 8000
@@ -400,7 +602,6 @@ variables:
   oci_driver_version:
     type: enum
     title: OCI CCM and CSI Driver Version
-    description: "Select what version of the OCI CCM and CSI driver to deploy."
     enum:
     - v1.30.0
     - v1.32.0
@@ -411,14 +612,12 @@ variables:
   use_existing_tags:
     type: boolean
     title: Use Existing Instance Role Tags
-    description: Indicates whether to reuse existing instance role tag namespace and defined tags when tagging OCI resources. By default, a new set of instance role tagging resources are created and destroyed with the rest of the cluster resources. If desired, create instance role tag resources seperately that can be reused with the the terraform from <a href='https://github.com/oracle-quickstart/oci-openshift/tree/main/terraform-stacks/create-instance-role-tags'>oci-openshift/terraform-stacks/create-instance-role-tags</a>. Existing instance role tagging resources will not be destroyed when the cluster is.
     default: false
     required: true
 
   tag_namespace_name:
     type: string
     title: Instance Role Tag Namespace Name
-    description: Name of the instance role tag namespace to reuse. Defaults to openshift-{cluster_name} if unspecified.
     default: ""
     required: false
     visible: use_existing_tags
@@ -426,156 +625,9 @@ variables:
   tag_namespace_compartment_ocid:
     type: oci:identity:compartment:id
     title: Instance Role Tag Namespace Compartment OCID
-    description: Compartment containing existing instance role tag namespace. Defaults to current compartment.
     default: compartment_ocid
     required: true
     visible: use_existing_tags
-
-  #
-  # Agent Based Installation Advanced Configurations
-  #
-  rendezvous_ip:
-    type: string
-    title: Rendezvous IP
-    description: The IP used to bootstrap the cluster using the Agent-based installer. Must be in the private_ocp subnet.
-    default: "10.0.16.20"
-    required: true
-    visible:
-      eq:
-        - installation_method
-        - Agent-based
-
-  set_openshift_installer_version:
-    type: boolean
-    title: Set Openshift Installer Version
-    description: If you don't want to use the latest version of openshift-installer, specify a specific supported version. For example, "4.19.1".
-    default: false
-    required: true
-    visible:
-      eq:
-        - installation_method
-        - Agent-based
-
-  openshift_installer_version:
-    type: string
-    title: Openshift Installer Version
-    description: The version of openshift-installer. You can find the published version in <a href='https://mirror.openshift.com/pub/openshift-v4/clients/ocp/'>published version</a>
-    default: "latest"
-    visible:
-      set_openshift_installer_version
-
-  is_disconnected_installation:
-    type: boolean
-    title: Is Disconnected Agent-based Installation
-    description: Indicates whether the cluster will be installed in a disconnected (air-gapped) environment.
-    default: false
-    required: true
-    visible:
-      eq:
-        - installation_method
-        - Agent-based
-
-  public_ssh_key:
-    type: string
-    title: Public ssh key
-    description: Public ssh key for web server to use.
-    default: Specify your SSH public key.
-    required: true
-    visible:
-      is_disconnected_installation
-
-  redhat_pull_secret:
-    type: string
-    title: RedHat Pull Secret
-    description: The pull secret that you need for authenticate purposes when downloading container images for OpenShift Container Platform components and services, such as Quay.io. See Install OpenShift Container Platform 4 from the Red Hat Hybrid Cloud Console.
-    default: Specify your redhat pull secret. The default value is "PULL SECRET".
-    visible:
-      is_disconnected_installation
-
-  webserver_private_ip:
-    type: string
-    title: Webserver Private IP
-    description: The Private IP of the server where you want to upload the rootfs image. This parameter is required only for disconnected environments. This IP should be included in the bootArtifactsBaseURL value in your agent-config file.
-    default: "10.0.0.200"
-    required: true
-    visible:
-      is_disconnected_installation
-
-  webserver_shape:
-    type: string
-    title: Webserver Shape
-    description: Compute Instance shape of webserver instance. For more details, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>
-    default: "VM.Standard.E5.Flex"
-    required: true
-    visible:
-      is_disconnected_installation
-
-  webserver_image_source_id:
-    title: Webserver Image
-    description: Image of webserver instance.
-    type: oci:core:image:id
-    required: true
-    visible:
-      is_disconnected_installation
-    dependsOn:
-      compartmentId: ${compartment_ocid}
-      operatingSystem: "Oracle Linux"
-      shape: ${webserver_shape}
-
-  webserver_ocpus:
-    type: integer
-    title: Webserver OCPU
-    description: The number of OCPUs available for the shape of webserver instance. The default value is 2.
-    default: 2
-    minimum: 1
-    maximum: 144
-    required: true
-    visible:
-      is_disconnected_installation
-
-  webserver_memory_in_gbs:
-    type: integer
-    title: Webserver Memory
-    description: The amount of memory available for the shape of webserver instance, in gigabytes. The default value is 8.
-    default: 8
-    minimum: 1
-    maximum: 1760
-    required: true
-    visible:
-      is_disconnected_installation
-
-  set_proxy:
-    type: boolean
-    title: Config Proxy Settings
-    description: If hosts are behind a firewall that requires the use of a proxy, provide additional information about the proxy.
-    default: false
-    required: true
-    visible:
-      is_disconnected_installation
-
-  http_proxy:
-    type: string
-    title: HTTP Proxy URL
-    description: The HTTP Proxy URL.
-    default: Specify your HTTP Proxy URL. For example "http://my.proxy.server"
-    visible:
-      set_proxy
-
-  https_proxy:
-    type: string
-    title: HTTPS Proxy URL
-    description: The HTTPS Proxy URL.
-    default: Specify your HTTPS Proxy URL. For example "https://my.proxy.server"
-    visible:
-      set_proxy
-
-  no_proxy:
-    type: string
-    title: No Proxy Domains
-    description: The No Proxy Domains.
-    default: Specify your No Proxy Domains. For example "localhost,127.0.0.1,{basedomain}"
-    visible:
-      set_proxy
 
   #
   # Oracle Cloud Agent Related Variables

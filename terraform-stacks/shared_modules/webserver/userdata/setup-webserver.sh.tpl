@@ -14,8 +14,14 @@ http_proxy=${http_proxy}
 https_proxy=${https_proxy}
 no_proxy=${no_proxy}
 openshift_installer_version=${openshift_installer_version}
+agent_install_dir=${agent_install_dir}
+object_storage_bucket=${object_storage_bucket}
+object_storage_namespace=${object_storage_namespace}
+dynamic_custom_manifest_object=${dynamic_custom_manifest_object}
+agent_config_object=${agent_config_object}
+install_config_object=${install_config_object}
+cluster_name=${cluster_name}
 
-# TODO - make these permanent by writing to /etc/environment. Make use of set_proxy and other proxy related variables.
 # only needed when there isn't public internet access
 # if cluster is only accessible from jumphost/webserver, append {cluster_name}.{baseDomain} to `no_proxy` e.g. `df-test.disconnected.dfosterdev.com`
 if [ "$set_proxy" = "true" ]; then
@@ -35,5 +41,22 @@ sudo mv openshift-install /usr/local/bin/.
 wget -nv https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
 tar -xf openshift-client-linux.tar.gz
 sudo mv oc /usr/local/bin/.
+
+sudo dnf -y install oraclelinux-developer-release-el9
+sudo dnf -y install python39-oci-cli
+
+# Prepare OpenShift agent-based deployment directory
+mkdir -p "${agent_install_dir}/openshift"
+sudo chmod -R a+w ${agent_install_dir}
+
+echo "Fetching OpenShift agent install artifacts from OCI Object Storage..."
+
+oci --auth instance_principal os object get --bucket-name "${object_storage_bucket}" --namespace "${object_storage_namespace}" --name "${agent_config_object}" --file "${agent_install_dir}/agent-config.yaml"
+oci --auth instance_principal os object get --bucket-name "${object_storage_bucket}" --namespace "${object_storage_namespace}" --name "${install_config_object}" --file "${agent_install_dir}/install-config.yaml"
+oci --auth instance_principal os object get --bucket-name "${object_storage_bucket}" --namespace "${object_storage_namespace}" --name "${dynamic_custom_manifest_object}" --file "${agent_install_dir}/openshift/dynamic-custom-manifest.yaml"
+
+echo "Agent-based OpenShift artifacts written:"
+ls -l "${agent_install_dir}"
+ls -l "${agent_install_dir}/openshift"
 
 echo "Webserver setup script completed."

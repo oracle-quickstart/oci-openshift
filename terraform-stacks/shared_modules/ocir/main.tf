@@ -18,7 +18,7 @@ data "oci_artifacts_container_images" "oca_container_images" {
   repository_name = var.oca_repo_name
 }
 
-# Fetch the only version of the oca listing 
+# Fetch the only version of the oca listing
 data "oci_marketplace_listing_packages" "marketplace_listing_packages" {
   listing_id = "ocid1.mktpublisting.oc1.phx.amaaaaaabg7vt6ia6vyockkduxg2jvwmxzef7nliwilshjavyjrybs66g57q"
 }

@@ -24,6 +24,10 @@ locals {
   apps_subnet_id        = var.enable_public_apps_lb ? module.network.op_subnet_public : module.network.op_subnet_private_ocp
   apps_security_list_id = var.enable_public_apps_lb ? module.network.op_security_list_public : module.network.op_security_list_private
 
+  existing_networking_compartment_ocid = var.use_existing_network ? var.networking_compartment_ocid : null
+
+  openshift_installer_version = var.set_openshift_installer_version ? var.openshift_installer_version : "latest"
+
   # how long resource creation will be paused to allow for newly created tagging resources to reach consistency
   wait_for_new_tag_consistency_wait_time = "900s"
 }

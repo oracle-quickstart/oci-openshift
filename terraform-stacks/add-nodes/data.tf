@@ -33,32 +33,3 @@ data "oci_load_balancer_backends" "openshift_apps_ingress_http" {
   backendset_name  = "openshift_cluster_ingress_http"
   load_balancer_id = data.oci_load_balancer_load_balancers.openshift_apps_lb.load_balancers[0].id
 }
-
-data "oci_core_vcns" "cluster_vcn" {
-  compartment_id = var.compartment_ocid
-  display_name   = var.cluster_name
-}
-
-data "oci_core_subnets" "private_ocp" {
-  compartment_id = var.compartment_ocid
-  display_name   = "private_ocp"
-  vcn_id         = data.oci_core_vcns.cluster_vcn.virtual_networks[0].id
-}
-
-data "oci_core_subnets" "private_bare_metal" {
-  compartment_id = var.compartment_ocid
-  display_name   = "private_bare_metal"
-  vcn_id         = data.oci_core_vcns.cluster_vcn.virtual_networks[0].id
-}
-
-data "oci_core_network_security_groups" "cluster_controlplane_nsg" {
-  compartment_id = var.compartment_ocid
-  display_name   = "cluster-controlplane-nsg"
-  vcn_id         = data.oci_core_vcns.cluster_vcn.virtual_networks[0].id
-}
-
-data "oci_core_network_security_groups" "cluster_compute_nsg" {
-  compartment_id = var.compartment_ocid
-  display_name   = "cluster-compute-nsg"
-  vcn_id         = data.oci_core_vcns.cluster_vcn.virtual_networks[0].id
-}

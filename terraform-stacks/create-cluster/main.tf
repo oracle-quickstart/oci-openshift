@@ -52,9 +52,10 @@ module "iam" {
 
   depends_on = [module.tags.wait_for_tag_consistency]
 
-  compartment_ocid = var.compartment_ocid
-  tenancy_ocid     = var.tenancy_ocid
-  cluster_name     = var.cluster_name
+  compartment_ocid            = var.compartment_ocid
+  tenancy_ocid                = var.tenancy_ocid
+  cluster_name                = var.cluster_name
+  networking_compartment_ocid = local.existing_networking_compartment_ocid
 
   // dependency on tags
   op_openshift_tag_namespace     = module.tags.op_openshift_tag_namespace
@@ -82,18 +83,27 @@ module "image" {
 }
 
 module "network" {
-  source = "./shared_modules/network"
+  source = "./shared_modules/network_interface"
 
   depends_on = [module.tags.wait_for_tag_consistency]
 
   compartment_ocid = var.compartment_ocid
   cluster_name     = var.cluster_name
 
+  # Parameters for creation of new network infrastructure
   vcn_cidr                = var.vcn_cidr
   private_cidr_ocp        = var.private_cidr_ocp
   private_cidr_bare_metal = var.private_cidr_bare_metal
   public_cidr             = var.public_cidr
   vcn_dns_label           = var.vcn_dns_label
+
+  # Parameters to use when using an exisiting network infrastructure
+  use_existing_network                  = var.use_existing_network
+  networking_compartment_ocid           = var.networking_compartment_ocid
+  existing_vcn_id                       = var.existing_vcn_id
+  existing_public_subnet_id             = var.existing_public_subnet_id
+  existing_private_bare_metal_subnet_id = var.existing_private_bare_metal_subnet_id
+  existing_private_ocp_subnet_id        = var.existing_private_ocp_subnet_id
 
   // Depedency on tags
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
@@ -122,6 +132,7 @@ module "load_balancer" {
 
 ## Web Server for creating OCP install images and hosting rootfs and ignition files
 module "webserver" {
+  count  = var.is_disconnected_installation ? 1 : 0
   source = "./shared_modules/webserver"
 
   is_disconnected_installation = var.is_disconnected_installation
@@ -140,7 +151,17 @@ module "webserver" {
   webserver_memory_in_gbs       = var.webserver_memory_in_gbs
   webserver_ocpus               = var.webserver_ocpus
   public_ssh_key                = var.public_ssh_key
-  openshift_installer_version   = var.openshift_installer_version
+  openshift_installer_version   = local.openshift_installer_version
+  cluster_name                  = var.cluster_name
+  object_storage_namespace      = var.object_storage_namespace
+  object_storage_bucket         = var.object_storage_bucket
+  agent_config                  = module.manifests.agent_config
+  install_config                = module.manifests.install_config
+  dynamic_custom_manifest       = module.manifests.dynamic_custom_manifest
+
+  // Depedency on tags
+  openshift_tag_namespace     = module.tags.op_openshift_tag_namespace
+  openshift_tag_instance_role = module.tags.op_openshift_tag_instance_role
 
   // Dependency on networks
   webserver_subnet_id = module.network.op_subnet_public # depend on variable

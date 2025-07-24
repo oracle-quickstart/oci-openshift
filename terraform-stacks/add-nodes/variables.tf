@@ -176,3 +176,33 @@ variable "cluster_instance_role_tag_namespace" {
   type        = string
   default     = ""
 }
+
+variable "networking_compartment_ocid" {
+  type        = string
+  description = "Select the compartment where the existing networking resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
+  default     = ""
+}
+
+variable "existing_vcn_id" {
+  description = "The OCID of the existing VCN to use when use_existing_network is true."
+  type        = string
+  default     = ""
+}
+
+variable "existing_private_ocp_subnet_id" {
+  description = "The OCID of the existing private subnet for OCP to use when use_existing_network is true."
+  type        = string
+  default     = ""
+}
+
+variable "existing_private_bare_metal_subnet_id" {
+  description = "The OCID of the existing private subnet for Bare Metal to use when use_existing_network is true."
+  type        = string
+  default     = ""
+}
+
+variable "existing_public_subnet_id" {
+  description = "The OCID of the existing public subnet to use when use_existing_network is true."
+  type        = string
+  default     = ""
+}
