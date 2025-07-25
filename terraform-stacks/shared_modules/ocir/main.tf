@@ -24,7 +24,7 @@ data "oci_marketplace_listing_packages" "marketplace_listing_packages" {
 }
 
 locals {
-  oca_version = try(data.oci_marketplace_listing_packages.marketplace_listing_packages.listing_packages[0].package_version,"NA")
+  oca_version = try(data.oci_marketplace_listing_packages.marketplace_listing_packages.listing_packages[0].package_version, "NA")
 
   all_images = flatten([
     for collection in data.oci_artifacts_container_images.oca_container_images.container_image_collection : collection.items

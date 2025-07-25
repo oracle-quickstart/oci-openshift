@@ -29,5 +29,5 @@ locals {
   openshift_installer_version = var.set_openshift_installer_version ? var.openshift_installer_version : "latest"
 
   # how long resource creation will be paused to allow for newly created tagging resources to reach consistency
-  wait_for_new_tag_consistency_wait_time = "900s"
+  wait_for_new_tag_consistency_wait_time = "30s"
 }

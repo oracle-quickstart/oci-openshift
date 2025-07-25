@@ -496,7 +496,7 @@ variables:
 
   existing_private_ocp_subnet_id:
     type: oci:core:subnet:id
-    title: Existing Private Subnet for OPC
+    title: Existing Private Subnet for OCP
     dependsOn:
       compartmentId: ${networking_compartment_ocid}
       vcnId: ${existing_vcn_id}

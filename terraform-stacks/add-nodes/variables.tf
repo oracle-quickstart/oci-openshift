@@ -112,12 +112,12 @@ variable "compute_boot_size" {
 
 variable "tenancy_ocid" {
   type        = string
-  description = "The ocid of the current tenancy."
+  description = "The OCID of the current tenancy."
 }
 
 variable "compartment_ocid" {
   type        = string
-  description = "The ocid of the compartment where you wish to create the OpenShift cluster."
+  description = "The OCID of the compartment where you wish to create the OpenShift cluster."
 }
 
 variable "cluster_name" {
