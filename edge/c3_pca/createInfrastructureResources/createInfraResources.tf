@@ -595,9 +595,9 @@ variable "control_plane_ocpu" {
   }
 }
 variable "control_plane_memory" {
-  default     = 16
+  default     = 24
   type        = number
-  description = "The amount of memory available for the shape of each control_plane node, in gigabytes. The default value is 16. "
+  description = "The amount of memory available for the shape of each control_plane node, in gigabytes. The default value is 24. "
 
   validation {
     condition     = var.control_plane_memory >= 1 && var.control_plane_memory <= 1760
