@@ -157,7 +157,7 @@ variable "control_plane_count" {
 variable "control_plane_ocpu" {
   default     = 4
   type        = number
-  description = "The number of OCPUs for each control_plane node. The default value is 4. For BM shapes, this value is ignored."
+  description = "The number of OCPUs for each control_plane node. The default value is 4. For BM shapes, this value is ignored and determined by the shape selected."
   validation {
     condition     = var.control_plane_ocpu >= 1 && var.control_plane_ocpu <= 114
     error_message = "The control_plane_ocpu value must be between 1 and 114."
@@ -165,9 +165,9 @@ variable "control_plane_ocpu" {
 }
 
 variable "control_plane_memory" {
-  default     = 16
+  default     = 24
   type        = number
-  description = "The amount of memory available for the shape of each control_plane node, in gigabytes. The default value is 16 for VM and 1024 for BM."
+  description = "The amount of memory available for the shape of each control_plane node, in gigabytes. The default value is 24. For BM shapes, this value is ignored and determined by the shape selected."
   validation {
     condition     = var.control_plane_memory >= 1 && var.control_plane_memory <= 1760
     error_message = "The control_plane_memory value must be between the value of control_plane_ocpu and 1760."
@@ -227,7 +227,7 @@ variable "compute_count" {
 variable "compute_ocpu" {
   default     = 6
   type        = number
-  description = "The number of OCPUs for each compute node. The default value is 6. For BM shapes, this value is ignored."
+  description = "The number of OCPUs for each compute node. The default value is 6. For BM shapes, this value is ignored and determined by the shape selected."
   validation {
     condition     = var.compute_ocpu >= 1 && var.compute_ocpu <= 114
     error_message = "The compute_ocpu value must be between 1 and 114."
@@ -237,7 +237,7 @@ variable "compute_ocpu" {
 variable "compute_memory" {
   default     = 16
   type        = number
-  description = "The amount of memory available for the shape of each compute node, in gigabytes. The default value is 16."
+  description = "The amount of memory available for the shape of each compute node, in gigabytes. The default value is 16. For BM shapes, this value is ignored and determined by the shape selected."
   validation {
     condition     = var.compute_memory >= 1 && var.compute_memory <= 1760
     error_message = "The compute_memory value must be between the value of compute_ocpu and 1760."

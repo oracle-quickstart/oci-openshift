@@ -321,7 +321,7 @@ variables:
   control_plane_memory:
     type: integer
     title: Control Plane Node Memory
-    default: 16
+    default: 24
     minimum: 1
     maximum: 1760
     required: true

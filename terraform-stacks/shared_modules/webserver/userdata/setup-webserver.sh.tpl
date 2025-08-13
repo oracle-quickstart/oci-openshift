@@ -51,12 +51,17 @@ sudo chmod -R a+w ${agent_install_dir}
 
 echo "Fetching OpenShift agent install artifacts from OCI Object Storage..."
 
+# maybe put this in a loop that can retry
 oci --auth instance_principal os object get --bucket-name "${object_storage_bucket}" --namespace "${object_storage_namespace}" --name "${agent_config_object}" --file "${agent_install_dir}/agent-config.yaml"
 oci --auth instance_principal os object get --bucket-name "${object_storage_bucket}" --namespace "${object_storage_namespace}" --name "${install_config_object}" --file "${agent_install_dir}/install-config.yaml"
 oci --auth instance_principal os object get --bucket-name "${object_storage_bucket}" --namespace "${object_storage_namespace}" --name "${dynamic_custom_manifest_object}" --file "${agent_install_dir}/openshift/dynamic-custom-manifest.yaml"
 
+echo "Backing up Agent-based OpenShift artifacts:"
+cp -R "${agent_install_dir}" "${agent_install_dir}-backup"
+
 echo "Agent-based OpenShift artifacts written:"
 ls -l "${agent_install_dir}"
 ls -l "${agent_install_dir}/openshift"
+
 
 echo "Webserver setup script completed."

@@ -50,7 +50,7 @@ A generic OpenShift cluster on OCI.
     - Count: 3
     - Shape: VM.Standard.E5.Flex
     - OCPU: 4
-    - Memory: 16 GB
+    - Memory: 24 GB
     - Boot Volume
         - Size: 1024 GB
         - VPUs/GB: 100
@@ -131,7 +131,7 @@ A generic OpenShift cluster on OCI.
     - Count: 3
     - Shape: VM.Standard.E5.Flex
     - OCPU: 4
-    - Memory: 16 GB
+    - Memory: 24 GB
     - Boot Volume
         - Size: 1024 GB
         - VPUs/GB: 100

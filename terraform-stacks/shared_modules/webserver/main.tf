@@ -87,8 +87,13 @@ resource "oci_core_instance" "webserver" {
       object_storage_namespace       = var.object_storage_namespace
       object_storage_bucket          = var.object_storage_bucket
       cluster_name                   = var.cluster_name
+      create_image                   = true
+      # image_object =
+
     }))
   }
+
+  depends_on = [time_sleep.wait_for_objects]
 }
 
 output "webserver_public_ip" {
