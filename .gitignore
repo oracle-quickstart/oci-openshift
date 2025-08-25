@@ -12,6 +12,10 @@ target/
 **/*.zip
 dist/
 
+checksums/
+**/*.sha256
+**/*.SHA256SUMS
+
 ### Terraform ###
 # Local .terraform directories
 **/.terraform/*

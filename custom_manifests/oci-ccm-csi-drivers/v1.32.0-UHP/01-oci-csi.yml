@@ -1,6 +1,6 @@
+# ----- 01-oci-csi.yml -----
 
 # oci-csi-00-namespace.yaml
----
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -13,7 +13,7 @@ metadata:
     "pod-security.kubernetes.io/warn": "privileged"
     "security.openshift.io/scc.podSecurityLabelSync": "false"
     "openshift.io/run-level": "0"
-    "pod-security.kubernetes.io/enforce-version": "v1.24"
+    "pod-security.kubernetes.io/enforce-version": "v1.32"
 
 ---
 
@@ -42,7 +42,7 @@ spec:
         node-role.kubernetes.io/control-plane: ""
       containers:
         - name: csi-volume-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v3.2.1
+          image: registry.k8s.io/sig-storage/csi-provisioner:v5.0.1
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --volume-name-prefix=csi
@@ -57,7 +57,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-fss-volume-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v3.2.1
+          image: registry.k8s.io/sig-storage/csi-provisioner:v5.0.1
           args:
             - --csi-address=/var/run/shared-tmpfs/csi-fss.sock
             - --volume-name-prefix=csi-fss
@@ -72,7 +72,7 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-attacher
-          image: k8s.gcr.io/sig-storage/csi-attacher:v4.2.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.6.1
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --timeout=120s
@@ -85,7 +85,24 @@ spec:
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
         - name: csi-resizer
-          image: k8s.gcr.io/sig-storage/csi-resizer:v1.7.0
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.11.1
+          args:
+            - --csi-address=/var/run/shared-tmpfs/csi.sock
+            - --leader-election
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: snapshot-controller
+          image: registry.k8s.io/sig-storage/snapshot-controller:v6.3.0
+          args:
+            - --leader-election
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: csi-snapshotter
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.3.0
           args:
             - --csi-address=/var/run/shared-tmpfs/csi.sock
             - --leader-election
@@ -99,7 +116,7 @@ spec:
             - --fss-csi-endpoint=unix://var/run/shared-tmpfs/csi-fss.sock
           command:
             - /usr/local/bin/oci-csi-controller-driver
-          image: ghcr.io/oracle/cloud-provider-oci:v1.25.0
+          image: ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: config
@@ -248,7 +265,7 @@ spec:
         role: csi-oci
     spec:
       nodeSelector:
-        node-role.kubernetes.io/worker: ""
+        node-role.kubernetes.io/worker: "" # this is not present in https://github.com/oracle/oci-cloud-controller-manager/blob/master/manifests/container-storage-interface/oci-csi-node-driver.yaml
       containers:
         - name: oci-csi-node-driver
           args:
@@ -267,7 +284,7 @@ spec:
                   fieldPath: spec.nodeName
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/host/usr/bin:/host/sbin
-          image: ghcr.io/oracle/cloud-provider-oci:v1.25.0
+          image: ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA
           securityContext:
             privileged: true
           volumeMounts:
@@ -281,6 +298,7 @@ spec:
             - mountPath: /dev
               name: device-dir
             - mountPath: /host
+              mountPropagation: HostToContainer
               name: host-root
             - mountPath: /sbin/iscsiadm
               name: chroot-iscsiadm
@@ -301,7 +319,7 @@ spec:
           args:
             - --csi-address=/csi/csi.sock
             - --kubelet-registration-path=/var/lib/kubelet/plugins/blockvolume.csi.oraclecloud.com/csi.sock
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.1
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.12.0
           securityContext:
             privileged: true
           lifecycle:
@@ -320,7 +338,7 @@ spec:
           args:
             - --csi-address=/fss/csi.sock
             - --kubelet-registration-path=/var/lib/kubelet/plugins/fss.csi.oraclecloud.com/csi.sock
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.0
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.12.0
           securityContext:
             privileged: true
           lifecycle:
@@ -434,6 +452,24 @@ rules:
  - apiGroups: [""]
    resources: ["persistentvolumeclaims/status"]
    verbs: ["patch"]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshotclasses" ]
+   verbs: [ "get", "list", "watch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshotcontents" ]
+   verbs: [ "create", "get", "list", "watch", "update", "delete", "patch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshotcontents/status" ]
+   verbs: [ "update", "patch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshots" ]
+   verbs: [ "get", "list", "watch", "update", "patch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshots/status" ]
+   verbs: [ "update", "patch" ]
+ - apiGroups: [ "" ]
+   resources: [ "serviceaccounts" ]
+   verbs: [ "get", "list", "watch", "create" ]
 
 ---
 
@@ -459,9 +495,9 @@ kind: StorageClass
 metadata:
   name: oci-bv
 provisioner: blockvolume.csi.oraclecloud.com
-volumeBindingMode: WaitForFirstConsumer
-allowVolumeExpansion: true
 reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
 
 ---
 
@@ -471,10 +507,60 @@ kind: StorageClass
 metadata:
   name: oci-bv-encrypted
 provisioner: blockvolume.csi.oraclecloud.com
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
 parameters:
   attachment-type: "paravirtualized"
-reclaimPolicy: Delete
-volumeBindingMode: WaitForFirstConsumer
+
+---
+
+# oci-bv-uhp can be used to create Ultra High Performance OCI Block Volume and should be the default when using OpenShift Virtualization. Currently, this StorageClass is only compatable with UHP-enabled CSI drivers e.g. "ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA"
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: oci-bv-uhp
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: blockvolume.csi.oraclecloud.com
+parameters:
+  oci.oraclecloud.com/initial-defined-tags-override: '{"openshift-tags": {"openshift-resource": "openshift-virtualization"}}'
+  vpusPerGB: "80"
+volumeBindingMode: Immediate
 allowVolumeExpansion: true
+reclaimPolicy: Delete
+
+---
+
+# # https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/volume-snapshot-and-restore-using-csi.md
+# apiVersion: snapshot.storage.k8s.io/v1
+# kind: VolumeSnapshotClass
+# metadata:
+#   name: oci-snapshot
+#   annotations:
+#     snapshot.storage.kubernetes.io/is-default-class: "true"
+# driver: blockvolume.csi.oraclecloud.com
+# parameters:
+#   backupType: full
+# deletionPolicy: Delete
+
+---
+
+# # https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingpersistentvolumeclaim_Provisioning_PVCs_on_FSS.htm#contengcreatingpersistentvolumeclaim_topic-Provisioning_PVCs_on_FSS-Using-CSI-Volume-Plugin
+# kind: StorageClass
+# apiVersion: storage.k8s.io/v1
+# metadata:
+#   name: oci-dyn-fss
+# provisioner: fss.csi.oraclecloud.com
+# parameters:
+#   availabilityDomain: <ad-name> # Required
+#   mountTargetOcid: <mt-ocid> | mountTargetSubnetOcid: <mt-subnet-ocid>
+#   compartmentOcid: <compartment-ocid>
+#   kmsKeyOcid: <key-ocid>
+#   exportPath: <path>
+#   exportOptions: "[{<options-in-json-format>}]"
+#   encryptInTransit: "false"
+#   oci.oraclecloud.com/initial-defined-tags-override: '{"<tag-namespace>": {"<tag-key>": "<tag-value>"}}'
+#   oci.oraclecloud.com/initial-freeform-tags-override: '{"<tag-key>": "<tag-value>"}'
 
 ---

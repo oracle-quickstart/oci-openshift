@@ -25,6 +25,14 @@ ${module.load_balancer.op_lb_openshift_apps_lb_ip_addr}  console-openshift-conso
 EOT
 }
 
+output "agent_config" {
+  value = module.manifests.agent_config
+}
+
+output "install_config" {
+  value = module.manifests.install_config
+}
+
 output "stack_version" {
   value = local.stack_version
 }

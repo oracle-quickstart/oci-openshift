@@ -1,3 +1,4 @@
+# ----- 01-oci-ccm.yml -----
 
 # oci-ccm-00-namespace.yaml
 apiVersion: v1
@@ -12,7 +13,7 @@ metadata:
     "pod-security.kubernetes.io/warn": "privileged"
     "security.openshift.io/scc.podSecurityLabelSync": "false"
     "openshift.io/run-level": "0"
-    "pod-security.kubernetes.io/enforce-version": "v1.24"
+    "pod-security.kubernetes.io/enforce-version": "v1.32"
 
 ---
 
@@ -55,6 +56,7 @@ rules:
   - list
   - watch
   - patch
+  - get
 
 - apiGroups:
   - ""
@@ -151,6 +153,9 @@ rules:
   - serviceaccounts
   verbs:
   - create
+  - list
+  - get
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -168,7 +173,6 @@ rules:
   - list
   - watch
   - patch
-
 ---
 
 # oci-ccm-03-cluster-role-binding.yaml
@@ -212,10 +216,7 @@ spec:
       hostNetwork: true
       nodeSelector:
         node-role.kubernetes.io/control-plane: ""
-      priorityClassName: system-cluster-critical
       tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
       - key: node.cloudprovider.kubernetes.io/uninitialized
         value: "true"
         effect: NoSchedule
@@ -237,7 +238,7 @@ spec:
             path: /etc/kubernetes
       containers:
         - name: oci-cloud-controller-manager
-          image: ghcr.io/oracle/cloud-provider-oci:v1.25.0
+          image: ghcr.io/oracle/cloud-provider-oci:v1.32.0
           command:
             - /bin/bash
             - -c
@@ -247,7 +248,7 @@ spec:
               if [[ -f /etc/kubernetes/apiserver-url.env ]]; then
                 source /etc/kubernetes/apiserver-url.env
               fi
-              exec /usr/local/bin/oci-cloud-controller-manager --cloud-config=/etc/oci/cloud-provider.yaml --cloud-provider=oci --leader-elect-resource-lock=configmapsleases --v=2
+              exec /usr/local/bin/oci-cloud-controller-manager --cloud-config=/etc/oci/cloud-provider.yaml --cloud-provider=oci --leader-elect-resource-lock=leases --concurrent-service-syncs=3 --v=2
           volumeMounts:
             - name: cfg
               mountPath: /etc/oci
@@ -255,5 +256,4 @@ spec:
             - name: kubernetes
               mountPath: /etc/kubernetes
               readOnly: true
-
 ---

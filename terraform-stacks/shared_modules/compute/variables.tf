@@ -130,6 +130,10 @@ variable "op_lb_bs_openshift_cluster_infra-mcs_backend_set_2" {
   type = string
 }
 
+variable "op_lb_bs_openshift_cluster_infra-mcs_backend_set_api_2" {
+  type = string
+}
+
 variable "installation_method" {
   type    = string
   default = "Assisted"

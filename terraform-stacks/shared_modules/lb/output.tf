@@ -51,3 +51,7 @@ output "op_lb_bs_openshift_cluster_infra-mcs_backend_set" {
 output "op_lb_bs_openshift_cluster_infra-mcs_backend_set_2" {
   value = try(oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_set_2.name, null)
 }
+
+output "op_lb_bs_openshift_cluster_infra-mcs_backend_set_api_2" {
+  value = try(oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_set_api_2.name, null)
+}

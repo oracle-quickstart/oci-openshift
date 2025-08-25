@@ -112,12 +112,12 @@ variable "compute_boot_size" {
 
 variable "tenancy_ocid" {
   type        = string
-  description = "The ocid of the current tenancy."
+  description = "The OCID of the current tenancy."
 }
 
 variable "compartment_ocid" {
   type        = string
-  description = "The ocid of the compartment where you wish to create the OpenShift cluster."
+  description = "The OCID of the compartment where you wish to create the OpenShift cluster."
 }
 
 variable "cluster_name" {
@@ -173,6 +173,36 @@ variable "distribute_compute_instances_across_fds" {
 
 variable "cluster_instance_role_tag_namespace" {
   description = "To assign roles like control_plane or compute to instances, a Tag Namespace is required. If you're using the default format openshift-'$cluster_name', you can skip specifying the Tag Namespace—it's automatically detected using the cluster name. If your setup uses a custom format, be sure to provide the correct Tag Namespace explicitly."
+  type        = string
+  default     = ""
+}
+
+variable "networking_compartment_ocid" {
+  type        = string
+  description = "Select the compartment where the existing networking resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
+  default     = ""
+}
+
+variable "existing_vcn_id" {
+  description = "The OCID of the existing VCN to use when use_existing_network is true."
+  type        = string
+  default     = ""
+}
+
+variable "existing_private_ocp_subnet_id" {
+  description = "The OCID of the existing private subnet for OCP to use when use_existing_network is true."
+  type        = string
+  default     = ""
+}
+
+variable "existing_private_bare_metal_subnet_id" {
+  description = "The OCID of the existing private subnet for Bare Metal to use when use_existing_network is true."
+  type        = string
+  default     = ""
+}
+
+variable "existing_public_subnet_id" {
+  description = "The OCID of the existing public subnet to use when use_existing_network is true."
   type        = string
   default     = ""
 }

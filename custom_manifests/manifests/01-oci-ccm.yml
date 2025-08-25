@@ -13,7 +13,7 @@ metadata:
     "pod-security.kubernetes.io/warn": "privileged"
     "security.openshift.io/scc.podSecurityLabelSync": "false"
     "openshift.io/run-level": "0"
-    "pod-security.kubernetes.io/enforce-version": "v1.30"
+    "pod-security.kubernetes.io/enforce-version": "v1.32"
 
 ---
 
@@ -238,7 +238,7 @@ spec:
             path: /etc/kubernetes
       containers:
         - name: oci-cloud-controller-manager
-          image: ghcr.io/oracle/cloud-provider-oci:v1.30.0
+          image: ghcr.io/oracle/cloud-provider-oci:v1.32.0
           command:
             - /bin/bash
             - -c

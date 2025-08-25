@@ -131,3 +131,26 @@ resource "oci_load_balancer_listener" "openshift_cluster_infra-mcs_2" {
   port                     = 22624
   protocol                 = "TCP"
 }
+
+resource "oci_load_balancer_backend_set" "openshift_cluster_infra-mcs_backend_set_api_2" {
+  health_checker {
+    protocol          = "HTTP"
+    port              = 22624
+    return_code       = 200
+    url_path          = "/healthz"
+    interval_ms       = 10000
+    timeout_in_millis = 3000
+    retries           = 3
+  }
+  name             = "openshift_cluster_infra-mcs_2"
+  load_balancer_id = oci_load_balancer_load_balancer.openshift_api_lb.id
+  policy           = "LEAST_CONNECTIONS"
+}
+
+resource "oci_load_balancer_listener" "openshift_cluster_infra-mcs-api_2" {
+  default_backend_set_name = oci_load_balancer_backend_set.openshift_cluster_infra-mcs_backend_set_api_2.name
+  name                     = "openshift_cluster_infra-mcs_2"
+  load_balancer_id         = oci_load_balancer_load_balancer.openshift_api_lb.id
+  port                     = 22624
+  protocol                 = "TCP"
+}

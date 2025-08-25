@@ -57,6 +57,18 @@ resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_5"
   direction                 = "INGRESS"
   source                    = var.vcn_cidr
 }
+resource "oci_core_network_security_group_security_rule" "cluster_lb_nsg_rule_nat_ingress" {
+  network_security_group_id = oci_core_network_security_group.cluster_lb_nsg.id
+  protocol                  = "6"
+  direction                 = "INGRESS"
+  source                    = "${oci_core_nat_gateway.nat_gateway.nat_ip}/32"
+  tcp_options {
+    destination_port_range {
+      min = 22624
+      max = 22624
+    }
+  }
+}
 
 resource "oci_core_network_security_group" "cluster_controlplane_nsg" {
   compartment_id = var.compartment_ocid

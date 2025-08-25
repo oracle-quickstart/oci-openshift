@@ -1,25 +1,27 @@
 SHELL = bash
-PKG_VERSION ?= v1.3.0
-OCI_DRIVER_VERSION ?= v1.30.0
+
+PKG_VERSION ?= v1.4.0
+OCI_DRIVER_VERSION ?= v1.32.0
+
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
 PODMAN := $(shell command -v podman 2> /dev/null)
 OC := $(shell command -v oc 2> /dev/null)
 
 .PHONY: all
-all: pre-commit machineconfigs manifests zip
+all: precommit machineconfigs manifests version checksums zip
 
-.PHONY: pre-commit
-pre-commit:
+.PHONY: precommit
+precommit:
 ifdef PRE_COMMIT
-	$(info "Running pre-commit...")
+	$(info Running pre-commit...)
 	pre-commit run --all-files
 else
-	$(warning "pre-commit not installed. Skipping...")
+	$(warning pre-commit not installed. Skipping...)
 endif
 
 .PHONY: zip
-zip: version checksums
-	@echo "Packaging stacks with version ${PKG_VERSION}..."
+zip:
+	$(info Zipping all terraform-stacks...)
 
 	@if [ ! -d dist ]; then \
 		mkdir dist ; \
@@ -29,7 +31,6 @@ zip: version checksums
 	for stack in * ; do \
 		if [ -d $$stack ] && [ "$$stack" != "shared_modules" ]; then \
 			cd $$stack ; \
-			echo "Building $$stack-${PKG_VERSION}.zip" ; \
 			zip -FS -r -q ../../dist/$$stack-${PKG_VERSION}.zip * -x **/.terraform/\* -x \.* ; \
 			zip -FS -r -q ../../dist/$$stack.zip * -x **/.terraform/\* -x \.* ; \
 			cd .. ; \
@@ -38,7 +39,7 @@ zip: version checksums
 
 .PHONY: manifests
 manifests:
-	@echo "Creating condensed-manifest.yml..."
+	$(info Creating condensed-manifest.yml...)
 	@cat ./custom_manifests/manifests/* > custom_manifests/condensed-manifest.yml ; \
 
 .PHONY: machineconfigs
@@ -71,23 +72,27 @@ endif
 
 .PHONY: checksums
 checksums:
-	@echo "Writing checksums..."
+	$(info Writing checksums...)
+
+	@if [ ! -d checksums ]; then \
+		mkdir checksums ; \
+	fi
+
+	@find ./custom_manifests -type f -name '*.yml' -print0 | sort -z | xargs -0 shasum -a 256 > checksums/custom_manifests.SHA256SUMS
+	@find ./terraform-stacks -type f -name '*.tf' -print0 | sort -z | xargs -0 shasum -a 256 > checksums/terraform-stacks.SHA256SUMS
 
 	@cd terraform-stacks ; \
 	for stack in * ; do \
 		if [ -d $$stack ] && [ "$$stack" != "shared_modules" ]; then \
 			cd $$stack ; \
-			shasum -a 256 *.tf > checksums ; \
-			if [ -d manifests ]; then \
-				shasum -a 256 manifests/* >> checksums ; \
-			fi ; \
+			find . -type f -name '*.tf' -print0 | sort -z | xargs -0 shasum -a 256 > $$stack.SHA256SUMS ; \
 			cd .. ; \
 		fi ; \
 	done
 
 .PHONY: version
 version:
-	@echo ${PKG_VERSION}
+	$(info Using PKG_VERSION=$(PKG_VERSION)...)
 
 	@cd terraform-stacks ; \
 	for stack in * ; do \
@@ -100,9 +105,11 @@ version:
 
 .PHONY: clean
 clean:
-	@echo "Cleaning up..."
+	$(info Cleaning up...)
 
 	rm -rvf dist
+	rm -rvf checksums
+	find . -type f -name '*.SHA256SUMS' -print0 | xargs -0 rm -v
 
 # make update-drivers OCI_DRIVER_VERSION=v1.30.0
 # Please be sure your KUBECONFIG is set to the cluster you want to modify

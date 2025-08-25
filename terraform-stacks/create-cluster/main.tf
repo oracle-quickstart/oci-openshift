@@ -52,9 +52,10 @@ module "iam" {
 
   depends_on = [module.tags.wait_for_tag_consistency]
 
-  compartment_ocid = var.compartment_ocid
-  tenancy_ocid     = var.tenancy_ocid
-  cluster_name     = var.cluster_name
+  compartment_ocid            = var.compartment_ocid
+  tenancy_ocid                = var.tenancy_ocid
+  cluster_name                = var.cluster_name
+  networking_compartment_ocid = local.existing_networking_compartment_ocid
 
   // dependency on tags
   op_openshift_tag_namespace     = module.tags.op_openshift_tag_namespace
@@ -82,18 +83,27 @@ module "image" {
 }
 
 module "network" {
-  source = "./shared_modules/network"
+  source = "./shared_modules/network_interface"
 
   depends_on = [module.tags.wait_for_tag_consistency]
 
   compartment_ocid = var.compartment_ocid
   cluster_name     = var.cluster_name
 
+  # Parameters for creation of new network infrastructure
   vcn_cidr                = var.vcn_cidr
   private_cidr_ocp        = var.private_cidr_ocp
   private_cidr_bare_metal = var.private_cidr_bare_metal
   public_cidr             = var.public_cidr
   vcn_dns_label           = var.vcn_dns_label
+
+  # Parameters to use when using an exisiting network infrastructure
+  use_existing_network                  = var.use_existing_network
+  networking_compartment_ocid           = var.networking_compartment_ocid
+  existing_vcn_id                       = var.existing_vcn_id
+  existing_public_subnet_id             = var.existing_public_subnet_id
+  existing_private_bare_metal_subnet_id = var.existing_private_bare_metal_subnet_id
+  existing_private_ocp_subnet_id        = var.existing_private_ocp_subnet_id
 
   // Depedency on tags
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
@@ -118,6 +128,43 @@ module "load_balancer" {
   op_subnet_private_ocp                    = module.network.op_subnet_private_ocp
   op_subnet_public                         = module.network.op_subnet_public
   op_network_security_group_cluster_lb_nsg = module.network.op_network_security_group_cluster_lb_nsg
+}
+
+## Web Server for creating OCP install images and hosting rootfs and ignition files
+module "webserver" {
+  count  = var.is_disconnected_installation ? 1 : 0
+  source = "./shared_modules/webserver"
+
+  is_disconnected_installation = var.is_disconnected_installation
+  set_proxy                    = var.set_proxy
+  http_proxy                   = var.http_proxy
+  https_proxy                  = var.https_proxy
+  no_proxy                     = var.no_proxy
+
+  webserver_availability_domain = module.meta.ad_name
+  webserver_compartment_ocid    = var.compartment_ocid
+  webserver_shape               = var.webserver_shape
+  webserver_image_source_id     = var.webserver_image_source_id
+  webserver_display_name        = "${var.cluster_name}-webserver"
+  webserver_private_ip          = var.webserver_private_ip
+  webserver_assign_public_ip    = true # variable
+  webserver_memory_in_gbs       = var.webserver_memory_in_gbs
+  webserver_ocpus               = var.webserver_ocpus
+  public_ssh_key                = var.public_ssh_key
+  openshift_installer_version   = local.openshift_installer_version
+  cluster_name                  = var.cluster_name
+  object_storage_namespace      = var.object_storage_namespace
+  object_storage_bucket         = var.object_storage_bucket
+  agent_config                  = module.manifests.agent_config
+  install_config                = module.manifests.install_config
+  dynamic_custom_manifest       = module.manifests.dynamic_custom_manifest
+
+  // Depedency on tags
+  openshift_tag_namespace     = module.tags.op_openshift_tag_namespace
+  openshift_tag_instance_role = module.tags.op_openshift_tag_instance_role
+
+  // Dependency on networks
+  webserver_subnet_id = module.network.op_subnet_public # depend on variable
 }
 
 module "compute" {
@@ -167,15 +214,16 @@ module "compute" {
   op_network_security_group_cluster_compute_nsg      = module.network.op_network_security_group_cluster_compute_nsg
 
   // Depedency on loadbalancer
-  op_lb_openshift_api_int_lb                           = module.load_balancer.op_lb_openshift_api_int_lb
-  op_lb_openshift_api_lb                               = module.load_balancer.op_lb_openshift_api_lb
-  op_lb_openshift_apps_lb                              = module.load_balancer.op_lb_openshift_apps_lb
-  op_lb_bs_openshift_cluster_api_backend_set_external  = module.load_balancer.op_lb_bs_openshift_cluster_api_backend_set_external
-  op_lb_bs_openshift_cluster_ingress_http_backend_set  = module.load_balancer.op_lb_bs_openshift_cluster_ingress_http_backend_set
-  op_lb_bs_openshift_cluster_ingress_https_backend_set = module.load_balancer.op_lb_bs_openshift_cluster_ingress_https_backend_set
-  op_lb_bs_openshift_cluster_api_backend_set_internal  = module.load_balancer.op_lb_bs_openshift_cluster_api_backend_set_internal
-  op_lb_bs_openshift_cluster_infra-mcs_backend_set     = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set
-  op_lb_bs_openshift_cluster_infra-mcs_backend_set_2   = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set_2
+  op_lb_openshift_api_int_lb                             = module.load_balancer.op_lb_openshift_api_int_lb
+  op_lb_openshift_api_lb                                 = module.load_balancer.op_lb_openshift_api_lb
+  op_lb_openshift_apps_lb                                = module.load_balancer.op_lb_openshift_apps_lb
+  op_lb_bs_openshift_cluster_api_backend_set_external    = module.load_balancer.op_lb_bs_openshift_cluster_api_backend_set_external
+  op_lb_bs_openshift_cluster_ingress_http_backend_set    = module.load_balancer.op_lb_bs_openshift_cluster_ingress_http_backend_set
+  op_lb_bs_openshift_cluster_ingress_https_backend_set   = module.load_balancer.op_lb_bs_openshift_cluster_ingress_https_backend_set
+  op_lb_bs_openshift_cluster_api_backend_set_internal    = module.load_balancer.op_lb_bs_openshift_cluster_api_backend_set_internal
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set       = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set_2     = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set_2
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set_api_2 = module.load_balancer.op_lb_bs_openshift_cluster_infra-mcs_backend_set_api_2
 }
 
 module "dns" {
@@ -201,16 +249,44 @@ module "dns" {
   op_vcn_openshift_vcn = module.network.op_vcn_openshift_vcn
 }
 
+module "ocir" {
+  source = "./shared_modules/ocir"
+
+  compartment_ocid = var.compartment_ocid
+  oca_repo_name    = var.oracle_cloud_agent_repo_name
+  region           = local.current_region_key
+}
+
 module "manifests" {
   source = "./shared_modules/manifest"
 
   compartment_ocid   = var.compartment_ocid
   oci_driver_version = var.oci_driver_version
 
+  redhat_pull_secret           = var.redhat_pull_secret
+  is_disconnected_installation = var.is_disconnected_installation
+  set_proxy                    = var.set_proxy
+  http_proxy                   = var.http_proxy
+  https_proxy                  = var.https_proxy
+  no_proxy                     = var.no_proxy
+
+
   // Depedency on networks
   op_vcn_openshift_vcn  = module.network.op_vcn_openshift_vcn
   op_apps_subnet        = local.apps_subnet_id
   op_apps_security_list = "${local.apps_subnet_id}: ${local.apps_security_list_id}"
+  vcn_cidr              = var.vcn_cidr
+  zone_dns              = var.zone_dns
+  rendezvous_ip         = var.rendezvous_ip
+  control_plane_count   = var.control_plane_count
+  compute_count         = var.compute_count
+  public_ssh_key        = var.public_ssh_key
+  cluster_name          = var.cluster_name
+  webserver_private_ip  = var.webserver_private_ip
+
+  // Dependency on ocir
+  use_oracle_cloud_agent = var.use_oracle_cloud_agent
+  oca_image_pull_link    = module.ocir.image_pull_command
 }
 
 module "resource_attribution_tags" {

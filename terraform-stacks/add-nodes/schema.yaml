@@ -15,12 +15,19 @@ variableGroups:
     - tenancy_ocid
     - compartment_ocid
     - cluster_name
-    - cluster_instance_role_tag_namespace
     - openshift_image_source_uri
 
 - title: "OpenShift Resource Attribution Tags"
   variables:
     - tag_namespace_compartment_ocid_resource_tagging
+
+- title: "Networking Configuration"
+  variables:
+  - networking_compartment_ocid
+  - existing_vcn_id
+  - existing_private_ocp_subnet_id
+  - existing_private_bare_metal_subnet_id
+  - existing_public_subnet_id
 
 - title: "Control Plane Node Configuration"
   variables:
@@ -47,6 +54,10 @@ variableGroups:
     - starting_ad_name_compute
     - distribute_compute_instances_across_fds
 
+- title: "Advanced Configurations"
+  variables:
+  - cluster_instance_role_tag_namespace
+
 ###########
 # VARIABLES
 ###########
@@ -63,8 +74,7 @@ variables:
     required: true
 
   tenancy_ocid:
-    title: Tenancy Ocid
-    description: The ocid of the current tenancy.
+    title: Tenancy OCID
     type: string
     default: tenancy_ocid
     required: true
@@ -82,11 +92,6 @@ variables:
     default: ""
     required: true
 
-  cluster_instance_role_tag_namespace:
-    title: Tag Namespace For OpenShift Instance Role Tagging
-    description: To assign roles like control_plane or compute to instances, a Tag Namespace is required. If you're using the default format openshift-"$cluster_name", you can skip specifying the Tag Namespace—it's automatically detected using the cluster name. If your setup uses a custom format, be sure to provide the correct Tag Namespace explicitly.
-    type: string
-
   #
   # OpenShift Resource Attribution Tag Variables
   #
@@ -96,7 +101,47 @@ variables:
     description: WARNING - Please make sure this tag exists before you apply the terraform stack. The compartment where the tag namespace for resource tagging should be created. Defaults to current compartment. The tag namespace and defined tags for OpenShift Attribution on OCI resources will be `openshift-tags` and `openshift-resource`.
       If this namespace already exists, the field should be verified to ensure it is correctly defined and applied.
       Example --> "defined-tags" - {"openshift-tags"- {"openshift-resource" - "openshift-resource-infra"} }
+    required: true
+
+
+  #
+  # Networking
+  #
+  networking_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Networking Compartment
     default: compartment_ocid
+    required: true
+
+  existing_vcn_id:
+    type: oci:core:vcn:id
+    title: Existing VCN
+    dependsOn:
+      compartmentId: ${networking_compartment_ocid}
+    required: true
+
+  existing_private_ocp_subnet_id:
+    type: oci:core:subnet:id
+    title: Existing Private Subnet for OCP
+    dependsOn:
+      compartmentId: ${networking_compartment_ocid}
+      vcnId: ${existing_vcn_id}
+    required: true
+
+  existing_private_bare_metal_subnet_id:
+    type: oci:core:subnet:id
+    title: Existing Private Subnet for Bare Metal
+    dependsOn:
+      compartmentId: ${networking_compartment_ocid}
+      vcnId: ${existing_vcn_id}
+    required: true
+
+  existing_public_subnet_id:
+    type: oci:core:subnet:id
+    title: Existing Public Subnet
+    dependsOn:
+      compartmentId: ${networking_compartment_ocid}
+      vcnId: ${existing_vcn_id}
     required: true
 
   #
@@ -251,3 +296,11 @@ variables:
     description: Select the checkbox to have compute instances distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will distribute them for you based on shape availability and other criteria.
     default: true
     required: true
+
+  #
+  # Advanced
+  #
+  cluster_instance_role_tag_namespace:
+    title: Tag Namespace For OpenShift Instance Role Tagging
+    description: To assign roles like control_plane or compute to instances, a Tag Namespace is required. If you're using the default format openshift-"$cluster_name", you can skip specifying the Tag Namespace—it's automatically detected using the cluster name. If your setup uses a custom format, be sure to provide the correct Tag Namespace explicitly.
+    type: string

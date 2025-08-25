@@ -62,6 +62,16 @@ module "meta" {
   current_compute_count                   = local.current_compute_count
 }
 
+module "network" {
+  source = "./shared_modules/network_interface/network_validator"
+
+  compartment_ocid                      = var.networking_compartment_ocid
+  existing_vcn_id                       = var.existing_vcn_id
+  existing_public_subnet_id             = var.existing_public_subnet_id
+  existing_private_bare_metal_subnet_id = var.existing_private_bare_metal_subnet_id
+  existing_private_ocp_subnet_id        = var.existing_private_ocp_subnet_id
+}
+
 module "compute" {
   source = "./shared_modules/compute"
 
@@ -100,21 +110,22 @@ module "compute" {
   op_image_openshift_image_native          = module.image.op_image_openshift_image_native
 
   // Depedency on networks
-  op_subnet_private_ocp                              = data.oci_core_subnets.private_ocp.subnets[0].id
-  op_subnet_private_bare_metal                       = data.oci_core_subnets.private_bare_metal.subnets[0].id
-  op_network_security_group_cluster_controlplane_nsg = data.oci_core_network_security_groups.cluster_controlplane_nsg.network_security_groups[0].id
-  op_network_security_group_cluster_compute_nsg      = data.oci_core_network_security_groups.cluster_compute_nsg.network_security_groups[0].id
+  op_subnet_private_ocp                              = module.network.subnet_details.private_ocp_subnet.id
+  op_subnet_private_bare_metal                       = module.network.subnet_details.private_bare_metal_subnet.id
+  op_network_security_group_cluster_controlplane_nsg = module.network.nsg_details.controlplane_nsg.id
+  op_network_security_group_cluster_compute_nsg      = module.network.nsg_details.compute_nsg.id
 
   // Depedency on loadbalancer
-  op_lb_openshift_api_int_lb                           = data.oci_load_balancer_load_balancers.openshift_api_int_lb.load_balancers[0].id
-  op_lb_openshift_api_lb                               = data.oci_load_balancer_load_balancers.openshift_api_lb.load_balancers[0].id
-  op_lb_openshift_apps_lb                              = data.oci_load_balancer_load_balancers.openshift_apps_lb.load_balancers[0].id
-  op_lb_bs_openshift_cluster_api_backend_set_external  = "openshift_cluster_api_backend"
-  op_lb_bs_openshift_cluster_ingress_http_backend_set  = "openshift_cluster_ingress_http"
-  op_lb_bs_openshift_cluster_ingress_https_backend_set = "openshift_cluster_ingress_https"
-  op_lb_bs_openshift_cluster_api_backend_set_internal  = "openshift_cluster_api_backend"
-  op_lb_bs_openshift_cluster_infra-mcs_backend_set     = "openshift_cluster_infra-mcs"
-  op_lb_bs_openshift_cluster_infra-mcs_backend_set_2   = "openshift_cluster_infra-mcs_2"
+  op_lb_openshift_api_int_lb                             = data.oci_load_balancer_load_balancers.openshift_api_int_lb.load_balancers[0].id
+  op_lb_openshift_api_lb                                 = data.oci_load_balancer_load_balancers.openshift_api_lb.load_balancers[0].id
+  op_lb_openshift_apps_lb                                = data.oci_load_balancer_load_balancers.openshift_apps_lb.load_balancers[0].id
+  op_lb_bs_openshift_cluster_api_backend_set_external    = "openshift_cluster_api_backend"
+  op_lb_bs_openshift_cluster_ingress_http_backend_set    = "openshift_cluster_ingress_http"
+  op_lb_bs_openshift_cluster_ingress_https_backend_set   = "openshift_cluster_ingress_https"
+  op_lb_bs_openshift_cluster_api_backend_set_internal    = "openshift_cluster_api_backend"
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set       = "openshift_cluster_infra-mcs"
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set_2     = "openshift_cluster_infra-mcs_2"
+  op_lb_bs_openshift_cluster_infra-mcs_backend_set_api_2 = "openshift_cluster_infra-mcs_2"
 }
 
 module "resource_attribution_tags" {

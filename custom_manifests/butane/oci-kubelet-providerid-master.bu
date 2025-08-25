@@ -44,3 +44,17 @@ systemd:
 
       [Install]
       WantedBy=network-online.target
+  - name: oci-hostname-update.service
+    enabled: true
+    contents: |
+      [Unit]
+      Description=OCI hostname agent
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/bash -c 'OCIHOSTNAME=$(curl -H \"Authorization: Bearer Oracle\" -L http://169.254.169.254/opc/v2/instance/ --retry 10 | jq -r '.displayName') && echo \"$OCIHOSTNAME\" > /etc/hostname'
+
+      [Install]
+      WantedBy=multi-user.target

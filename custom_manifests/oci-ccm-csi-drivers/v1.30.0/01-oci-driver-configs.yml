@@ -16,12 +16,21 @@ stringData:
       subnet1: $OCP_SUBNET_ID
       securityListManagementMode: Frontend
       securityLists:
-        $OCP_SUBNET_ID: $OPC_SEC_LIST_ID
+        $OCP_SUBNET_ID: $OCP_SEC_LIST_ID
     rateLimiter:
       rateLimitQPSRead: 20.0
       rateLimitBucketRead: 5
       rateLimitQPSWrite: 20.0
       rateLimitBucketWrite: 5
+    tags:
+      loadBalancer:
+        defined:
+          openshift-tags:
+            openshift-resource: openshift-resource-infra
+      blockVolume:
+        defined:
+          openshift-tags:
+            openshift-resource: openshift-resource-infra
 
 ---
 
@@ -42,11 +51,20 @@ stringData:
       subnet1: $OCP_SUBNET_ID
       securityListManagementMode: Frontend
       securityLists:
-        $OCP_SUBNET_ID: $OPC_SEC_LIST_ID
+        $OCP_SUBNET_ID: $OCP_SEC_LIST_ID
     rateLimiter:
       rateLimitQPSRead: 20.0
       rateLimitBucketRead: 5
       rateLimitQPSWrite: 20.0
       rateLimitBucketWrite: 5
+    tags:
+      loadBalancer:
+        defined:
+          openshift-tags:
+            openshift-resource: openshift-resource-infra
+      blockVolume:
+        defined:
+          openshift-tags:
+            openshift-resource: openshift-resource-infra
 
 ---

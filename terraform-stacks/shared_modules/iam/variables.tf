@@ -21,3 +21,7 @@ variable "op_openshift_tag_instance_role" {
 variable "defined_tags" {
   type = map(string)
 }
+
+variable "networking_compartment_ocid" {
+  type = string
+}
