@@ -1,0 +1,581 @@
+# ----- 01-oci-csi.yml -----
+
+# oci-csi-00-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oci-csi
+  annotations:
+    workload.openshift.io/allowed: management
+  labels:
+    "pod-security.kubernetes.io/enforce": "privileged"
+    "pod-security.kubernetes.io/audit": "privileged"
+    "pod-security.kubernetes.io/warn": "privileged"
+    "security.openshift.io/scc.podSecurityLabelSync": "false"
+    "openshift.io/run-level": "0"
+    "pod-security.kubernetes.io/enforce-version": "v1.32"
+
+---
+
+# oci-csi-02-controller-driver.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deprecated.daemonset.template.generation: "1"
+  generation: 1
+  name: csi-oci-controller
+  namespace: oci-csi
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: csi-oci-controller
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: csi-oci-controller
+        role: csi-oci
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      containers:
+        - name: csi-volume-provisioner
+          image: registry.k8s.io/sig-storage/csi-provisioner:v5.0.1
+          args:
+            - --csi-address=/var/run/shared-tmpfs/csi.sock
+            - --volume-name-prefix=csi
+            - --feature-gates=Topology=true
+            - --timeout=120s
+            - --leader-election
+            - --leader-election-namespace=oci-csi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/oci/
+              readOnly: true
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: csi-fss-volume-provisioner
+          image: registry.k8s.io/sig-storage/csi-provisioner:v5.0.1
+          args:
+            - --csi-address=/var/run/shared-tmpfs/csi-fss.sock
+            - --volume-name-prefix=csi-fss
+            - --feature-gates=Topology=true
+            - --timeout=120s
+            - --leader-election
+            - --leader-election-namespace=oci-csi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/oci/
+              readOnly: true
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: csi-attacher
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.6.1
+          args:
+            - --csi-address=/var/run/shared-tmpfs/csi.sock
+            - --timeout=120s
+            - --leader-election=true
+            - --leader-election-namespace=oci-csi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/oci/
+              readOnly: true
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: csi-resizer
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.11.1
+          args:
+            - --csi-address=/var/run/shared-tmpfs/csi.sock
+            - --leader-election
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: snapshot-controller
+          image: registry.k8s.io/sig-storage/snapshot-controller:v6.3.0
+          args:
+            - --leader-election
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: csi-snapshotter
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.3.0
+          args:
+            - --csi-address=/var/run/shared-tmpfs/csi.sock
+            - --leader-election
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+        - name: oci-csi-controller-driver
+          args:
+            - --endpoint=unix://var/run/shared-tmpfs/csi.sock
+            - --fss-csi-endpoint=unix://var/run/shared-tmpfs/csi-fss.sock
+          command:
+            - /usr/local/bin/oci-csi-controller-driver
+          image: ${oci_image_source}
+          %{~ if region_metadata != "" ~}
+          env:
+            - name: OCI_REGION_METADATA
+              value: '${region_metadata}'
+          %{~ endif ~}
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: config
+              mountPath: /etc/oci/
+              readOnly: true
+            - name: kubernetes
+              mountPath: /etc/kubernetes
+              readOnly: true
+            - mountPath: /var/run/shared-tmpfs
+              name: shared-tmpfs
+      volumes:
+        - name: config
+          secret:
+            secretName: oci-volume-provisioner
+        - name: kubernetes
+          hostPath:
+            path: /etc/kubernetes
+        - name: shared-tmpfs
+          emptyDir: {}
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      imagePullSecrets:
+        - name: image-pull-secret
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccount: csi-oci-node-sa
+      serviceAccountName: csi-oci-node-sa
+      terminationGracePeriodSeconds: 30
+      tolerations:
+        - operator: Exists
+
+---
+
+# oci-csi-03-fss-driver.yaml
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: fss.csi.oraclecloud.com
+spec:
+  attachRequired: false
+  podInfoOnMount: false
+
+---
+
+# oci-csi-04-bv-driver.yaml
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: blockvolume.csi.oraclecloud.com
+spec:
+  fsGroupPolicy: File
+
+---
+
+# oci-csi-05-iscsiadm.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: oci-csi-iscsiadm
+  namespace: oci-csi
+data:
+  iscsiadm: |
+    #!/bin/sh
+    if [ -x /host/sbin/iscsiadm ]; then
+      chroot /host /sbin/iscsiadm "$@"
+    elif [ -x /host/usr/local/sbin/iscsiadm ]; then
+      chroot /host /usr/local/sbin/iscsiadm "$@"
+    elif [ -x /host/bin/iscsiadm ]; then
+      chroot /host /bin/iscsiadm "$@"
+    elif [ -x /host/usr/local/bin/iscsiadm ]; then
+      chroot /host /usr/local/bin/iscsiadm "$@"
+    else
+      chroot /host iscsiadm "$@"
+    fi
+
+---
+
+# oci-csi-06-fss-csi.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oci-fss-csi
+  namespace: oci-csi
+data:
+  mount: |-
+    #!/bin/sh
+    if [ -x /sbin/mount ]; then
+    chroot /host mount "$@"
+    elif [ -x /usr/local/sbin/mount ]; then
+    chroot /host mount "$@"
+    elif [ -x /usr/sbin/mount ]; then
+    chroot /host mount "$@"
+    elif [ -x /usr/local/bin/mount ]; then
+    chroot /host mount "$@"
+    else
+    chroot /host mount "$@"
+    fi
+  umount: |-
+    #!/bin/sh
+    if [ -x /sbin/umount ]; then
+    chroot /host umount "$@"
+    elif [ -x /usr/local/sbin/umount ]; then
+    chroot /host umount "$@"
+    elif [ -x /usr/sbin/umount ]; then
+    chroot /host umount "$@"
+    elif [ -x /usr/local/bin/umount ]; then
+    chroot /host umount "$@"
+    else
+    chroot /host umount "$@"
+    fi
+  umount.oci-fss: |-
+    #!/bin/sh
+    if [ -x /sbin/umount-oci-fss ]; then
+    chroot /host umount.oci-fss "$@"
+    elif [ -x /usr/local/sbin/umount-oci-fss ]; then
+    chroot /host umount.oci-fss "$@"
+    elif [ -x /usr/sbin/umount-oci-fss ]; then
+    chroot /host umount.oci-fss "$@"
+    elif [ -x /usr/local/bin/umount-oci-fss ]; then
+    chroot /host umount.oci-fss "$@"
+    else
+    chroot /host umount.oci-fss "$@"
+    fi
+
+---
+
+# oci-csi-07-node-driver.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    deprecated.daemonset.template.generation: "1"
+  generation: 1
+  name: csi-oci-node
+  namespace: oci-csi
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: csi-oci-node
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: csi-oci-node
+        role: csi-oci
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/worker: "" # this is not present in https://github.com/oracle/oci-cloud-controller-manager/blob/master/manifests/container-storage-interface/oci-csi-node-driver.yaml
+      containers:
+        - name: oci-csi-node-driver
+          args:
+            - --v=2
+            - --endpoint=unix:///csi/csi.sock
+            - --nodeid=$(KUBE_NODE_NAME)
+            - --loglevel=debug
+            - --fss-endpoint=unix:///fss/csi.sock
+          command:
+            - /usr/local/bin/oci-csi-node-driver
+          env:
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/host/usr/bin:/host/sbin
+            %{~ if region_metadata != "" ~}
+            - name: OCI_REGION_METADATA
+              value: '${region_metadata}'
+            %{~ endif ~}
+          image: ${oci_image_source}
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /csi
+              name: plugin-dir
+            - mountPath: /fss
+              name: fss-plugin-dir
+            - mountPath: /var/lib/kubelet
+              mountPropagation: Bidirectional
+              name: pods-mount-dir
+            - mountPath: /dev
+              name: device-dir
+            - mountPath: /host
+              mountPropagation: HostToContainer
+              name: host-root
+            - mountPath: /sbin/iscsiadm
+              name: chroot-iscsiadm
+              subPath: iscsiadm
+            - mountPath: /host/var/lib/kubelet
+              mountPropagation: Bidirectional
+              name: encrypt-pods-mount-dir
+            - mountPath: /sbin/umount.oci-fss
+              name: fss-driver-mounts
+              subPath: umount.oci-fss
+            - mountPath: /sbin/umount
+              name: fss-driver-mounts
+              subPath: umount
+            - mountPath: /sbin/mount
+              name: fss-driver-mounts
+              subPath: mount
+        - name: csi-node-registrar
+          args:
+            - --csi-address=/csi/csi.sock
+            - --kubelet-registration-path=/var/lib/kubelet/plugins/blockvolume.csi.oraclecloud.com/csi.sock
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.12.0
+          securityContext:
+            privileged: true
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - rm -rf /registration/blockvolume.csi.oraclecloud.com /registration/blockvolume.csi.oraclecloud.com-reg.sock
+          volumeMounts:
+            - mountPath: /csi
+              name: plugin-dir
+            - mountPath: /registration
+              name: registration-dir
+        - name: csi-node-registrar-fss
+          args:
+            - --csi-address=/fss/csi.sock
+            - --kubelet-registration-path=/var/lib/kubelet/plugins/fss.csi.oraclecloud.com/csi.sock
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.12.0
+          securityContext:
+            privileged: true
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - rm -rf /registration/fss.csi.oraclecloud.com /registration/fss.csi.oraclecloud.com-reg.sock
+          volumeMounts:
+            - mountPath: /fss
+              name: fss-plugin-dir
+            - mountPath: /registration
+              name: registration-dir
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccount: csi-oci-node-sa
+      serviceAccountName: csi-oci-node-sa
+      terminationGracePeriodSeconds: 30
+      tolerations:
+        - operator: Exists
+      volumes:
+        - hostPath:
+            path: /var/lib/kubelet/plugins_registry/
+            type: DirectoryOrCreate
+          name: registration-dir
+        - hostPath:
+            path: /var/lib/kubelet/plugins/blockvolume.csi.oraclecloud.com
+            type: DirectoryOrCreate
+          name: plugin-dir
+        - hostPath:
+            path: /var/lib/kubelet/plugins/fss.csi.oraclecloud.com
+            type: DirectoryOrCreate
+          name: fss-plugin-dir
+        - hostPath:
+            path: /var/lib/kubelet
+            type: Directory
+          name: pods-mount-dir
+        - hostPath:
+            path: /var/lib/kubelet
+            type: Directory
+          name: encrypt-pods-mount-dir
+        - hostPath:
+            path: /dev
+            type: ""
+          name: device-dir
+        - hostPath:
+            path: /
+            type: Directory
+          name: host-root
+        - configMap:
+            name: oci-csi-iscsiadm
+            defaultMode: 0755
+          name: chroot-iscsiadm
+        - configMap:
+            name: oci-fss-csi
+            defaultMode: 0755
+          name: fss-driver-mounts
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+
+---
+
+# oci-csi-08-node-rbac-sa.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+ name: csi-oci-node-sa
+ namespace: oci-csi
+
+---
+
+# oci-csi-09-node-rbac-cr.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ name: csi-oci
+ namespace: oci-csi
+rules:
+ - apiGroups: [""]
+   resources: ["events"]
+   verbs: ["get", "list", "watch", "create", "update", "patch"]
+ - apiGroups: [""]
+   resources: ["nodes"]
+   verbs: ["get", "list", "watch"]
+ - apiGroups: ["volume.oci.oracle.com"]
+   resources: ["blockscsiinfos"]
+   verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+ - apiGroups: [""]
+   resources: ["persistentvolumes"]
+   verbs: ["get", "list", "watch", "create", "delete", "patch"]
+ - apiGroups: [""]
+   resources: ["persistentvolumeclaims"]
+   verbs: ["get", "list", "watch", "update", "create"]
+ - apiGroups: ["storage.k8s.io"]
+   resources: ["storageclasses", "volumeattachments", "volumeattachments/status", "csinodes"]
+   verbs: ["get", "list", "watch", "patch"]
+ - apiGroups: ["coordination.k8s.io"]
+   resources: ["leases"]
+   verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+ - apiGroups: [""]
+   resources: ["endpoints"]
+   verbs: ["get", "watch", "create", "update"]
+ - apiGroups: [""]
+   resources: ["pods"]
+   verbs: ["get", "list", "watch"]
+ - apiGroups: [""]
+   resources: ["persistentvolumeclaims/status"]
+   verbs: ["patch"]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshotclasses" ]
+   verbs: [ "get", "list", "watch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshotcontents" ]
+   verbs: [ "create", "get", "list", "watch", "update", "delete", "patch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshotcontents/status" ]
+   verbs: [ "update", "patch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshots" ]
+   verbs: [ "get", "list", "watch", "update", "patch" ]
+ - apiGroups: [ "snapshot.storage.k8s.io" ]
+   resources: [ "volumesnapshots/status" ]
+   verbs: [ "update", "patch" ]
+ - apiGroups: [ "" ]
+   resources: [ "serviceaccounts" ]
+   verbs: [ "get", "list", "watch", "create" ]
+
+---
+
+# oci-csi-10-node-rbac-crb.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ name: csi-oci-binding
+subjects:
+ - kind: ServiceAccount
+   name: csi-oci-node-sa
+   namespace: oci-csi
+roleRef:
+ kind: ClusterRole
+ name: csi-oci
+ apiGroup: rbac.authorization.k8s.io
+
+---
+
+# oci-csi-11-storage-class-bv.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: oci-bv
+%{~ if oci_driver_version != "v1.32.0-UHP" }
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+%{~ endif }
+provisioner: blockvolume.csi.oraclecloud.com
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+
+---
+
+# oci-csi-12-storage-class-bv-enc.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: oci-bv-encrypted
+provisioner: blockvolume.csi.oraclecloud.com
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  attachment-type: "paravirtualized"
+
+---
+%{~ if oci_driver_version == "v1.32.0-UHP" }
+
+# oci-bv-uhp can be used to create Ultra High Performance OCI Block Volume and should be the default when using OpenShift Virtualization. Currently, this StorageClass is only compatable with UHP-enabled CSI drivers e.g. "ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA"
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: oci-bv-uhp
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: blockvolume.csi.oraclecloud.com
+parameters:
+  oci.oraclecloud.com/initial-defined-tags-override: '{"openshift-tags": {"openshift-resource": "openshift-virtualization"}}'
+  vpusPerGB: "80"
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+
+---
+%{~ endif }
+
+# # https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/volume-snapshot-and-restore-using-csi.md
+# apiVersion: snapshot.storage.k8s.io/v1
+# kind: VolumeSnapshotClass
+# metadata:
+#   name: oci-snapshot
+#   annotations:
+#     snapshot.storage.kubernetes.io/is-default-class: "true"
+# driver: blockvolume.csi.oraclecloud.com
+# parameters:
+#   backupType: full
+# deletionPolicy: Delete
+
+---
+
+# # https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingpersistentvolumeclaim_Provisioning_PVCs_on_FSS.htm#contengcreatingpersistentvolumeclaim_topic-Provisioning_PVCs_on_FSS-Using-CSI-Volume-Plugin
+# kind: StorageClass
+# apiVersion: storage.k8s.io/v1
+# metadata:
+#   name: oci-dyn-fss
+# provisioner: fss.csi.oraclecloud.com
+# parameters:
+#   availabilityDomain: <ad-name> # Required
+#   mountTargetOcid: <mt-ocid> | mountTargetSubnetOcid: <mt-subnet-ocid>
+#   compartmentOcid: <compartment-ocid>
+#   kmsKeyOcid: <key-ocid>
+#   exportPath: <path>
+#   exportOptions: "[{<options-in-json-format>}]"
+#   encryptInTransit: "false"
+#   oci.oraclecloud.com/initial-defined-tags-override: '{"<tag-namespace>": {"<tag-key>": "<tag-value>"}}'
+#   oci.oraclecloud.com/initial-freeform-tags-override: '{"<tag-key>": "<tag-value>"}'
+
+---

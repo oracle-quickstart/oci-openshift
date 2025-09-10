@@ -262,6 +262,7 @@ module "manifests" {
 
   compartment_ocid   = var.compartment_ocid
   oci_driver_version = var.oci_driver_version
+  region_metadata    = module.meta.region_metadata
 
   redhat_pull_secret           = var.redhat_pull_secret
   is_disconnected_installation = var.is_disconnected_installation

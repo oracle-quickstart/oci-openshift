@@ -26,11 +26,13 @@ EOT
 }
 
 output "agent_config" {
-  value = module.manifests.agent_config
+  value       = var.installation_method == "Assisted" ? null : module.manifests.agent_config
+  description = "Agent config output; null if use Assisted Installer."
 }
 
 output "install_config" {
-  value = module.manifests.install_config
+  value       = var.installation_method == "Assisted" ? null : module.manifests.install_config
+  description = "Install config output; null if use Assisted Installer."
 }
 
 output "stack_version" {

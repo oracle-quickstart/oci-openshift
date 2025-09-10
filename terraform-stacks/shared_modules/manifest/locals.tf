@@ -1,4 +1,18 @@
 locals {
+  default_oci_driver_image = "ghcr.io/oracle/cloud-provider-oci:v1.32.0"
+
+  oci_image_sources = {
+    "v1.30.0"     = "ghcr.io/oracle/cloud-provider-oci:v1.30.0"
+    "v1.32.0"     = "ghcr.io/oracle/cloud-provider-oci:v1.32.0"
+    "v1.32.0-UHP" = "ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA"
+  }
+
+  oci_csi = templatefile("${path.module}/manifest-templates/01-oci-csi.yml.tpl", {
+    region_metadata    = var.region_metadata
+    oci_driver_version = var.oci_driver_version
+    oci_image_source   = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
+  })
+
   common_config = <<-COMMONCONFIG
     useInstancePrincipals: true
     compartment: ${var.compartment_ocid}

@@ -12,7 +12,7 @@ output "dynamic_custom_manifest" {
   description = "The custom manifests to be applied during OpenShift cluster installation process."
   value       = <<-EOT
     ${file("${path.module}/oci-ccm-csi-drivers/${var.oci_driver_version}/01-oci-ccm.yml")}
-    ${file("${path.module}/oci-ccm-csi-drivers/${var.oci_driver_version}/01-oci-csi.yml")}
+    ${local.oci_csi}
     ${local.oci_ccm_config_secret}
     ${local.oci_csi_config_secret}
     %{if var.use_oracle_cloud_agent && var.oca_image_pull_link != "" && var.oca_image_pull_link != "no-image-found"}
