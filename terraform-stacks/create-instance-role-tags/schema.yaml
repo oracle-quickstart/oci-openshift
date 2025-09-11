@@ -1,11 +1,7 @@
-#
-# Copyright (c) 2019-2020 Oracle and/or its affiliates. All rights reserved.
-#
-
-title: OpenShift on OCI Instance Role Tags
+title: OpenShift on OCI Instance Role Tags - v1.4.1
 description: A Terraform Stack for creating OpenShift Instance Role Tags
-schemaVersion: 1.0.0
-version: "20241019"
+schemaVersion: 1.4.1
+version: "20251010"
 locale: "en"
 
 variableGroups:

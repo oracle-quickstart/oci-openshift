@@ -1,11 +1,7 @@
-#
-# Copyright (c) 2024 Oracle and/or its affiliates. Licensed under the Universal Permissive License (UPL), Version 1.0. See LICENSE for more details.
-#
-
-title: Adding Nodes to OpenShift Cluster on OCI
+title: Add Nodes to OpenShift Cluster on OCI - v1.4.1
 description: A Terraform Stack for creating resources required for adding nodes to OpenShift Cluster on OCI
-schemaVersion: 1.1.0
-version: "20241106"
+schemaVersion: 1.4.1
+version: "20251010"
 locale: "en"
 
 
