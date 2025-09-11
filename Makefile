@@ -1,6 +1,6 @@
 SHELL = bash
 
-PKG_VERSION ?= v1.4.0
+PKG_VERSION ?= v1.4.1
 OCI_DRIVER_VERSION ?= v1.32.0
 
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
@@ -70,6 +70,8 @@ else
 	$(warning podman not installed. Skipping...)
 endif
 
+
+# generate individual file checksums and zipped stack checksums
 .PHONY: checksums
 checksums:
 	$(info Writing checksums...)
@@ -111,8 +113,8 @@ clean:
 	rm -rvf checksums
 	find . -type f -name '*.SHA256SUMS' -print0 | xargs -0 rm -v
 
-# make update-drivers OCI_DRIVER_VERSION=v1.30.0
-# Please be sure your KUBECONFIG is set to the cluster you want to modify
+# export KUBECONFIG=<path_to_kubeconfig>
+# make update-drivers OCI_DRIVER_VERSION=v1.32.0
 .PHONY: update-drivers
 update-drivers:
 ifdef OC

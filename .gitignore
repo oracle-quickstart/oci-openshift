@@ -9,12 +9,15 @@ target/
 .DS_Store
 .secrets
 .dev
+
 **/*.zip
 dist/
 
 checksums/
 **/*.sha256
 **/*.SHA256SUMS
+
+**/condensed-manifest.yml
 
 ### Terraform ###
 # Local .terraform directories
