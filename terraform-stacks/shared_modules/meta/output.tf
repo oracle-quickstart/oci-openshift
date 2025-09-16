@@ -25,3 +25,7 @@ output "node_distribution_summary" {
     }
   }
 }
+
+output "region_metadata" {
+  value = local.region_metadata == "error" ? "" : jsonencode(local.region_metadata)
+}

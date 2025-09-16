@@ -94,3 +94,7 @@ variable "oca_image_pull_link" {
   type    = string
   default = ""
 }
+
+variable "region_metadata" {
+  type = string
+}

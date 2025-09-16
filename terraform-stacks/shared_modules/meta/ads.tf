@@ -6,6 +6,10 @@ terraform {
       source  = "oracle/oci"
       version = ">= 6.12.0"
     }
+    external = {
+      source  = "hashicorp/external"
+      version = "~> 2.3"
+    }
   }
 }
 
