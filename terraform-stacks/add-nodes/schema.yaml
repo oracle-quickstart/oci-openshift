@@ -1,7 +1,7 @@
-title: Add Nodes to OpenShift Cluster on OCI - v1.4.1
+title: Add Nodes to OpenShift Cluster on OCI - v1.4.2
 description: A Terraform Stack for creating resources required for adding nodes to OpenShift Cluster on OCI
-schemaVersion: 1.4.1
-version: "20251010"
+schemaVersion: 1.4.2
+version: "20250916"
 locale: "en"
 
 
