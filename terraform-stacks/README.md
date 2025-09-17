@@ -85,9 +85,9 @@ Create the OCI resources for an OpenShift cluster on OCI and facilitate the inst
     - Count: 3
     - Shape: VM.Standard.E5.Flex
     - OCPU: 6
-    - Memory: 16 GB
+    - Memory: 32 GB
     - Boot Volume
-        - Size: 1024 GB
+        - Size: 300 GB
         - VPUs/GB: 30
 
 #### OCI Resources
@@ -166,9 +166,9 @@ Create the OCI resources for an OpenShift cluster on OCI and facilitate the inst
     - Count: 3
     - Shape: VM.Standard.E5.Flex
     - OCPU: 6
-    - Memory: 16 GB
+    - Memory: 32 GB
     - Boot Volume
-        - Size: 100 GB
+        - Size: 300 GB
         - VPUs/GB: 30
 
 #### Compact Bare Metal
