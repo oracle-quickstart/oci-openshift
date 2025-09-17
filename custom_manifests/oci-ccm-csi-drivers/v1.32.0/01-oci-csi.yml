@@ -517,17 +517,17 @@ parameters:
 
 ---
 
-# # https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/volume-snapshot-and-restore-using-csi.md
-# apiVersion: snapshot.storage.k8s.io/v1
-# kind: VolumeSnapshotClass
-# metadata:
-#   name: oci-snapshot
-#   annotations:
-#     snapshot.storage.kubernetes.io/is-default-class: "true"
-# driver: blockvolume.csi.oraclecloud.com
-# parameters:
-#   backupType: full
-# deletionPolicy: Delete
+# https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/volume-snapshot-and-restore-using-csi.md
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: oci-snapshot
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+driver: blockvolume.csi.oraclecloud.com
+parameters:
+  backupType: full
+deletionPolicy: Delete
 
 ---
 

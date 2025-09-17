@@ -1,11 +1,7 @@
-#
-# Copyright (c) 2019-2020 Oracle and/or its affiliates. All rights reserved.
-#
-
-title: OpenShift on OCI
+title: OpenShift Cluster on OCI - v1.4.2
 description: A Terraform Stack for creating resources required for installing OpenShift on OCI
-schemaVersion: 1.2.0
-version: "20250602"
+schemaVersion: 1.4.2
+version: "20250916"
 locale: "en"
 
 variableGroups:
@@ -368,22 +364,17 @@ variables:
   compute_shape:
     type: string
     title: Compute Shape
-    description: Compute Instance shape of compute nodes. For more details, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>
     default: "VM.Standard.E5.Flex"
     required: true
 
   compute_count:
     type: integer
     title: Compute Node Count
-    description: The number of compute nodes in the cluster. The default value is 3.
     required: true
-    default: 3
 
   compute_ocpu:
     type: integer
     title: Compute Node OCPU
-    description: The number of OCPUs available for the shape of each compute node. The default value is 6.
-    default: 6
     minimum: 1
     maximum: 144
     required: true
@@ -391,8 +382,6 @@ variables:
   compute_memory:
     type: integer
     title: Compute Node Memory
-    description: The amount of memory available for the shape of each compute node, in gigabytes. The default value is 16.
-    default: 16
     minimum: 1
     maximum: 1760
     required: true
@@ -400,8 +389,6 @@ variables:
   compute_boot_size:
     type: integer
     title: Compute Node Boot Volume
-    description: The size of the boot volume of each compute node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB.
-    default: 100
     minimum: 50
     maximum: 32768
     required: true
@@ -409,8 +396,6 @@ variables:
   compute_boot_volume_vpus_per_gb:
     type: integer
     title: Compute Node VPU
-    description: The number of volume performance units (VPUs) that will be applied to this volume per GB of each compute node. The default value is 30.
-    default: 30
     minimum: 10
     maximum: 120
     multipleOf: 10

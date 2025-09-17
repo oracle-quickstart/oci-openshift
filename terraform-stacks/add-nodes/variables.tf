@@ -63,13 +63,13 @@ variable "compute_count" {
 variable "compute_shape" {
   default     = "VM.Standard.E5.Flex"
   type        = string
-  description = "Compute shape of the compute nodes. The default shape is BM.Standard3.64. For more detail regarding supported shapes, please visit https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes"
+  description = "Compute shape of the compute nodes. The default shape is VM.Standard.E5.Flex for VM setup and BM.Standard3.64 for BM setup. For more details regarding supported shapes, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>."
 }
 
 variable "compute_ocpu" {
   default     = 6
   type        = number
-  description = "The number of OCPUs available for the shape of each compute node. The default value is 4. "
+  description = "The number of OCPUs available for the shape of each compute node."
 
   validation {
     condition     = var.compute_ocpu >= 1 && var.compute_ocpu <= 114
@@ -89,9 +89,9 @@ variable "compute_boot_volume_vpus_per_gb" {
 }
 
 variable "compute_memory" {
-  default     = 16
+  default     = 32
   type        = number
-  description = "The amount of memory available for the shape of each compute node, in gigabytes. The default value is 16."
+  description = "The amount of memory available for the shape of each compute node, in gigabytes."
 
   validation {
     condition     = var.compute_memory >= 1 && var.compute_memory <= 1760
@@ -100,9 +100,9 @@ variable "compute_memory" {
 }
 
 variable "compute_boot_size" {
-  default     = 100
+  default     = 300
   type        = number
-  description = "The size of the boot volume of each compute node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB."
+  description = "The size of the boot volume of each compute node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB)."
 
   validation {
     condition     = var.compute_boot_size >= 50 && var.compute_boot_size <= 32768
