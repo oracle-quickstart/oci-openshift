@@ -4,12 +4,12 @@
 - [Limits and Considerations](#limitations-and-considerations)
 - [Installation](#installation)
 
-[OpenShift Virtualization](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/virtualization/index) provides scalable, enterprise-grade virtualization in OpenShift. You can use it to manage virtual machines (VMs) exclusively or alongside container workloads. Another use-case for OpenShift Virtualization is as a migration destination for VMs moving from vSphere to OpenShift using the Migration Toolkit for Virtualization.
+[OpenShift Virtualization](https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html/virtualization/index) provides scalable, enterprise-grade virtualization in OpenShift. You can use it to manage virtual machines (VMs) exclusively or alongside container workloads. Another use-case for OpenShift Virtualization is as a migration destination for VMs moving from vSphere to OpenShift using the Migration Toolkit for Virtualization.
 
 In collaboration with Red Hat and their Virtualization team, OpenShift Virtualization is available for OpenShift on OCI.
 
 For more information, see:
-- [Red Hat - Planning and Installing OpenShift Virtualization](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/virtualization/getting-started#planning-and-installing-virt_virt-getting-started)
+- [Red Hat - Planning and Installing OpenShift Virtualization](https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html/virtualization/getting-started#planning-and-installing-virt_virt-getting-started)
 - [Red Hat - Migration Toolkit for Virtualization](https://developers.redhat.com/products/mtv/overview)
 
 ## Prerequisites
@@ -25,7 +25,7 @@ We also recommend that you use Ultra High Performance Raw Block Volumes (UHP RBV
 
 For more information, see:
 - [oci-openshift - STORAGE.md](/docs/STORAGE.md)
-- [Red Hat - Planning a bare metal cluster for OpenShift Virtualization](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html-single/installing_on_bare_metal/index#virt-planning-bare-metal-cluster-for-ocp-virt_preparing-to-install-on-bare-metal)
+- [Red Hat - Planning a bare metal cluster for OpenShift Virtualization](https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html-single/installing_on_bare_metal/index#virt-planning-bare-metal-cluster-for-ocp-virt_preparing-to-install-on-bare-metal)
 - [OCI - OpenShift on OCI: Supported Shapes](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes)
 - [OCI - Bare Metal Compute Shapes](https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm#baremetalshapes)
 - [OCI - Ultra High Performance Block Volumes](https://docs.oracle.com/en-us/iaas/Content/Block/Concepts/blockvolumeultrahighperformance.htm)
@@ -87,39 +87,41 @@ reclaimPolicy: Delete
 ---
 
 ### Installing OpenShift Virtualization
-1. Follow the [installation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/virtualization/installing#virt-installing-virt-operator_installing-virt) documentation from Red Hat to install the OpenShift Virtualization operator.
+1. Follow the [installation](https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html/virtualization/installing#virt-installing-virt-operator_installing-virt) documentation from Red Hat to install the OpenShift Virtualization operator.
 
-2. After you have installed the OpenShift Virtualization operator and created your HyperConverged instance, you need to [update](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/virtualization/storage#virt-configuring-storage-profile) the StorageProfile for your **default** StorageClass:
-    ```
+2. After you have installed the OpenShift Virtualization operator and created your HyperConverged instance, verify the StorageProfiles created by HyperConverged and [update](https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html/virtualization/storage#virt-configuring-storage-profile) them if needed:
+    ```bash
     oc patch storageprofile oci-bv-uhp --type=merge -p '{"spec": {"claimPropertySets": [{"accessModes": ["ReadWriteMany","ReadWriteOnce"], "volumeMode": "Block"}], "cloneStrategy": "csi-clone"}}'
     ```
 
-3. To clone VMs, you must have a **default** StorageClass. If no StorageClass is annotated as the **default**, you can patch an existing StorageClass. For Ultra High Performance (UHP) Block Volumes, use `oci-bv-uhp`:
-    ```
+3. You must have a **default** StorageClass for OpenShift Virtualization. If no StorageClass is annotated as the **default**, you can annotate/patch an existing StorageClass. For Ultra High Performance (UHP) Block Volumes, use `oci-bv-uhp` from the [Using the UHP CSI Driver](#using-the-uhp-csi-driver):
+
+    Annotate it if necessary:
+    ```bash
     oc patch storageclass oci-bv-uhp -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'
     ```
 
-4. **If you want to be able to clone VMs or use snapshot/restore operations, you must manually create the `VolumeSnapshotClass` resource after installation.**
-The OCI CSI driver supports snapshotting, but the `VolumeSnapshotClass` is **not installed by default** for compatibility reasons.
-Create the following manifest and apply it to your cluster:
+4. The OCI CSI driver supports snapshotting, and if you want to be able to clone VMs or perform snapshot/restore operations, you must have a **default** `VolumeSnapshotClass`. The `oci-snapshot` `VolumeSnapshotClass` is annotated as the **default** and included in the `dynamic_custom_manifest` output from `create-cluster` (**>=v1.4.2**).
 
-```yaml
-apiVersion: snapshot.storage.k8s.io/v1
-kind: VolumeSnapshotClass
-metadata:
-  name: oci-snapshot
-  annotations:
-    snapshot.storage.kubernetes.io/is-default-class: "true"
-driver: blockvolume.csi.oraclecloud.com
-parameters:
-  backupType: full
-deletionPolicy: Delete
-```
+    If you are missing a `VolumeSnapshotClass` and need to add one to an existing cluster, review the following manifest and apply it to your cluster:
 
-Apply it with:
+    ```yaml
+    apiVersion: snapshot.storage.k8s.io/v1
+    kind: VolumeSnapshotClass
+    metadata:
+      name: oci-snapshot
+      annotations:
+        snapshot.storage.kubernetes.io/is-default-class: "true"
+    driver: blockvolume.csi.oraclecloud.com
+    parameters:
+      backupType: full
+    deletionPolicy: Delete
+    ```
 
-```bash
-oc apply -f <your-volumesnapshotclass-file>.yaml
-```
+    Apply it with:
+
+    ```bash
+    oc apply -f oci-snapshot.yaml
+    ```
 
 For more details, see [STORAGE.md - Enabling VolumeSnapshotClass](/docs/STORAGE.md#enabling-volumesnapshotclass).
