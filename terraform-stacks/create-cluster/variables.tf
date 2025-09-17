@@ -227,7 +227,7 @@ variable "compute_count" {
 variable "compute_ocpu" {
   default     = 6
   type        = number
-  description = "The number of OCPUs for each compute node. The default value is 6. For BM shapes, this value is ignored and determined by the shape selected."
+  description = "The number of OCPUs for each compute node. For BM shapes, this value is ignored and determined by the shape selected."
   validation {
     condition     = var.compute_ocpu >= 1 && var.compute_ocpu <= 114
     error_message = "The compute_ocpu value must be between 1 and 114."
@@ -235,9 +235,9 @@ variable "compute_ocpu" {
 }
 
 variable "compute_memory" {
-  default     = 16
+  default     = 32
   type        = number
-  description = "The amount of memory available for the shape of each compute node, in gigabytes. The default value is 16. For BM shapes, this value is ignored and determined by the shape selected."
+  description = "The amount of memory available for the shape of each compute node, in gigabytes.For BM shapes, this value is ignored and determined by the shape selected."
   validation {
     condition     = var.compute_memory >= 1 && var.compute_memory <= 1760
     error_message = "The compute_memory value must be between the value of compute_ocpu and 1760."
@@ -245,9 +245,9 @@ variable "compute_memory" {
 }
 
 variable "compute_boot_size" {
-  default     = 100
+  default     = 300
   type        = number
-  description = "The size of the boot volume of each compute node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB). The default value is 100 GB."
+  description = "The size of the boot volume of each compute node in GBs. The minimum value is 50 GB and the maximum value is 32,768 GB (32 TB)."
   validation {
     condition     = var.compute_boot_size >= 50 && var.compute_boot_size <= 32768
     error_message = "The compute_boot_size value must be between 50 and 32768."
@@ -257,7 +257,7 @@ variable "compute_boot_size" {
 variable "compute_boot_volume_vpus_per_gb" {
   default     = 30
   type        = number
-  description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each compute node. The default value is 30. "
+  description = "The number of volume performance units (VPUs) that will be applied to this volume per GB of each compute node."
   validation {
     condition     = var.compute_boot_volume_vpus_per_gb >= 10 && var.compute_boot_volume_vpus_per_gb <= 120 && var.compute_boot_volume_vpus_per_gb % 10 == 0
     error_message = "The compute_boot_volume_vpus_per_gb value must be between 10 and 120, and must be a multiple of 10."
