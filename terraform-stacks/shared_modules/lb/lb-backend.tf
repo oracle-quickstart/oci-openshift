@@ -23,8 +23,10 @@ resource "oci_load_balancer_listener" "openshift_cluster_api_listener_external" 
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_http_backend_set" {
   health_checker {
-    protocol          = "TCP"
+    protocol          = "HTTP"
     port              = 80
+    return_code       = 200
+    url_path          = "/healthz"
     interval_ms       = 10000
     timeout_in_millis = 3000
     retries           = 3
@@ -39,13 +41,15 @@ resource "oci_load_balancer_listener" "openshift_cluster_ingress_http" {
   name                     = "openshift_cluster_ingress_http"
   load_balancer_id         = oci_load_balancer_load_balancer.openshift_apps_lb.id
   port                     = 80
-  protocol                 = "TCP"
+  protocol                 = "HTTP"
 }
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_ingress_https_backend_set" {
   health_checker {
-    protocol          = "TCP"
+    protocol          = "HTTP"
     port              = 443
+    return_code       = 200
+    url_path          = "/healthz"
     interval_ms       = 10000
     timeout_in_millis = 3000
     retries           = 3
@@ -60,7 +64,7 @@ resource "oci_load_balancer_listener" "openshift_cluster_ingress_https" {
   name                     = "openshift_cluster_ingress_https"
   load_balancer_id         = oci_load_balancer_load_balancer.openshift_apps_lb.id
   port                     = 443
-  protocol                 = "TCP"
+  protocol                 = "HTTP"
 }
 
 resource "oci_load_balancer_backend_set" "openshift_cluster_api_backend_set_internal" {
