@@ -1,6 +1,6 @@
-title: OpenShift on OCI Resource Attribution Tags - v1.4.2
+title: OpenShift on OCI Resource Attribution Tags - v1.4.3
 description: A Terraform Stack for creating OpenShift Resource Attribution Tags.
-schemaVersion: 1.4.2
+schemaVersion: 1.4.3
 version: "20250916"
 locale: "en"
 
