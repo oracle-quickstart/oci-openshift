@@ -69,7 +69,7 @@ ifdef PODMAN
 
 	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/vlan-bm-mtu-configure-master.bu > custom_manifests/manifests/07-configure-bm-vlan-mtu.yml
 	@echo '---' >> custom_manifests/manifests/07-configure-bm-vlan-mtu.yml
-	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/vlan-bm-mtu-configure-worker.bu > custom_manifests/manifests/07-configure-bm-vlan-mtu.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/vlan-bm-mtu-configure-worker.bu >> custom_manifests/manifests/07-configure-bm-vlan-mtu.yml
 	@echo '---' >> custom_manifests/manifests/07-configure-bm-vlan-mtu.yml
 
 
