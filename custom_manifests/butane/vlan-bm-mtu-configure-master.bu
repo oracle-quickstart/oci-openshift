@@ -1,0 +1,113 @@
+variant: openshift
+version: 4.16.0
+metadata:
+  name: 00-master-bm-vlan-mtu-9000
+  labels:
+    machineconfiguration.openshift.io/role: master
+storage:
+  files:
+  - mode: 0755
+    path: "/usr/local/sbin/bm-mtu-configure.sh"
+    contents:
+      inline: |
+        #!/bin/bash
+        # Configure MTU=9000 on VLAN-backed bare metal interfaces
+        # This script runs at boot to ensure OVN-Kubernetes has sufficient MTU
+        # for its Geneve overlay (8900+ 58 bytes encapsulation = 8958 minimum)
+        #
+        # Problem: Bare metal shapes with VLAN-backed networking (like BM.Standard.E5.192,
+        #          BM.Standard.E6.256) default to MTU 1500 on RHCOS, causing OVN to fail.
+        #
+        # Solution: Dynamically detect VLAN interfaces and set MTU=9000 on parent+VLAN.
+        #          Uses ip commands directly (no NetworkManager dependency).
+        #          Includes guards to skip VM workers and already-configured nodes.
+
+        set -euo pipefail
+
+        # Guard 1: No VLAN interfaces => no-op (virtual workers)
+        vlans=$(ip -o link show type vlan | awk '{print $2}' | sed 's/:$//' | sed 's/@.*//' || true)
+        if [ -z "$vlans" ]; then
+          echo "[INFO] No VLAN interfaces found, exiting (no-op for VM workers)"
+          exit 0
+        fi
+
+        echo "[INFO] Found VLAN interfaces: $vlans"
+
+        # Process each VLAN interface
+        for vlan in $vlans; do
+          # Extract parent interface name
+          # VLAN interfaces are named: parent.vlanid or parent.vlanid@parent
+          # Strip everything from first dot onwards to get parent
+          parent=$(echo "$vlan" | sed 's/\..*//')
+
+          if [ -z "$parent" ] || [ "$parent" = "$vlan" ]; then
+            echo "[WARN] Could not determine parent for $vlan, skipping"
+            continue
+          fi
+
+          # Get current MTU from actual devices (not NetworkManager)
+          parent_mtu=$(ip link show "$parent" 2>/dev/null | grep -oP 'mtu \K[0-9]+' || echo 0)
+          vlan_mtu=$(ip link show "$vlan" 2>/dev/null | grep -oP 'mtu \K[0-9]+' || echo 0)
+
+          echo "[INFO] $parent: MTU=$parent_mtu, $vlan: MTU=$vlan_mtu"
+
+          # Guard 2: Already jumbo => no-op (idempotent)
+          if [ "$parent_mtu" -ge 9000 ] && [ "$vlan_mtu" -ge 9000 ]; then
+            echo "[INFO] $parent and $vlan already have MTU >= 9000, no changes needed"
+            continue
+          fi
+
+          echo "[ACTION] Setting MTU=9000 on $parent and $vlan"
+
+          # Set MTU on parent device (if needed)
+          if [ "$parent_mtu" -lt 9000 ]; then
+            ip link set dev "$parent" mtu 9000
+            echo "[SUCCESS] Set MTU=9000 on $parent"
+          fi
+
+          # Set MTU on VLAN device (if needed)
+          if [ "$vlan_mtu" -lt 9000 ]; then
+            ip link set dev "$vlan" mtu 9000
+            echo "[SUCCESS] Set MTU=9000 on $vlan"
+          fi
+
+          echo "[SUCCESS] MTU configuration complete for $parent and $vlan"
+        done
+
+        # Also set br-ex MTU if it exists (OVS bridge created by ovs-configuration.service)
+        # This handles the case where the script runs after OVS has started
+        if ip link show br-ex &>/dev/null; then
+          br_ex_mtu=$(ip link show br-ex 2>/dev/null | grep -oP 'mtu \K[0-9]+' || echo 0)
+          if [ "$br_ex_mtu" -lt 9000 ]; then
+            echo "[ACTION] Setting MTU=9000 on br-ex"
+            if command -v ovs-vsctl &>/dev/null; then
+              ovs-vsctl set Interface br-ex mtu_request=9000 && echo "[SUCCESS] Set MTU=9000 on br-ex"
+            fi
+          else
+            echo "[INFO] br-ex already has MTU >= 9000"
+          fi
+        fi
+
+        echo "[INFO] bm-mtu-configure.sh completed successfully"
+        exit 0
+systemd:
+  units:
+  - name: bm-mtu-configure.service
+    enabled: true
+    contents: |
+      [Unit]
+      Description=Configure MTU=9000 on VLAN-backed bare metal interfaces
+      Documentation=https://github.com/oracle-quickstart/oci-openshift/issues/78
+      After=NetworkManager.service oci-eval-user-data.service
+      Before=ovs-configuration.service kubelet.service
+      ConditionPathExists=/usr/local/sbin/bm-mtu-configure.sh
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/sbin/bm-mtu-configure.sh
+      RemainAfterExit=yes
+      StandardOutput=journal+console
+      StandardError=journal+console
+
+      [Install]
+      WantedBy=multi-user.target

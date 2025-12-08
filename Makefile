@@ -1,6 +1,6 @@
 SHELL = bash
 
-PKG_VERSION ?= v1.4.2
+PKG_VERSION ?= v1.4.3
 OCI_DRIVER_VERSION ?= v1.32.0
 
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
@@ -66,6 +66,13 @@ ifdef PODMAN
 	@echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
 	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/oci-eval-user-data-worker.bu >> custom_manifests/manifests/05-oci-eval-user-data.yml
 	@echo '---' >> custom_manifests/manifests/05-oci-eval-user-data.yml
+
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/vlan-bm-mtu-configure-master.bu > custom_manifests/manifests/07-configure-bm-vlan-mtu.yml
+	@echo '---' >> custom_manifests/manifests/07-configure-bm-vlan-mtu.yml
+	@podman run -i --rm quay.io/coreos/butane:release --pretty --strict < custom_manifests/butane/vlan-bm-mtu-configure-worker.bu >> custom_manifests/manifests/07-configure-bm-vlan-mtu.yml
+	@echo '---' >> custom_manifests/manifests/07-configure-bm-vlan-mtu.yml
+
+
 else
 	$(warning podman not installed. Skipping...)
 endif
