@@ -24,7 +24,21 @@ output "dynamic_custom_manifest" {
     ${file("${path.module}/manifests/04-cluster-network.yml")}
     ${file("${path.module}/manifests/05-oci-eval-user-data.yml")}
     ${file("${path.module}/manifests/07-configure-bm-vlan-mtu.yml")}
+    %{if var.use_autoscaling_operator}
+    ${file("${path.module}/manifests/08-autoscaling-operator.yml")}
+    ${local.autoscaling_operator_runtime_manifest_configmap}
+    %{endif}
   EOT
+}
+
+output "autoscaling_manifest" {
+  description = "Autoscaling operator manifests to apply after cluster installation has converged."
+  value       = var.use_autoscaling_operator ? local.autoscaling_operator_runtime_bundle : null
+
+  precondition {
+    condition     = !var.use_autoscaling_operator || var.autoscalar_node_maximum_count >= var.autoscalar_node_minimum_count
+    error_message = "The autoscalar_node_maximum_count value must be greater than or equal to autoscalar_node_minimum_count."
+  }
 }
 
 output "agent_config" {

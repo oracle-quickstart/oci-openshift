@@ -53,6 +53,18 @@ variableGroups:
       - starting_fd_name_cp
     visible: create_openshift_instances
 
+  - title: "Autoscaling Configurations"
+    variables:
+      - use_autoscaling_operator
+      - autoscalar_node_shape
+      - autoscalar_node_image_source_uri
+      - autoscalar_node_minimum_count
+      - autoscalar_node_maximum_count
+      - autoscalar_node_ocpus
+      - autoscalar_node_memory
+      - cluster_network_cidr_block
+      - service_network_cidr_block
+
   - title: "Compute Node Configuration"
     variables:
       - compute_shape
@@ -66,7 +78,13 @@ variableGroups:
       - starting_ad_name_compute
       - distribute_compute_instances_across_fds
       - starting_fd_name_compute
-    visible: create_openshift_instances
+    visible:
+      and:
+        - create_openshift_instances
+        - eq:
+            - use_autoscaling_operator
+            - false
+
   - title: "Networking Configuration"
     variables:
       - create_public_dns
@@ -632,6 +650,102 @@ variables:
     minimum: 10
     maximum: 8000
     required: true
+
+  #
+  # Autoscalar configurations
+  #
+
+  use_autoscaling_operator:
+    type: boolean
+    title: Enable OCI OpenShift Autoscalar (beta)
+    description: Select this option to enable OCI OpenShift Autoscalar (beta). When enabled, node autoscaling will be managed by the OCI OpenShift Autoscalar Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands.
+    default: false
+
+  autoscalar_node_shape:
+    type: string
+    title: Autoscaler Node Shape
+    required: true
+    description: If you select a bare metal shape, provide Existing Private Subnet for Bare Metal. The OCP and bare metal subnet names are looked up automatically. Resource tagging is only needed for bare metal shapes so the autoscaler can pull the required iSCSI tags.
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscalar_node_ocpus:
+    type: integer
+    title: Autoscalar Node OCPU
+    default: 4
+    minimum: 1
+    maximum: 144
+    required: true
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscalar_node_memory:
+    type: integer
+    title: Autoscalar Node Memory
+    default: 24
+    minimum: 1
+    maximum: 1760
+    required: true
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscalar_node_image_source_uri:
+    type: string
+    title: Autoscalar Image Source URI
+    default: ""
+    required: true
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscalar_node_minimum_count:
+    type: integer
+    title: Minimum Autoscalar Node Count
+    required: true
+    default: 0
+    minimum: 0
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscalar_node_maximum_count:
+    type: integer
+    title: Maximum Autoscalar Node Count
+    required: true
+    default: 5
+    minimum: 0
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  cluster_network_cidr_block:
+    type: string
+    title: Cluster Network CIDR Block
+    required: true
+    default: "10.128.0.0/14"
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  service_network_cidr_block:
+    type: string
+    title: Service Network CIDR Block
+    required: true
+    default: "172.30.0.0/16"
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
 
   #
   # Advanced configurations

@@ -30,7 +30,7 @@ module "meta" {
   distribute_cp_instances_across_fds      = var.distribute_cp_instances_across_fds
   distribute_compute_instances_across_fds = var.distribute_compute_instances_across_fds
   control_plane_count                     = var.control_plane_count
-  compute_count                           = var.compute_count
+  compute_count                           = local.effective_compute_count
 }
 module "tags" {
   source = "./shared_modules/tags"
@@ -82,6 +82,11 @@ module "image" {
   openshift_image_source_uri  = var.openshift_image_source_uri
   control_plane_shape         = var.control_plane_shape
   compute_shape               = var.compute_shape
+
+  // autoscalar image generation
+  use_autoscaling_operator         = var.use_autoscaling_operator
+  autoscalar_node_image_source_uri = var.autoscalar_node_image_source_uri
+  autoscalar_node_shape            = var.autoscalar_node_shape
 
   // Depedency on tags
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
@@ -204,7 +209,7 @@ module "compute" {
 
   // Dependency on AD placement
   cp_node_map      = module.meta.cp_node_map
-  compute_node_map = module.meta.compute_node_map
+  compute_node_map = var.use_autoscaling_operator ? {} : module.meta.compute_node_map
 
   // Depedency on tags
   op_openshift_tag_boot_volume_type = module.tags.op_openshift_tag_boot_volume_type
@@ -279,7 +284,6 @@ module "manifests" {
   https_proxy                  = var.https_proxy
   no_proxy                     = var.no_proxy
 
-
   // Depedency on networks
   op_vcn_openshift_vcn  = module.network.op_vcn_openshift_vcn
   op_apps_subnet        = local.apps_subnet_id
@@ -288,7 +292,7 @@ module "manifests" {
   zone_dns              = var.zone_dns
   rendezvous_ip         = var.rendezvous_ip
   control_plane_count   = var.control_plane_count
-  compute_count         = var.compute_count
+  compute_count         = local.effective_compute_count
   public_ssh_key        = var.public_ssh_key
   cluster_name          = var.cluster_name
   webserver_private_ip  = var.webserver_private_ip
@@ -296,6 +300,29 @@ module "manifests" {
   // Dependency on ocir
   use_oracle_cloud_agent = var.use_oracle_cloud_agent
   oca_image_pull_link    = module.ocir.image_pull_command
+
+  // newly added
+  region                                   = var.region
+  tenancy_ocid                             = var.tenancy_ocid
+  op_network_security_group_cluster_lb_nsg = module.network.op_network_security_group_cluster_lb_nsg
+  op_subnet_private_ocp                    = module.network.op_subnet_private_ocp
+  op_lb_openshift_api_lb                   = module.load_balancer.op_lb_openshift_api_lb
+  op_lb_openshift_api_lb_ip_addr           = module.load_balancer.op_lb_openshift_api_lb_ip_addr
+
+  // autoscalar
+  use_autoscaling_operator          = var.use_autoscaling_operator
+  autoscalar_node_shape             = var.autoscalar_node_shape
+  autoscalar_node_minimum_count     = var.autoscalar_node_minimum_count
+  autoscalar_node_maximum_count     = var.autoscalar_node_maximum_count
+  autoscalar_node_ocpus             = var.autoscalar_node_ocpus
+  autoscalar_node_memory            = var.autoscalar_node_memory
+  autoscaler_defined_tags_namespace = module.tags.op_openshift_tag_namespace
+  bare_metal_subnet_id              = local.is_autoscaler_bm_shape ? module.network.op_subnet_private_bare_metal : ""
+  bare_metal_subnet_name            = local.is_autoscaler_bm_shape ? data.oci_core_subnet.autoscaler_bare_metal_subnet[0].display_name : ""
+  ocp_subnet_name                   = data.oci_core_subnet.autoscaler_ocp_subnet.display_name
+  cluster_network_cidr_block        = var.cluster_network_cidr_block
+  service_network_cidr_block        = var.service_network_cidr_block
+  autoscalar_node_image_id          = module.image.op_image_openshift_autoscaling_image
 }
 
 module "resource_attribution_tags" {
