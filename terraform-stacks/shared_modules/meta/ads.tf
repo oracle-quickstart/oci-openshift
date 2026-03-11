@@ -45,7 +45,7 @@ locals {
 
   # This will extract just the number at the end after "AD-"
   starting_ad_index_cp      = var.starting_ad_name_cp != null && var.starting_ad_name_cp != "" ? (regex("AD-([0-9]+)$", var.starting_ad_name_cp)[0]) - 1 : 0 # Subtract 1 because AD indices typically start from 1
-  starting_ad_index_compute = var.starting_ad_name_compute != null && var.starting_ad_name_compute!= "" ? (regex("AD-([0-9]+)$", var.starting_ad_name_compute)[0]) - 1 : 0
+  starting_ad_index_compute = var.starting_ad_name_compute != null && var.starting_ad_name_compute != "" ? (regex("AD-([0-9]+)$", var.starting_ad_name_compute)[0]) - 1 : 0
 
   # FD starting index
   starting_fd_index_cp = (

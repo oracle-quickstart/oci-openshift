@@ -4,6 +4,8 @@ data "oci_core_compute_global_image_capability_schemas" "image_capability_schema
 locals {
 
   global_image_capability_schemas = data.oci_core_compute_global_image_capability_schemas.image_capability_schemas.compute_global_image_capability_schemas
+  autoscaling_source_image_type   = "QCOW2"
+  is_autoscaler_bm_shape          = can(regex("^BM\\.", var.autoscalar_node_shape))
   schema_bare_metal = {
     "Compute.Firmware" = jsonencode({
       descriptorType = "enumstring"

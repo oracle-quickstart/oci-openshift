@@ -482,3 +482,68 @@ variable "compute_capacity_reservation" {
     error_message = "Invalid capacity reservation OCID"
   }
 }
+variable "use_autoscaling_operator" {
+  type        = bool
+  description = "Enable the Oracle Cloud Autoscalar (beta). When enabled, node autoscaling will be managed by the Oracle Cloud Autoscalar Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands."
+  default     = false
+}
+
+variable "autoscalar_node_shape" {
+  default     = "VM.Standard.E5.Flex"
+  type        = string
+  description = "Compute shape of the autoscalar nodes. The default shape is VM.Standard.E5.Flex for VM setup and BM.Standard3.64 for BM setup. For more details regarding supported shapes, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>."
+}
+
+variable "autoscalar_node_minimum_count" {
+  default     = 0
+  type        = number
+  description = "The minimum number of autoscaled nodes in the cluster. The default value is 0."
+  validation {
+    condition     = var.autoscalar_node_minimum_count >= 0
+    error_message = "The autoscalar_node_minimum_count value must be greater than or equal to 0."
+  }
+}
+
+variable "autoscalar_node_maximum_count" {
+  default     = 5
+  type        = number
+  description = "The maximum number of autoscaled nodes in the cluster. The default value is 5."
+}
+
+variable "autoscalar_node_ocpus" {
+  default     = 4
+  type        = number
+  description = "The number of OCPUs for each autoscaled node. The default value is 4. For BM shapes, this value is ignored and determined by the shape selected."
+  validation {
+    condition     = var.autoscalar_node_ocpus >= 1 && var.autoscalar_node_ocpus <= 144
+    error_message = "The autoscalar_node_ocpus value must be between 1 and 144."
+  }
+}
+
+variable "autoscalar_node_memory" {
+  default     = 24
+  type        = number
+  description = "The amount of memory available for the shape of each autoscaled node, in gigabytes. The default value is 24. For BM shapes, this value is ignored and determined by the shape selected."
+  validation {
+    condition     = var.autoscalar_node_memory >= 1 && var.autoscalar_node_memory <= 1760
+    error_message = "The autoscalar_node_memory value must be between the value of 1 and 1760."
+  }
+}
+
+variable "cluster_network_cidr_block" {
+  default     = "10.128.0.0/14"
+  type        = string
+  description = "The CIDR block for the OpenShift cluster network."
+}
+
+variable "service_network_cidr_block" {
+  default     = "172.30.0.0/16"
+  type        = string
+  description = "The CIDR block for the OpenShift service network."
+}
+
+variable "autoscalar_node_image_source_uri" {
+  type        = string
+  description = "<strong><em>(Required)</em></strong> - The OCI Object Storage URL for the Autoscalar node image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block."
+  default     = ""
+}

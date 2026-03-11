@@ -5,6 +5,7 @@
 - [create-instance-role-tags](#create-instance-role-tags)
 - [create-cluster](#create-cluster)
 - [add-nodes](#add-nodes)
+- [create-autoscalar-operator](#create-autoscalar-operator)
 
 ---
 
@@ -164,6 +165,13 @@ Create the OCI resources for an OpenShift cluster on OCI and facilitate the inst
 
 ### Example Cluster Configurations
 ---
+
+## create-autoscalar-operator
+
+Discovers networking and load balancer details for an existing OpenShift cluster on OCI, builds the autoscaling node image using the same image module logic, and produces a single manifest output (`autoscaling_manifest`) that installs the OCI autoscaling operator plus its ConfigMap with your environment values.
+
+Inputs include existing VCN/subnet IDs, cluster name (for LB discovery), region/compartment, and autoscaler target shape and image URI. The output string can be copied into a file and applied with `oc apply -f /path-file-having-autoscaling-dynamic-output/autoscaling-dynamic-output.yml`.
+
 
 #### High-Availability VMs (Default)
 
