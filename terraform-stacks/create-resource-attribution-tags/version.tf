@@ -1,3 +1,3 @@
 locals {
-  stack_version = "v1.4.3"
+  stack_version = "v1.5.0"
 }

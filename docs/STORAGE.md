@@ -104,12 +104,12 @@ View the supported driver versions in [custom_manifests/oci-ccm-csi-drivers](/cu
 #### To upgrade/change OCI CSI driver version on an existing OpenShift cluster
 
 
-1. Find the version of the oci-ccm-csi-driver manifests you need e.g. [**v1.32.0**](/custom_manifests/oci-ccm-csi-drivers/v1.32.0)
+1. Find the version of the oci-ccm-csi-driver manifests you need e.g. [**v1.34.0**](/custom_manifests/oci-ccm-csi-drivers/v1.34.0)
 
 2. Apply the changes manually or reapply the entire manifest with the following command:
 
     ```bash
-    oc apply -f custom_manifests/oci-ccm-csi-drivers/v1.32.0/01-oci-csi.yml
+    oc apply -f custom_manifests/oci-ccm-csi-drivers/v1.34.0/01-oci-csi.yml
     ```
 
 #### Enabling VolumeSnapshotClass

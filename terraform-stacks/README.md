@@ -10,7 +10,14 @@
 
 This directory contains Terraform stacks specifically designed for Red Hat OpenShift on Oracle Cloud Infrastructure. They can be used to provision OCI resources that support the creation and management of OpenShift clusters running on OCI. These stacks are typically applied using OCI Resource Manager Service (RMS).
 
-⚠️ Important: You must create the OpenShift resource attribution tags first (using the [create-resource-attribution-tags](#create-resource-attribution-tags) stack) before you can create clusters or add nodes using our other stacks. Skipping this step may cause failures or unexpected behavior.
+⚠️ Important: OpenShift resource attribution tags are mandatory. You must create them first by using the [create-resource-attribution-tags](#create-resource-attribution-tags) stack before you can create clusters or add nodes using our other stacks. Skipping this step may cause failures or unexpected behavior.
+
+The tagging-controller expects these tags to exist on the OCI resources used by the cluster, including the instances that run OpenShift on OCI. If the tag namespace or defined tag does not exist, or if the cluster does not have permission to use that tag namespace, the OpenShift cluster will fail to bootstrap.
+
+Before creating a cluster, verify both of the following:
+
+- The `openshift-tags` tag namespace and the `openshift-resource=openshift-resource-infra` defined tag already exist.
+- The cluster's instance principal dynamic group has permission to use tag namespaces in the compartment that contains those tags.
 
 ---
 ---
@@ -22,6 +29,12 @@ OpenShift resource attribution tags used to categorize, organize, and track reso
 Example:
 ```
 {"openshift-tags": {"openshift-resource": "openshift-resource-infra"}
+```
+
+If the resource attribution tags exist in compartment `ocid.id.aaaa`, and the cluster runs with instance principals using the dynamic group `openshift_control_plane_nodes`, add a policy that allows that dynamic group to use the tag namespace in the compartment that owns those tags:
+
+```text
+Allow dynamic-group openshift_control_plane_nodes to use tag-namespaces in compartment id ocid.id.aaaa
 ```
 
 ⚠️ Note: Apply this stack only if the required tagging resources do not already exist within your tenancy.

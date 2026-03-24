@@ -1,16 +1,25 @@
 locals {
-  default_oci_driver_image = "ghcr.io/oracle/cloud-provider-oci:v1.32.0"
+  default_oci_driver_image = "ghcr.io/oracle/cloud-provider-oci:v1.34.0"
 
   oci_image_sources = {
-    "v1.30.0"     = "ghcr.io/oracle/cloud-provider-oci:v1.30.0"
-    "v1.32.0"     = "ghcr.io/oracle/cloud-provider-oci:v1.32.0"
+    "v1.33.1"     = "ghcr.io/oracle/cloud-provider-oci:v1.33.1"
+    "v1.32.2"     = "ghcr.io/oracle/cloud-provider-oci:v1.32.2"
+    "v1.34.0"     = "ghcr.io/oracle/cloud-provider-oci:v1.34.0"
     "v1.32.0-UHP" = "ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA"
   }
 
+  oci_pod_security_enforce_versions = {
+    "v1.33.1"     = "v1.33"
+    "v1.32.2"     = "v1.32"
+    "v1.34.0"     = "v1.34"
+    "v1.32.0-UHP" = "v1.32"
+  }
+
   oci_csi = templatefile("${path.module}/manifest-templates/01-oci-csi.yml.tpl", {
-    region_metadata    = var.region_metadata
-    oci_driver_version = var.oci_driver_version
-    oci_image_source   = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
+    region_metadata              = var.region_metadata
+    oci_driver_version           = var.oci_driver_version
+    oci_image_source             = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
+    pod_security_enforce_version = lookup(local.oci_pod_security_enforce_versions, var.oci_driver_version, "v1.34")
   })
 
   common_config = <<-COMMONCONFIG
