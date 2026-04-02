@@ -238,7 +238,7 @@ spec:
             path: /etc/kubernetes
       containers:
         - name: oci-cloud-controller-manager
-          image: ghcr.io/oracle/cloud-provider-oci:v1.34.0
+          image: ghcr.io/nikhisin3001/cloud-provider-oci:v1.34.0
           env:
             - name: OPENSHIFT_NODE_LABEL_ID
               value: node.openshift.io/os_id=rhel
