@@ -6,8 +6,8 @@ variable "oci_driver_version" {
   type = string
 
   validation {
-    condition     = contains(["v1.30.0", "v1.32.0", "v1.32.0-UHP"], var.oci_driver_version)
-    error_message = "The oci_driver_version must correspond to a folder in oci-openshift/custom_manifests/oci-ccm-csi-drivers."
+    condition     = var.oci_driver_version == "v1.34.0"
+    error_message = "The create-cluster stack only supports oci_driver_version = v1.34.0."
   }
 }
 

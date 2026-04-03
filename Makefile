@@ -1,7 +1,7 @@
 SHELL = bash
 
-PKG_VERSION ?= v1.4.3
-OCI_DRIVER_VERSION ?= v1.32.0
+PKG_VERSION ?= v1.5.0
+OCI_DRIVER_VERSION ?= v1.34.0
 
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
 PODMAN := $(shell command -v podman 2> /dev/null)
@@ -121,7 +121,7 @@ clean:
 	find . -type f -name '*.SHA256SUMS' -print0 | xargs -0 rm -v
 
 # export KUBECONFIG=<path_to_kubeconfig>
-# make update-drivers OCI_DRIVER_VERSION=v1.32.0
+# make update-drivers OCI_DRIVER_VERSION=v1.34.0
 .PHONY: update-drivers
 update-drivers:
 ifdef OC

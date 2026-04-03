@@ -35,6 +35,35 @@ Before you begin, ensure you have:
 - *(Optional)* An Object Storage bucket to store the discovery ISO image. You can also use an existing bucket.
 - Access to the required configuration files, including the [custom manifests](https://github.com/oracle-quickstart/oci-openshift/tree/main/custom_manifests) and [terraform stacks](https://github.com/oracle-quickstart/oci-openshift/tree/main/terraform-stacks).
 
+⚠️ **Important**: Resource attribution tags are mandatory for OpenShift on OCI.
+
+Before creating the cluster, ensure the required resource attribution tags already exist. If they do not exist yet, run the [create-attribution-tags](https://github.com/oracle-quickstart/oci-openshift/tree/main/terraform-stacks/create-resource-attribution-tags) stack first. You typically do this for the first cluster deployment in a tenancy or environment. After the tags exist, later cluster deployments can reuse them.
+
+These tags are not optional. The tagging-controller ensures the required OpenShift resource attribution tags exist on the OCI resources used by the cluster, including the instances that run OpenShift on OCI. If the tag namespace or defined tag is missing, or if the cluster does not have permission to use that tag namespace, the OpenShift cluster will fail to bootstrap.
+
+The required resource attribution tag structure is:
+
+```json
+{"openshift-tags": {"openshift-resource": "openshift-resource-infra"}}
+```
+
+Customers must also ensure that the OpenShift cluster can access the compartment that owns the resource attribution tags. When the cluster uses OCI instance principals, the control plane dynamic group must be allowed to use the tag namespace in the compartment where the resource attribution tags are defined.
+
+Example:
+
+1. The resource attribution tags exist in compartment `ocid.id.aaaa`.
+2. The cluster runs with instance principals and uses the dynamic group `openshift_control_plane_nodes`.
+3. Add a policy that allows that dynamic group to use tag namespaces in the compartment that owns the tags.
+
+```text
+Allow dynamic-group openshift_control_plane_nodes to use tag-namespaces in compartment id ocid.id.aaaa
+```
+
+Before creating the cluster, verify both of the following:
+
+- The `openshift-tags` tag namespace and the `openshift-resource=openshift-resource-infra` defined tag already exist.
+- The cluster's instance principal dynamic group has permission to use tag namespaces in the compartment that contains those tags.
+
 ### Install OpenShift Clusters on OCI
 
 Follow the installation instructions for your preferred method:
@@ -43,8 +72,6 @@ Follow the installation instructions for your preferred method:
 - [**Agent-based Installer**](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/agent-installer.htm): An advanced installation method that requires you to provision the infrastructure in one of the two ways:
   - [**Terraform Provisioning**](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/agent-installer-using-stack.htm) - For connected environments.
   - [**Manual Provisioning**](https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/installing-agent.htm) - For disconnected or air-gapped environments.
-
-⚠️ **Important**: Before creating the cluster, ensure you've executed the latest version of [create-attribution-tags](https://github.com/oracle-quickstart/oci-openshift/tree/main/terraform-stacks/create-resource-attribution-tags) stack. This ensures all necessary tags are available prior to cluster provisioning. You only need to run this for the `first cluster deployment`. Subsequent cluster deployments will not require this step, as the tags will already exist.
 
 ### Post-Installation
 

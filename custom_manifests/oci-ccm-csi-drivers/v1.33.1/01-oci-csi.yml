@@ -13,7 +13,7 @@ metadata:
     "pod-security.kubernetes.io/warn": "privileged"
     "security.openshift.io/scc.podSecurityLabelSync": "false"
     "openshift.io/run-level": "0"
-    "pod-security.kubernetes.io/enforce-version": "${pod_security_enforce_version}"
+    "pod-security.kubernetes.io/enforce-version": "v1.33"
 
 ---
 
@@ -116,12 +116,7 @@ spec:
             - --fss-csi-endpoint=unix://var/run/shared-tmpfs/csi-fss.sock
           command:
             - /usr/local/bin/oci-csi-controller-driver
-          image: ${oci_image_source}
-          %{~ if region_metadata != "" ~}
-          env:
-            - name: OCI_REGION_METADATA
-              value: '${region_metadata}'
-          %{~ endif ~}
+          image: ghcr.io/oracle/cloud-provider-oci:v1.33.1
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: config
@@ -289,11 +284,7 @@ spec:
                   fieldPath: spec.nodeName
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/host/usr/bin:/host/sbin
-            %{~ if region_metadata != "" ~}
-            - name: OCI_REGION_METADATA
-              value: '${region_metadata}'
-            %{~ endif ~}
-          image: ${oci_image_source}
+          image: ghcr.io/oracle/cloud-provider-oci:v1.33.1
           securityContext:
             privileged: true
           volumeMounts:
@@ -503,10 +494,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: oci-bv
-%{~ if oci_driver_version != "v1.32.0-UHP" }
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
-%{~ endif }
 provisioner: blockvolume.csi.oraclecloud.com
 reclaimPolicy: Delete
 allowVolumeExpansion: true
@@ -527,37 +516,18 @@ parameters:
   attachment-type: "paravirtualized"
 
 ---
-%{~ if oci_driver_version == "v1.32.0-UHP" }
 
-# oci-bv-uhp can be used to create Ultra High Performance OCI Block Volume and should be the default when using OpenShift Virtualization. Currently, this StorageClass is only compatable with UHP-enabled CSI drivers e.g. "ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA"
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
+# https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/volume-snapshot-and-restore-using-csi.md
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
 metadata:
-  name: oci-bv-uhp
+  name: oci-snapshot
   annotations:
-    storageclass.kubernetes.io/is-default-class: "true"
-provisioner: blockvolume.csi.oraclecloud.com
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+driver: blockvolume.csi.oraclecloud.com
 parameters:
-  oci.oraclecloud.com/initial-defined-tags-override: '{"openshift-tags": {"openshift-resource": "openshift-virtualization"}}'
-  vpusPerGB: "80"
-volumeBindingMode: Immediate
-allowVolumeExpansion: true
-reclaimPolicy: Delete
-
----
-%{~ endif }
-
-# # https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/volume-snapshot-and-restore-using-csi.md
-# apiVersion: snapshot.storage.k8s.io/v1
-# kind: VolumeSnapshotClass
-# metadata:
-#   name: oci-snapshot
-#   annotations:
-#     snapshot.storage.kubernetes.io/is-default-class: "true"
-# driver: blockvolume.csi.oraclecloud.com
-# parameters:
-#   backupType: full
-# deletionPolicy: Delete
+  backupType: full
+deletionPolicy: Delete
 
 ---
 

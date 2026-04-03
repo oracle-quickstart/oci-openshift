@@ -421,7 +421,7 @@ variable "load_balancer_shape_details_minimum_bandwidth_in_mbps" {
 variable "oci_driver_version" {
   type        = string
   description = "The OCI CCM and CSI driver version. Select what version of the OCI CCM and CSI driver manifests to include in the `dynamic_custom_manifest` output. See available versions in <a href='https://github.com/oracle-quickstart/oci-openshift/tree/main/custom_manifests/oci-ccm-csi-drivers'>oci-openshift/custom_manifests/oci-ccm-csi-drivers</a>"
-  default     = "v1.32.0"
+  default     = "v1.34.0"
 }
 
 variable "use_existing_tags" {

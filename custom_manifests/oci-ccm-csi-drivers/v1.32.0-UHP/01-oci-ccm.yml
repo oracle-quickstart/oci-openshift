@@ -239,6 +239,9 @@ spec:
       containers:
         - name: oci-cloud-controller-manager
           image: ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA
+          env:
+            - name: OPENSHIFT_NODE_LABEL_ID
+              value: node.openshift.io/os_id=rhel
           command:
             - /bin/bash
             - -c
