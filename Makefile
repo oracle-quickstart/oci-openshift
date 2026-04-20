@@ -1,6 +1,6 @@
 SHELL = bash
 
-PKG_VERSION ?= v1.5.0
+PKG_VERSION ?= v1.5.1
 OCI_DRIVER_VERSION ?= v1.34.0
 
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
