@@ -282,6 +282,17 @@ variable "distribute_compute_instances_across_fds" {
   default     = true
 }
 
+
+variable "starting_fd_name_cp" {
+  type    = string
+  default = null
+}
+
+variable "starting_fd_name_compute" {
+  type    = string
+  default = null
+}
+
 variable "create_public_dns" {
   type        = bool
   description = "Create a public DNS zone with your Base domain specified in Zone DNS. If this is not created, it is advised that you create a private DNS zone unless you are bringing your own DNS solution. To resolve cluster hostnames without DNS, users should add entries to /etc/hosts mapping the cluster hostnames to the IP address of the api_apps Load Balancer. The etc_hosts_entry output can be used for this purpose."
@@ -444,4 +455,24 @@ variable "tag_namespace_compartment_ocid" {
   type        = string
   description = "The OCI of the compartment containing existing instance role tag namespace. Defaults to current compartment."
   default     = ""
+}
+
+variable "control_plane_capacity_reservation" {
+  description = "Capacity Reservation OCID to use for control plane nodes (optional)."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.control_plane_capacity_reservation == null || var.control_plane_capacity_reservation == "" || can(regex("^ocid1\\.capacityreservation\\.oc1\\.[a-z0-9-]+\\.[a-z0-9]+$", var.control_plane_capacity_reservation))
+    error_message = "Invalid capacity reservation OCID"
+  }
+}
+
+variable "compute_capacity_reservation" {
+  description = "Capacity Reservation OCID to use for compute nodes (optional)."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.compute_capacity_reservation == null || var.compute_capacity_reservation == "" || can(regex("^ocid1\\.capacityreservation\\.oc1\\.[a-z0-9-]+\\.[a-z0-9]+$", var.compute_capacity_reservation))
+    error_message = "Invalid capacity reservation OCID"
+  }
 }

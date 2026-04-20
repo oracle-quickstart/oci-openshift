@@ -1,6 +1,6 @@
-title: OpenShift Cluster on OCI - v1.5.0
+title: OpenShift Cluster on OCI - v1.5.1
 description: A Terraform Stack for creating resources required for installing OpenShift on OCI
-schemaVersion: 1.5.0
+schemaVersion: 1.5.1
 version: "20250916"
 locale: "en"
 
@@ -40,28 +40,32 @@ variableGroups:
 
 - title: "Control Plane Node Configuration"
   variables:
-  - control_plane_shape
-  - control_plane_count
-  - control_plane_ocpu
-  - control_plane_memory
-  - control_plane_boot_size
-  - control_plane_boot_volume_vpus_per_gb
-  - distribute_cp_instances_across_ads
-  - starting_ad_name_cp
-  - distribute_cp_instances_across_fds
+    - control_plane_shape
+    - control_plane_count
+    - control_plane_capacity_reservation
+    - control_plane_ocpu
+    - control_plane_memory
+    - control_plane_boot_size
+    - control_plane_boot_volume_vpus_per_gb
+    - distribute_cp_instances_across_ads
+    - starting_ad_name_cp
+    - distribute_cp_instances_across_fds
+    - starting_fd_name_cp
   visible: create_openshift_instances
 
 - title: "Compute Node Configuration"
   variables:
-  - compute_shape
-  - compute_count
-  - compute_ocpu
-  - compute_memory
-  - compute_boot_size
-  - compute_boot_volume_vpus_per_gb
-  - distribute_compute_instances_across_ads
-  - starting_ad_name_compute
-  - distribute_compute_instances_across_fds
+    - compute_shape
+    - compute_count
+    - compute_capacity_reservation
+    - compute_ocpu
+    - compute_memory
+    - compute_boot_size
+    - compute_boot_volume_vpus_per_gb
+    - distribute_compute_instances_across_ads
+    - starting_ad_name_compute
+    - distribute_compute_instances_across_fds
+    - starting_fd_name_compute
   visible: create_openshift_instances
 
 - title: "Networking Configuration"
@@ -339,6 +343,12 @@ variables:
     multipleOf: 10
     required: true
 
+  control_plane_capacity_reservation:
+    type: string
+    title: Control Plane Capacity Reservation OCID
+    description: Specify the OCID of the Control Plane Capacity Reservation to use for the control plane nodes.
+    required: false
+
   distribute_cp_instances_across_ads:
     type: boolean
     title: Distribute Control Plane Instances Across Availability Domains
@@ -357,6 +367,19 @@ variables:
     title: Distribute Control Plane Instances Across Fault Domains
     default: true
     required: true
+
+  starting_fd_name_cp:
+    type: oci:identity:faultdomain:name
+    title: Starting FD
+    description: Specify the Fault Domain (FD) for initial node placement. Additional nodes will be automatically distributed across FDs in a round-robin sequence starting from your selected FD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      availabilityDomainName: ${starting_ad_name_cp}
+    required: false
+    visible:
+      eq:
+        - distribute_cp_instances_across_ads
+        - false
 
   #
   # Compute Configuration Variables
@@ -401,6 +424,12 @@ variables:
     multipleOf: 10
     required: true
 
+  compute_capacity_reservation:
+    type: string
+    title: Compute Capacity Reservation OCID
+    description: Specify the OCID of the Compute Capacity Reservation to use for the compute nodes.
+    required: false
+
   distribute_compute_instances_across_ads:
     type: boolean
     title: Distribute Compute Instances Across ADs
@@ -422,6 +451,19 @@ variables:
     description: Select the checkbox to have compute instances distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will distribute them for you based on shape availability and other criteria.
     default: true
     required: true
+
+  starting_fd_name_compute:
+    type: oci:identity:faultdomain:name
+    title: Starting FD
+    description: Specify the Fault Domain (FD) for initial node placement. Additional nodes will be automatically distributed across FDs in a round-robin sequence starting from your selected FD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      availabilityDomainName: ${starting_ad_name_compute}
+    required: false
+    visible:
+      eq:
+        - distribute_compute_instances_across_ads
+        - false
 
   #
   # Networking Configuration Variables

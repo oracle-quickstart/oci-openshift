@@ -1,6 +1,6 @@
-title: Add Nodes to OpenShift Cluster on OCI - v1.5.0
+title: Add Nodes to OpenShift Cluster on OCI - v1.5.1
 description: A Terraform Stack for creating resources required for adding nodes to OpenShift Cluster on OCI
-schemaVersion: 1.5.0
+schemaVersion: 1.5.1
 version: "20250916"
 locale: "en"
 
@@ -37,11 +37,13 @@ variableGroups:
     - distribute_cp_instances_across_ads
     - starting_ad_name_cp
     - distribute_cp_instances_across_fds
+    - starting_fd_name_cp
 
 - title: "Compute Node Configuration"
   variables:
     - compute_shape
     - compute_count
+    - compute_capacity_reservation
     - compute_ocpu
     - compute_memory
     - compute_boot_size
@@ -49,6 +51,7 @@ variableGroups:
     - distribute_compute_instances_across_ads
     - starting_ad_name_compute
     - distribute_compute_instances_across_fds
+    - starting_fd_name_compute
 
 - title: "Advanced Configurations"
   variables:
@@ -216,6 +219,14 @@ variables:
     default: true
     required: true
 
+  starting_fd_name_cp:
+    type: oci:identity:faultdomain:name
+    title: Starting FD
+    description: Specify the Fault Domain (FD) for initial node placement. Additional nodes will be automatically distributed across FDs in a round-robin sequence starting from your selected FD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      availabilityDomainName: ${starting_ad_name_cp}
+    required: false
 
   #
   # Compute Configuration Variables
@@ -259,6 +270,12 @@ variables:
     multipleOf: 10
     required: true
 
+  compute_capacity_reservation:
+    type: string
+    title: Compute Capacity Reservation OCID
+    description: Specify the OCID of the Compute Capacity Reservation to use for the compute nodes.
+    required: false
+
   distribute_compute_instances_across_ads:
     type: boolean
     title: Distribute Compute Instances Across ADs
@@ -280,6 +297,15 @@ variables:
     description: Select the checkbox to have compute instances distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will distribute them for you based on shape availability and other criteria.
     default: true
     required: true
+
+  starting_fd_name_compute:
+    type: oci:identity:faultdomain:name
+    title: Starting FD
+    description: Specify the Fault Domain (FD) for initial node placement. Additional nodes will be automatically distributed across FDs in a round-robin sequence starting from your selected FD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      availabilityDomainName: ${starting_ad_name_compute}
+    required: false
 
   #
   # Advanced

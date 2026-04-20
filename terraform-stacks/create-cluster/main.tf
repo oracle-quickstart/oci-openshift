@@ -23,8 +23,12 @@ module "meta" {
   compartment_ocid                        = var.compartment_ocid
   starting_ad_name_cp                     = var.starting_ad_name_cp
   starting_ad_name_compute                = var.starting_ad_name_compute
+  starting_fd_name_cp                     = var.starting_fd_name_cp
+  starting_fd_name_compute                = var.starting_fd_name_compute
   distribute_cp_instances_across_ads      = var.distribute_cp_instances_across_ads
   distribute_compute_instances_across_ads = var.distribute_compute_instances_across_ads
+  distribute_cp_instances_across_fds      = var.distribute_cp_instances_across_fds
+  distribute_compute_instances_across_fds = var.distribute_compute_instances_across_fds
   control_plane_count                     = var.control_plane_count
   compute_count                           = var.compute_count
 }
@@ -184,12 +188,14 @@ module "compute" {
   control_plane_boot_volume_vpus_per_gb = var.control_plane_boot_volume_vpus_per_gb
   control_plane_memory                  = var.control_plane_memory
   control_plane_ocpu                    = var.control_plane_ocpu
+  control_plane_capacity_reservation    = var.control_plane_capacity_reservation
 
   compute_shape                   = var.compute_shape
   compute_boot_size               = var.compute_boot_size
   compute_boot_volume_vpus_per_gb = var.compute_boot_volume_vpus_per_gb
   compute_memory                  = var.compute_memory
   compute_ocpu                    = var.compute_ocpu
+  compute_capacity_reservation    = var.compute_capacity_reservation
 
   distribute_cp_instances_across_fds      = var.distribute_cp_instances_across_fds
   distribute_compute_instances_across_fds = var.distribute_compute_instances_across_fds

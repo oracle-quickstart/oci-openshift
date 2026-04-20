@@ -177,3 +177,15 @@ variable "openshift_tag_openshift_resource_value" {
   type    = string
   default = "openshift-resource-infra"
 }
+
+variable "control_plane_capacity_reservation" {
+  description = "Capacity Reservation OCID to use for control plane nodes (optional)."
+  type        = string
+  default     = null
+}
+
+variable "compute_capacity_reservation" {
+  description = "Capacity Reservation OCID to use for compute nodes (optional)."
+  type        = string
+  default     = null
+}
