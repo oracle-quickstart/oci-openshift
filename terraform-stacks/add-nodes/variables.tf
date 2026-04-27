@@ -189,9 +189,15 @@ variable "cluster_instance_role_tag_namespace" {
   default     = ""
 }
 
-variable "networking_compartment_ocid" {
+variable "vcn_compartment_ocid" {
   type        = string
-  description = "Select the compartment where the existing networking resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
+  description = "Select the compartment where the existing vcn resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
+  default     = ""
+}
+
+variable "subnet_compartment_ocid" {
+  type        = string
+  description = "Select the compartment where the existing subnet resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
   default     = ""
 }
 

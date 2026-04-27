@@ -23,14 +23,31 @@ resource "oci_identity_policy" "policy_openshift_control_plane_nodes_tags" {
   defined_tags = var.defined_tags
 }
 
-resource "oci_identity_policy" "policy_openshift_control_plane_nodes_networking" {
-  count          = var.compartment_ocid != var.networking_compartment_ocid && var.networking_compartment_ocid != null ? 1 : 0
-  compartment_id = var.networking_compartment_ocid
-  description    = "OpenShift control_plane nodes network access"
-  name           = "${var.cluster_name}_control_plane_nodes_networking_access_policy"
+resource "oci_identity_policy" "policy_openshift_control_plane_nodes_vcn_networking" {
+  count          = local.need_vcn_policy ? 1 : 0
+  compartment_id = var.vcn_compartment_ocid
+
+  description = "OpenShift control_plane nodes network access (VCN compartment)"
+  name        = "${var.cluster_name}_control_plane_nodes_vcn_networking_access_policy"
+
   statements = [
-    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage security-lists in compartment id ${var.networking_compartment_ocid}",
-    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage virtual-network-family in compartment id ${var.networking_compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage security-lists in compartment id ${var.vcn_compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage virtual-network-family in compartment id ${var.vcn_compartment_ocid}",
   ]
+
+  defined_tags = var.defined_tags
+}
+
+resource "oci_identity_policy" "policy_openshift_control_plane_nodes_subnet_networking" {
+  count          = local.need_subnet_policy ? 1 : 0
+  compartment_id = var.subnet_compartment_ocid
+
+  description = "OpenShift control_plane nodes network access (Subnet compartment)"
+  name        = "${var.cluster_name}_control_plane_nodes_subnet_networking_access_policy"
+
+  statements = [
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage virtual-network-family in compartment id ${var.subnet_compartment_ocid}",
+  ]
+
   defined_tags = var.defined_tags
 }

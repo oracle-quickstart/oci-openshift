@@ -21,10 +21,10 @@ locals {
   is_control_plane_iscsi_type = can(regex("^BM\\..*$", var.control_plane_shape))
   is_compute_iscsi_type       = can(regex("^BM\\..*$", var.compute_shape))
 
-  apps_subnet_id        = var.enable_public_apps_lb ? module.network.op_subnet_public : module.network.op_subnet_private_ocp
-  apps_security_list_id = var.enable_public_apps_lb ? module.network.op_security_list_public : module.network.op_security_list_private
-
-  existing_networking_compartment_ocid = var.use_existing_network ? var.networking_compartment_ocid : null
+  apps_subnet_id                   = var.enable_public_apps_lb ? module.network.op_subnet_public : module.network.op_subnet_private_ocp
+  apps_security_list_id            = var.enable_public_apps_lb ? module.network.op_security_list_public : module.network.op_security_list_private
+  existing_vcn_compartment_ocid    = var.use_existing_network ? var.vcn_compartment_ocid : null
+  existing_subnet_compartment_ocid = var.use_existing_network ? var.subnet_compartment_ocid : null
 
   openshift_installer_version = var.set_openshift_installer_version ? var.openshift_installer_version : "latest"
 

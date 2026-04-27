@@ -15,7 +15,11 @@ variable "compartment_ocid" {
   type = string
 }
 
-variable "networking_compartment_ocid" {
+variable "vcn_compartment_ocid" {
+  type = string
+}
+
+variable "subnet_compartment_ocid" {
   type = string
 }
 
