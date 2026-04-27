@@ -29,8 +29,8 @@ module "network_validator" {
   count  = var.use_existing_network ? 1 : 0
   source = "./network_validator"
 
-  compartment_ocid = var.networking_compartment_ocid
-
+  vcn_compartment_ocid                  = var.vcn_compartment_ocid
+  subnet_compartment_ocid               = var.subnet_compartment_ocid
   existing_vcn_id                       = var.existing_vcn_id
   existing_public_subnet_id             = var.existing_public_subnet_id
   existing_private_bare_metal_subnet_id = var.existing_private_bare_metal_subnet_id

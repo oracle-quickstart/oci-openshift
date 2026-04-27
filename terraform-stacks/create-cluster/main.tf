@@ -56,10 +56,11 @@ module "iam" {
 
   depends_on = [module.tags.wait_for_tag_consistency]
 
-  compartment_ocid            = var.compartment_ocid
-  tenancy_ocid                = var.tenancy_ocid
-  cluster_name                = var.cluster_name
-  networking_compartment_ocid = local.existing_networking_compartment_ocid
+  compartment_ocid        = var.compartment_ocid
+  tenancy_ocid            = var.tenancy_ocid
+  cluster_name            = var.cluster_name
+  vcn_compartment_ocid    = local.existing_vcn_compartment_ocid
+  subnet_compartment_ocid = local.existing_subnet_compartment_ocid
 
   // dependency on tags
   op_openshift_tag_namespace     = module.tags.op_openshift_tag_namespace
@@ -103,7 +104,8 @@ module "network" {
 
   # Parameters to use when using an exisiting network infrastructure
   use_existing_network                  = var.use_existing_network
-  networking_compartment_ocid           = var.networking_compartment_ocid
+  vcn_compartment_ocid                  = local.existing_vcn_compartment_ocid
+  subnet_compartment_ocid               = local.existing_subnet_compartment_ocid
   existing_vcn_id                       = var.existing_vcn_id
   existing_public_subnet_id             = var.existing_public_subnet_id
   existing_private_bare_metal_subnet_id = var.existing_private_bare_metal_subnet_id

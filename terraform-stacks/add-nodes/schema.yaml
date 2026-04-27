@@ -19,8 +19,9 @@ variableGroups:
 
 - title: "Networking Configuration"
   variables:
-  - networking_compartment_ocid
+  - vcn_compartment_ocid
   - existing_vcn_id
+  - subnet_compartment_ocid
   - existing_private_ocp_subnet_id
   - existing_private_bare_metal_subnet_id
   - existing_public_subnet_id
@@ -106,9 +107,10 @@ variables:
   #
   # Networking
   #
-  networking_compartment_ocid:
+
+  vcn_compartment_ocid:
     type: oci:identity:compartment:id
-    title: Networking Compartment
+    title: VCN Compartment
     default: compartment_ocid
     required: true
 
@@ -116,14 +118,20 @@ variables:
     type: oci:core:vcn:id
     title: Existing VCN
     dependsOn:
-      compartmentId: ${networking_compartment_ocid}
+      compartmentId: ${vcn_compartment_ocid}
+    required: true
+
+  subnet_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Subnet Compartment
+    default: compartment_ocid
     required: true
 
   existing_private_ocp_subnet_id:
     type: oci:core:subnet:id
     title: Existing Private Subnet for OCP
     dependsOn:
-      compartmentId: ${networking_compartment_ocid}
+      compartmentId: ${subnet_compartment_ocid}
       vcnId: ${existing_vcn_id}
     required: true
 
@@ -131,7 +139,7 @@ variables:
     type: oci:core:subnet:id
     title: Existing Private Subnet for Bare Metal
     dependsOn:
-      compartmentId: ${networking_compartment_ocid}
+      compartmentId: ${subnet_compartment_ocid}
       vcnId: ${existing_vcn_id}
     required: true
 
@@ -139,7 +147,7 @@ variables:
     type: oci:core:subnet:id
     title: Existing Public Subnet
     dependsOn:
-      compartmentId: ${networking_compartment_ocid}
+      compartmentId: ${subnet_compartment_ocid}
       vcnId: ${existing_vcn_id}
     required: true
 
