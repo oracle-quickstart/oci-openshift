@@ -27,7 +27,7 @@ data:
   BARE_METAL_SUBNET_NAME: "${var.bare_metal_subnet_name}"
   COMPARTMENT_ID: "${var.compartment_ocid}"
   CONTROL_PLANE_ENDPOINT: "${var.op_lb_openshift_api_lb_ip_addr}"
-  IMAGE_ID: "${var.autoscalar_node_image_id}"
+  IMAGE_ID: "${var.autoscalar_node_image_id != null ? var.autoscalar_node_image_id : ""}"
   NETWORK_SECURITY_GROUP_ID: "${var.op_network_security_group_cluster_lb_nsg}"
   CLUSTER_NETWORK_CIDR_BLOCK: "${var.cluster_network_cidr_block}"
   SERVICE_NETWORK_CIDR_BLOCK: "${var.service_network_cidr_block}"
@@ -49,7 +49,7 @@ metadata:
   namespace: oci-capi-operator
 spec:
   autoscaling:
-    imageId: "${var.autoscalar_node_image_id}"
+    imageId: "${var.autoscalar_node_image_id != null ? var.autoscalar_node_image_id : ""}"
     maxNodes: ${var.autoscalar_node_maximum_count}
     minNodes: ${var.autoscalar_node_minimum_count}
     shape: "${var.autoscalar_node_shape}"
