@@ -1,4 +1,4 @@
-title: OpenShift Cluster on OCI - Autoscaling Operator - v1.5.1
+title: OpenShift Cluster on OCI - Autoscaling Operator (Beta) - v1.5.1
 description: A Terraform Stack that discovers an existing OpenShift cluster's networking and LBs, builds the autoscaling node image, and outputs a manifest for the OCI autoscaling operator.
 schemaVersion: 1.5.1
 version: "20250213"
@@ -23,7 +23,7 @@ variableGroups:
   - existing_private_ocp_subnet_id
   - bare_metal_subnet_id
 
-- title: "Autoscaling Configurations"
+- title: "Autoscaling Configurations (Beta)"
   variables:
   - autoscaler_node_shape
   - autoscaler_node_image_source_uri
@@ -104,7 +104,7 @@ variables:
 
   autoscaler_node_image_source_uri:
     type: string
-    title: Autoscaler Image source URI
+    title: Autoscaler Image Source URI
     description: (Required) The OCI Object Storage URL for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block. For more details, review Object Storage and PARs.
     required: true
 
@@ -146,6 +146,6 @@ variables:
 
   autoscaler_defined_tags_namespace:
     type: string
-    title: OpenShift tagnamespace
+    title: OpenShift Tag Namespace
     description: Resource tagging is only needed for bare metal autoscaler shapes so the autoscaler can pull the required iSCSI tags.
     default: ""

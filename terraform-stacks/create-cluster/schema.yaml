@@ -53,7 +53,7 @@ variableGroups:
       - starting_fd_name_cp
     visible: create_openshift_instances
 
-  - title: "Autoscaling Configurations"
+  - title: "Autoscaling Configurations (Beta)"
     variables:
       - use_autoscaling_operator
       - autoscaler_node_shape
@@ -652,8 +652,8 @@ variables:
 
   use_autoscaling_operator:
     type: boolean
-    title: Enable OCI OpenShift Autoscaler (beta)
-    description: Select this option to enable OCI OpenShift Autoscaler (beta). When enabled, node autoscaling will be managed by the OCI OpenShift Autoscaler Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands.
+    title: Enable OCI OpenShift Autoscaler (Beta)
+    description: Select this option to enable OCI OpenShift Autoscaler (Beta). When enabled, node autoscaling will be managed by the OCI OpenShift Autoscaler Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands.
     default: false
 
   autoscaler_node_shape:
