@@ -33,36 +33,36 @@ variable "subnet_compartment_ocid" {
 # # Tagging lookup
 
 # Image inputs for autoscaling image generation (reuses image module behavior)
-variable "autoscalar_node_shape" { type = string }
-variable "autoscalar_node_image_source_uri" { type = string }
+variable "autoscaler_node_shape" { type = string }
+variable "autoscaler_node_image_source_uri" { type = string }
 
 # Autoscaler config values
-variable "autoscalar_node_minimum_count" {
+variable "autoscaler_node_minimum_count" {
   type = number
 
   validation {
-    condition     = var.autoscalar_node_minimum_count >= 0
-    error_message = "The autoscalar_node_minimum_count value must be greater than or equal to 0."
+    condition     = var.autoscaler_node_minimum_count >= 0
+    error_message = "The autoscaler_node_minimum_count value must be greater than or equal to 0."
   }
 }
 
-variable "autoscalar_node_maximum_count" { type = number }
+variable "autoscaler_node_maximum_count" { type = number }
 
-variable "autoscalar_node_ocpus" {
+variable "autoscaler_node_ocpus" {
   type = number
 
   validation {
-    condition     = var.autoscalar_node_ocpus >= 1 && var.autoscalar_node_ocpus <= 144
-    error_message = "The autoscalar_node_ocpus value must be between 1 and 144."
+    condition     = var.autoscaler_node_ocpus >= 1 && var.autoscaler_node_ocpus <= 144
+    error_message = "The autoscaler_node_ocpus value must be between 1 and 144."
   }
 }
 
-variable "autoscalar_node_memory" {
+variable "autoscaler_node_memory" {
   type = number
 
   validation {
-    condition     = var.autoscalar_node_memory >= 1 && var.autoscalar_node_memory <= 1760
-    error_message = "The autoscalar_node_memory value must be between 1 and 1760."
+    condition     = var.autoscaler_node_memory >= 1 && var.autoscaler_node_memory <= 1760
+    error_message = "The autoscaler_node_memory value must be between 1 and 1760."
   }
 }
 variable "cluster_network_cidr_block" {

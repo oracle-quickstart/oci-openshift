@@ -40,12 +40,12 @@ module "image" {
   is_control_plane_iscsi_type = false
   is_compute_iscsi_type       = false
   openshift_image_source_uri  = ""
-  control_plane_shape         = var.autoscalar_node_shape
-  compute_shape               = var.autoscalar_node_shape
+  control_plane_shape         = var.autoscaler_node_shape
+  compute_shape               = var.autoscaler_node_shape
 
   use_autoscaling_operator         = true
-  autoscalar_node_image_source_uri = var.autoscalar_node_image_source_uri
-  autoscalar_node_shape            = var.autoscalar_node_shape
+  autoscaler_node_image_source_uri = var.autoscaler_node_image_source_uri
+  autoscaler_node_shape            = var.autoscaler_node_shape
 
   # No defined_tags to avoid home-region provider requirement here
   defined_tags = {}
@@ -63,16 +63,16 @@ module "autoscaling_manifest" {
   op_lb_openshift_api_lb                   = module.discovery.api_lb_id
   op_lb_openshift_api_lb_ip_addr           = module.discovery.api_lb_ip_addr
 
-  autoscalar_node_shape             = var.autoscalar_node_shape
-  autoscalar_node_minimum_count     = var.autoscalar_node_minimum_count
-  autoscalar_node_maximum_count     = var.autoscalar_node_maximum_count
-  autoscalar_node_ocpus             = var.autoscalar_node_ocpus
-  autoscalar_node_memory            = var.autoscalar_node_memory
+  autoscaler_node_shape             = var.autoscaler_node_shape
+  autoscaler_node_minimum_count     = var.autoscaler_node_minimum_count
+  autoscaler_node_maximum_count     = var.autoscaler_node_maximum_count
+  autoscaler_node_ocpus             = var.autoscaler_node_ocpus
+  autoscaler_node_memory            = var.autoscaler_node_memory
   cluster_network_cidr_block        = var.cluster_network_cidr_block
   service_network_cidr_block        = var.service_network_cidr_block
   autoscaler_defined_tags_namespace = var.autoscaler_defined_tags_namespace
   bare_metal_subnet_id              = var.bare_metal_subnet_id
   bare_metal_subnet_name            = try(data.oci_core_subnet.existing_private_bare_metal[0].display_name, "")
   ocp_subnet_name                   = data.oci_core_subnet.existing_private_ocp.display_name
-  autoscalar_node_image_id          = module.image.op_image_openshift_autoscaling_image
+  autoscaler_node_image_id          = module.image.op_image_openshift_autoscaling_image
 }

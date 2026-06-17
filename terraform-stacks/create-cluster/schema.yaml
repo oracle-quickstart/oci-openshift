@@ -56,12 +56,12 @@ variableGroups:
   - title: "Autoscaling Configurations"
     variables:
       - use_autoscaling_operator
-      - autoscalar_node_shape
-      - autoscalar_node_image_source_uri
-      - autoscalar_node_minimum_count
-      - autoscalar_node_maximum_count
-      - autoscalar_node_ocpus
-      - autoscalar_node_memory
+      - autoscaler_node_shape
+      - autoscaler_node_image_source_uri
+      - autoscaler_node_minimum_count
+      - autoscaler_node_maximum_count
+      - autoscaler_node_ocpus
+      - autoscaler_node_memory
       - cluster_network_cidr_block
       - service_network_cidr_block
 
@@ -78,12 +78,7 @@ variableGroups:
       - starting_ad_name_compute
       - distribute_compute_instances_across_fds
       - starting_fd_name_compute
-    visible:
-      and:
-        - create_openshift_instances
-        - eq:
-            - use_autoscaling_operator
-            - false
+    visible: create_openshift_instances
 
   - title: "Networking Configuration"
     variables:
@@ -652,16 +647,16 @@ variables:
     required: true
 
   #
-  # Autoscalar configurations
+  # Autoscaler configurations
   #
 
   use_autoscaling_operator:
     type: boolean
-    title: Enable OCI OpenShift Autoscalar (beta)
-    description: Select this option to enable OCI OpenShift Autoscalar (beta). When enabled, node autoscaling will be managed by the OCI OpenShift Autoscalar Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands.
+    title: Enable OCI OpenShift Autoscaler (beta)
+    description: Select this option to enable OCI OpenShift Autoscaler (beta). When enabled, node autoscaling will be managed by the OCI OpenShift Autoscaler Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands.
     default: false
 
-  autoscalar_node_shape:
+  autoscaler_node_shape:
     type: string
     title: Autoscaler Node Shape
     required: true
@@ -671,9 +666,9 @@ variables:
         - use_autoscaling_operator
         - true
 
-  autoscalar_node_ocpus:
+  autoscaler_node_ocpus:
     type: integer
-    title: Autoscalar Node OCPU
+    title: Autoscaler Node OCPU
     default: 4
     minimum: 1
     maximum: 144
@@ -683,9 +678,9 @@ variables:
         - use_autoscaling_operator
         - true
 
-  autoscalar_node_memory:
+  autoscaler_node_memory:
     type: integer
-    title: Autoscalar Node Memory
+    title: Autoscaler Node Memory
     default: 24
     minimum: 1
     maximum: 1760
@@ -695,9 +690,9 @@ variables:
         - use_autoscaling_operator
         - true
 
-  autoscalar_node_image_source_uri:
+  autoscaler_node_image_source_uri:
     type: string
-    title: Autoscalar Image Source URI
+    title: Autoscaler Image Source URI
     default: ""
     required: true
     visible:
@@ -705,9 +700,9 @@ variables:
         - use_autoscaling_operator
         - true
 
-  autoscalar_node_minimum_count:
+  autoscaler_node_minimum_count:
     type: integer
-    title: Minimum Autoscalar Node Count
+    title: Minimum Autoscaler Node Count
     required: true
     default: 0
     minimum: 0
@@ -716,9 +711,9 @@ variables:
         - use_autoscaling_operator
         - true
 
-  autoscalar_node_maximum_count:
+  autoscaler_node_maximum_count:
     type: integer
-    title: Maximum Autoscalar Node Count
+    title: Maximum Autoscaler Node Count
     required: true
     default: 5
     minimum: 0

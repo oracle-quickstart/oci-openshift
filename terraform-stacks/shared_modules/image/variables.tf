@@ -39,12 +39,12 @@ variable "use_autoscaling_operator" {
   default = false
 }
 
-variable "autoscalar_node_image_source_uri" {
+variable "autoscaler_node_image_source_uri" {
   type    = string
   default = ""
 }
 
-variable "autoscalar_node_shape" {
+variable "autoscaler_node_shape" {
   type    = string
   default = ""
 }

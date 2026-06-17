@@ -83,10 +83,10 @@ module "image" {
   control_plane_shape         = var.control_plane_shape
   compute_shape               = var.compute_shape
 
-  // autoscalar image generation
+  // autoscaler image generation
   use_autoscaling_operator         = var.use_autoscaling_operator
-  autoscalar_node_image_source_uri = var.autoscalar_node_image_source_uri
-  autoscalar_node_shape            = var.autoscalar_node_shape
+  autoscaler_node_image_source_uri = var.autoscaler_node_image_source_uri
+  autoscaler_node_shape            = var.autoscaler_node_shape
 
   // Depedency on tags
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
@@ -209,7 +209,7 @@ module "compute" {
 
   // Dependency on AD placement
   cp_node_map      = module.meta.cp_node_map
-  compute_node_map = var.use_autoscaling_operator ? {} : module.meta.compute_node_map
+  compute_node_map = module.meta.compute_node_map
 
   // Depedency on tags
   op_openshift_tag_boot_volume_type = module.tags.op_openshift_tag_boot_volume_type
@@ -309,20 +309,20 @@ module "manifests" {
   op_lb_openshift_api_lb                   = module.load_balancer.op_lb_openshift_api_lb
   op_lb_openshift_api_lb_ip_addr           = module.load_balancer.op_lb_openshift_api_lb_ip_addr
 
-  // autoscalar
+  // autoscaler
   use_autoscaling_operator          = var.use_autoscaling_operator
-  autoscalar_node_shape             = var.autoscalar_node_shape
-  autoscalar_node_minimum_count     = var.autoscalar_node_minimum_count
-  autoscalar_node_maximum_count     = var.autoscalar_node_maximum_count
-  autoscalar_node_ocpus             = var.autoscalar_node_ocpus
-  autoscalar_node_memory            = var.autoscalar_node_memory
+  autoscaler_node_shape             = var.autoscaler_node_shape
+  autoscaler_node_minimum_count     = var.autoscaler_node_minimum_count
+  autoscaler_node_maximum_count     = var.autoscaler_node_maximum_count
+  autoscaler_node_ocpus             = var.autoscaler_node_ocpus
+  autoscaler_node_memory            = var.autoscaler_node_memory
   autoscaler_defined_tags_namespace = module.tags.op_openshift_tag_namespace
   bare_metal_subnet_id              = local.is_autoscaler_bm_shape ? module.network.op_subnet_private_bare_metal : ""
   bare_metal_subnet_name            = local.is_autoscaler_bm_shape ? data.oci_core_subnet.autoscaler_bare_metal_subnet[0].display_name : ""
   ocp_subnet_name                   = data.oci_core_subnet.autoscaler_ocp_subnet.display_name
   cluster_network_cidr_block        = var.cluster_network_cidr_block
   service_network_cidr_block        = var.service_network_cidr_block
-  autoscalar_node_image_id          = module.image.op_image_openshift_autoscaling_image
+  autoscaler_node_image_id          = module.image.op_image_openshift_autoscaling_image
 }
 
 module "resource_attribution_tags" {

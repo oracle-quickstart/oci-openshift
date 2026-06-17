@@ -126,23 +126,23 @@ variable "use_autoscaling_operator" {
   type = bool
 }
 
-variable "autoscalar_node_shape" {
+variable "autoscaler_node_shape" {
   type = string
 }
 
-variable "autoscalar_node_minimum_count" {
+variable "autoscaler_node_minimum_count" {
   type = number
 }
 
-variable "autoscalar_node_maximum_count" {
+variable "autoscaler_node_maximum_count" {
   type = number
 }
 
-variable "autoscalar_node_ocpus" {
+variable "autoscaler_node_ocpus" {
   type = number
 }
 
-variable "autoscalar_node_memory" {
+variable "autoscaler_node_memory" {
   type = number
 }
 
@@ -182,6 +182,6 @@ variable "capoci_version" {
   default = "v0.24.0"
 }
 
-variable "autoscalar_node_image_id" {
+variable "autoscaler_node_image_id" {
   type = string
 }
