@@ -21,7 +21,6 @@ Before creating a cluster, verify both of the following:
 - The cluster's instance principal dynamic group has permission to use tag namespaces in the compartment that contains those tags.
 
 ---
----
 
 ## create-resource-attribution-tags
 
@@ -52,7 +51,6 @@ Allow dynamic-group openshift_control_plane_nodes to use tag-namespaces in compa
     - `openshift-resource`
 
 ---
----
 
 ## create-instance-role-tags
 
@@ -76,7 +74,6 @@ Please allow for ~10 minutes after creation before tagging resources with them. 
             - "PARAVIRTUALIZED"
             - "ISCSI"
 
----
 ---
 
 ## create-cluster
@@ -163,14 +160,14 @@ Create the OCI resources for an OpenShift cluster on OCI and facilitate the inst
     - Control Plane nodes
     - Compute nodes
 
+### OCI OpenShift Autoscaler (Beta)
+
+The OCI OpenShift Autoscaler is available as a beta feature. It can be enabled during a new cluster installation with the `create-cluster` stack, or installed after a cluster already exists with the `create-autoscaler-operator` stack.
+
+For detailed installation steps, bare metal image preparation with `assets/autoscaler/iscsi.sh`, verification, and cleanup instructions, see [OCI OpenShift Autoscaler Beta Guide](../docs/AUTOSCALER.md).
+
 ### Example Cluster Configurations
 ---
-
-## create-autoscaler-operator
-
-Discovers networking and load balancer details for an existing OpenShift cluster on OCI, builds the autoscaling node image using the same image module logic, and produces a single manifest output (`autoscaling_manifest`) that installs the OCI autoscaling operator plus its ConfigMap with your environment values.
-
-Inputs include existing VCN/subnet IDs, cluster name (for LB discovery), region/compartment, and autoscaler target shape and image URI. The output string can be copied into a file and applied with `oc apply -f /path-file-having-autoscaling-dynamic-output/autoscaling-dynamic-output.yml`.
 
 
 #### High-Availability VMs (Default)
@@ -219,6 +216,16 @@ Inputs include existing VCN/subnet IDs, cluster name (for LB discovery), region/
     - Count: 0
 
 ---
+---
+
+## create-autoscaler-operator (Beta)
+
+The `create-autoscaler-operator` stack installs the beta OCI OpenShift Autoscaler onto an existing OpenShift cluster.
+
+It discovers networking and load balancer details for an existing OpenShift cluster on OCI, imports the autoscaling node image from the Object Storage PAR URL, and produces a single manifest output named `autoscaling_manifest`.
+
+For usage instructions, see [OCI OpenShift Autoscaler Beta Guide](../docs/AUTOSCALER.md).
+
 ---
 
 ## add-nodes
