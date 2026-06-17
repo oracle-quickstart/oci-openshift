@@ -626,7 +626,7 @@ spec:
         envFrom:
         - configMapRef:
             name: oci-capi-operator-config
-        image: ghcr.io/yutpeng/openshift-oracle-capi-autoscaling-dev-preview:v1.13
+        image: ghcr.io/yutpeng/openshift-oracle-capi-autoscaling-dev-preview:v1.19
         livenessProbe:
           httpGet:
             path: /healthz
@@ -657,7 +657,7 @@ spec:
         - init
         command:
         - /manager
-        image: ghcr.io/yutpeng/openshift-oracle-capi-autoscaling-dev-preview:v1.13
+        image: ghcr.io/yutpeng/openshift-oracle-capi-autoscaling-dev-preview:v1.19
         envFrom:
         - configMapRef:
             name: oci-capi-operator-config
