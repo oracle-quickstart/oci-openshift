@@ -6,7 +6,7 @@ resource "oci_core_image" "autoscaling_image" {
 
   image_source_details {
     source_type = "objectStorageUri"
-    source_uri  = var.autoscalar_node_image_source_uri
+    source_uri  = var.autoscaler_node_image_source_uri
 
     source_image_type = local.autoscaling_source_image_type
   }
@@ -14,8 +14,8 @@ resource "oci_core_image" "autoscaling_image" {
 
   lifecycle {
     precondition {
-      condition     = can(regex("^https://objectstorage\\.[^/]+\\.[^/]+/(p/[^/]+/)?n/[^/]+/b/[^/]+/o/.+", trimspace(var.autoscalar_node_image_source_uri)))
-      error_message = "The autoscalar_node_image_source_uri value must be an OCI Object Storage object or PAR URL when use_autoscaling_operator is enabled."
+      condition     = can(regex("^https://objectstorage\\.[^/]+\\.[^/]+/(p/[^/]+/)?n/[^/]+/b/[^/]+/o/.+", trimspace(var.autoscaler_node_image_source_uri)))
+      error_message = "The autoscaler_node_image_source_uri value must be an OCI Object Storage object or PAR URL when use_autoscaling_operator is enabled."
     }
   }
 }
@@ -24,7 +24,7 @@ resource "oci_core_shape_management" "autoscaling_image_shape_mgmt" {
   count          = var.use_autoscaling_operator ? 1 : 0
   compartment_id = var.compartment_ocid
   image_id       = oci_core_image.autoscaling_image[0].id
-  shape_name     = var.autoscalar_node_shape
+  shape_name     = var.autoscaler_node_shape
 }
 
 resource "oci_core_compute_image_capability_schema" "autoscaling_image_capability_schema" {

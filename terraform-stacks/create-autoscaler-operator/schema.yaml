@@ -25,12 +25,12 @@ variableGroups:
 
 - title: "Autoscaling Configurations"
   variables:
-  - autoscalar_node_shape
-  - autoscalar_node_image_source_uri
-  - autoscalar_node_minimum_count
-  - autoscalar_node_maximum_count
-  - autoscalar_node_ocpus
-  - autoscalar_node_memory
+  - autoscaler_node_shape
+  - autoscaler_node_image_source_uri
+  - autoscaler_node_minimum_count
+  - autoscaler_node_maximum_count
+  - autoscaler_node_ocpus
+  - autoscaler_node_memory
   - cluster_network_cidr_block
   - service_network_cidr_block
 
@@ -96,38 +96,38 @@ variables:
       compartmentId: ${subnet_compartment_ocid}
       vcnId: ${existing_vcn_id}
 
-  autoscalar_node_shape:
+  autoscaler_node_shape:
     type: string
     title: Autoscaler Node Shape
     required: true
     description: If you select a bare metal shape, provide Existing Private Subnet for Bare Metal. The OCP and bare metal subnet names are looked up automatically. Resource tagging is only needed for bare metal shapes so the autoscaler can pull the required iSCSI tags.
 
-  autoscalar_node_image_source_uri:
+  autoscaler_node_image_source_uri:
     type: string
     title: Autoscaler Image source URI
     description: (Required) The OCI Object Storage URL for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block. For more details, review Object Storage and PARs.
     required: true
 
-  autoscalar_node_minimum_count:
+  autoscaler_node_minimum_count:
     type: integer
     title: Minimum Autoscaler Node Count
     default: 1
     minimum: 0
 
-  autoscalar_node_maximum_count:
+  autoscaler_node_maximum_count:
     type: integer
     title: Maximum Autoscaler Node Count
     default: 10
     minimum: 0
 
-  autoscalar_node_ocpus:
+  autoscaler_node_ocpus:
     type: integer
     title: Autoscaler Node OCPUs
     default: 4
     minimum: 1
     maximum: 144
 
-  autoscalar_node_memory:
+  autoscaler_node_memory:
     type: integer
     title: Autoscaler Node Memory (GB)
     default: 32

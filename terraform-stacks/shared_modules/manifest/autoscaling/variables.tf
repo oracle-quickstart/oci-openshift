@@ -35,9 +35,9 @@ variable "bare_metal_subnet_id" { type = string }
 variable "bare_metal_subnet_name" { type = string }
 variable "ocp_subnet_name" { type = string }
 
-variable "autoscalar_node_shape" { type = string }
-variable "autoscalar_node_minimum_count" { type = number }
-variable "autoscalar_node_maximum_count" { type = number }
-variable "autoscalar_node_ocpus" { type = number }
-variable "autoscalar_node_memory" { type = number }
-variable "autoscalar_node_image_id" { type = string }
+variable "autoscaler_node_shape" { type = string }
+variable "autoscaler_node_minimum_count" { type = number }
+variable "autoscaler_node_maximum_count" { type = number }
+variable "autoscaler_node_ocpus" { type = number }
+variable "autoscaler_node_memory" { type = number }
+variable "autoscaler_node_image_id" { type = string }

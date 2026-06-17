@@ -17,17 +17,17 @@ data:
   CAPOCI_VERSION: "${var.capoci_version}"
   CERT_MANAGER_VERSION: "${local.cert_manager_version}"
   API_SERVER_LOAD_BALANCER_ID: "${var.op_lb_openshift_api_lb}"
-  AUTOSCALER_CPUS: "${var.autoscalar_node_ocpus}"
+  AUTOSCALER_CPUS: "${var.autoscaler_node_ocpus}"
   AUTOSCALER_DEFINED_TAGS_NAMESPACE: "${var.autoscaler_defined_tags_namespace}"
-  AUTOSCALER_MAX_NODES: "${var.autoscalar_node_maximum_count}"
-  AUTOSCALER_MEMORY: "${var.autoscalar_node_memory}"
-  AUTOSCALER_MIN_NODES: "${var.autoscalar_node_minimum_count}"
-  AUTOSCALER_SHAPE: "${var.autoscalar_node_shape}"
+  AUTOSCALER_MAX_NODES: "${var.autoscaler_node_maximum_count}"
+  AUTOSCALER_MEMORY: "${var.autoscaler_node_memory}"
+  AUTOSCALER_MIN_NODES: "${var.autoscaler_node_minimum_count}"
+  AUTOSCALER_SHAPE: "${var.autoscaler_node_shape}"
   BARE_METAL_SUBNET_ID: "${var.bare_metal_subnet_id}"
   BARE_METAL_SUBNET_NAME: "${var.bare_metal_subnet_name}"
   COMPARTMENT_ID: "${var.compartment_ocid}"
   CONTROL_PLANE_ENDPOINT: "${var.op_lb_openshift_api_lb_ip_addr}"
-  IMAGE_ID: "${var.autoscalar_node_image_id != null ? var.autoscalar_node_image_id : ""}"
+  IMAGE_ID: "${var.autoscaler_node_image_id != null ? var.autoscaler_node_image_id : ""}"
   NETWORK_SECURITY_GROUP_ID: "${var.op_network_security_group_cluster_lb_nsg}"
   CLUSTER_NETWORK_CIDR_BLOCK: "${var.cluster_network_cidr_block}"
   SERVICE_NETWORK_CIDR_BLOCK: "${var.service_network_cidr_block}"
@@ -49,13 +49,13 @@ metadata:
   namespace: oci-capi-operator
 spec:
   autoscaling:
-    imageId: "${var.autoscalar_node_image_id != null ? var.autoscalar_node_image_id : ""}"
-    maxNodes: ${var.autoscalar_node_maximum_count}
-    minNodes: ${var.autoscalar_node_minimum_count}
-    shape: "${var.autoscalar_node_shape}"
+    imageId: "${var.autoscaler_node_image_id != null ? var.autoscaler_node_image_id : ""}"
+    maxNodes: ${var.autoscaler_node_maximum_count}
+    minNodes: ${var.autoscaler_node_minimum_count}
+    shape: "${var.autoscaler_node_shape}"
     shapeConfig:
-      cpus: ${var.autoscalar_node_ocpus}
-      memory: ${var.autoscalar_node_memory}
+      cpus: ${var.autoscaler_node_ocpus}
+      memory: ${var.autoscaler_node_memory}
 EOT
 
   autoscaling_operator_provider_installer = <<EOT
@@ -170,7 +170,7 @@ output "autoscaling_manifest" {
   value       = local.autoscaling_operator_runtime_bundle
 
   precondition {
-    condition     = var.autoscalar_node_minimum_count >= 0 && var.autoscalar_node_maximum_count >= var.autoscalar_node_minimum_count
-    error_message = "The autoscalar_node_minimum_count value must be greater than or equal to 0, and autoscalar_node_maximum_count must be greater than or equal to autoscalar_node_minimum_count."
+    condition     = var.autoscaler_node_minimum_count >= 0 && var.autoscaler_node_maximum_count >= var.autoscaler_node_minimum_count
+    error_message = "The autoscaler_node_minimum_count value must be greater than or equal to 0, and autoscaler_node_maximum_count must be greater than or equal to autoscaler_node_minimum_count."
   }
 }

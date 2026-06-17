@@ -36,8 +36,8 @@ output "autoscaling_manifest" {
   value       = var.use_autoscaling_operator ? local.autoscaling_operator_runtime_bundle : null
 
   precondition {
-    condition     = !var.use_autoscaling_operator || var.autoscalar_node_maximum_count >= var.autoscalar_node_minimum_count
-    error_message = "The autoscalar_node_maximum_count value must be greater than or equal to autoscalar_node_minimum_count."
+    condition     = !var.use_autoscaling_operator || var.autoscaler_node_maximum_count >= var.autoscaler_node_minimum_count
+    error_message = "The autoscaler_node_maximum_count value must be greater than or equal to autoscaler_node_minimum_count."
   }
 }
 
