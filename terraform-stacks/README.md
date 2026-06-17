@@ -5,6 +5,7 @@
 - [create-instance-role-tags](#create-instance-role-tags)
 - [create-cluster](#create-cluster)
 - [add-nodes](#add-nodes)
+- [create-autoscaler-operator](#create-autoscaler-operator)
 
 ---
 
@@ -19,7 +20,6 @@ Before creating a cluster, verify both of the following:
 - The `openshift-tags` tag namespace and the `openshift-resource=openshift-resource-infra` defined tag already exist.
 - The cluster's instance principal dynamic group has permission to use tag namespaces in the compartment that contains those tags.
 
----
 ---
 
 ## create-resource-attribution-tags
@@ -51,7 +51,6 @@ Allow dynamic-group openshift_control_plane_nodes to use tag-namespaces in compa
     - `openshift-resource`
 
 ---
----
 
 ## create-instance-role-tags
 
@@ -75,7 +74,6 @@ Please allow for ~10 minutes after creation before tagging resources with them. 
             - "PARAVIRTUALIZED"
             - "ISCSI"
 
----
 ---
 
 ## create-cluster
@@ -162,8 +160,15 @@ Create the OCI resources for an OpenShift cluster on OCI and facilitate the inst
     - Control Plane nodes
     - Compute nodes
 
+### OCI OpenShift Autoscaler (Beta)
+
+The OCI OpenShift Autoscaler is available as a beta feature. It can be enabled during a new cluster installation with the `create-cluster` stack, or installed after a cluster already exists with the `create-autoscaler-operator` stack.
+
+For detailed installation steps, bare metal image preparation with `assets/autoscaler/iscsi.sh`, verification, and cleanup instructions, see [OCI OpenShift Autoscaler Beta Guide](../docs/AUTOSCALER.md).
+
 ### Example Cluster Configurations
 ---
+
 
 #### High-Availability VMs (Default)
 
@@ -211,6 +216,16 @@ Create the OCI resources for an OpenShift cluster on OCI and facilitate the inst
     - Count: 0
 
 ---
+---
+
+## create-autoscaler-operator (Beta)
+
+The `create-autoscaler-operator` stack installs the beta OCI OpenShift Autoscaler onto an existing OpenShift cluster.
+
+It discovers networking and load balancer details for an existing OpenShift cluster on OCI, imports the autoscaling node image from the Object Storage PAR URL, and produces a single manifest output named `autoscaling_manifest`.
+
+For usage instructions, see [OCI OpenShift Autoscaler Beta Guide](../docs/AUTOSCALER.md).
+
 ---
 
 ## add-nodes

@@ -33,3 +33,18 @@ variable "control_plane_shape" {
 variable "compute_shape" {
   type = string
 }
+
+variable "use_autoscaling_operator" {
+  type    = bool
+  default = false
+}
+
+variable "autoscaler_node_image_source_uri" {
+  type    = string
+  default = ""
+}
+
+variable "autoscaler_node_shape" {
+  type    = string
+  default = ""
+}

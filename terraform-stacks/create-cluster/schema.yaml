@@ -1,99 +1,121 @@
-title: OpenShift Cluster on OCI - v1.5.0
+title: OpenShift Cluster on OCI - v1.5.1
 description: A Terraform Stack for creating resources required for installing OpenShift on OCI
-schemaVersion: 1.5.0
+schemaVersion: 1.5.1
 version: "20250916"
 locale: "en"
 
 variableGroups:
-- title: "OpenShift Cluster Configuration"
-  variables:
-  - tenancy_ocid
-  - compartment_ocid
-  - cluster_name
-  - installation_method
-  - create_openshift_instances
-  - openshift_image_source_uri
+  - title: "OpenShift Cluster Configuration"
+    variables:
+      - tenancy_ocid
+      - compartment_ocid
+      - cluster_name
+      - installation_method
+      - create_openshift_instances
+      - openshift_image_source_uri
 
-- title: "OpenShift Resource Attribution Tags"
-  variables:
-  - tag_namespace_compartment_ocid_resource_tagging
+  - title: "OpenShift Resource Attribution Tags"
+    variables:
+      - tag_namespace_compartment_ocid_resource_tagging
 
-- title: "Agent Based Installation Advanced Configurations"
-  variables:
-  - rendezvous_ip
-  - is_disconnected_installation
-  - set_openshift_installer_version
-  - openshift_installer_version
-  - public_ssh_key
-  - redhat_pull_secret
-  - object_storage_namespace
-  - object_storage_bucket
-  - webserver_private_ip
-  - webserver_shape
-  - webserver_image_source_id
-  - webserver_ocpus
-  - webserver_memory_in_gbs
-  - set_proxy
-  - http_proxy
-  - https_proxy
-  - no_proxy
+  - title: "Agent Based Installation Advanced Configurations"
+    variables:
+      - rendezvous_ip
+      - is_disconnected_installation
+      - set_openshift_installer_version
+      - openshift_installer_version
+      - public_ssh_key
+      - redhat_pull_secret
+      - object_storage_namespace
+      - object_storage_bucket
+      - webserver_private_ip
+      - webserver_shape
+      - webserver_image_source_id
+      - webserver_ocpus
+      - webserver_memory_in_gbs
+      - set_proxy
+      - http_proxy
+      - https_proxy
+      - no_proxy
 
-- title: "Control Plane Node Configuration"
-  variables:
-  - control_plane_shape
-  - control_plane_count
-  - control_plane_ocpu
-  - control_plane_memory
-  - control_plane_boot_size
-  - control_plane_boot_volume_vpus_per_gb
-  - distribute_cp_instances_across_ads
-  - starting_ad_name_cp
-  - distribute_cp_instances_across_fds
-  visible: create_openshift_instances
+  - title: "Control Plane Node Configuration"
+    variables:
+      - control_plane_shape
+      - control_plane_count
+      - control_plane_capacity_reservation
+      - control_plane_ocpu
+      - control_plane_memory
+      - control_plane_boot_size
+      - control_plane_boot_volume_vpus_per_gb
+      - distribute_cp_instances_across_ads
+      - starting_ad_name_cp
+      - distribute_cp_instances_across_fds
+      - starting_fd_name_cp
+    visible: create_openshift_instances
 
-- title: "Compute Node Configuration"
-  variables:
-  - compute_shape
-  - compute_count
-  - compute_ocpu
-  - compute_memory
-  - compute_boot_size
-  - compute_boot_volume_vpus_per_gb
-  - distribute_compute_instances_across_ads
-  - starting_ad_name_compute
-  - distribute_compute_instances_across_fds
-  visible: create_openshift_instances
+  - title: "Autoscaling Configurations (Beta)"
+    variables:
+      - use_autoscaling_operator
+      - autoscaler_node_shape
+      - autoscaler_node_image_source_uri
+      - autoscaler_node_minimum_count
+      - autoscaler_node_maximum_count
+      - autoscaler_node_ocpus
+      - autoscaler_node_memory
+      - cluster_network_cidr_block
+      - service_network_cidr_block
 
-- title: "Networking Configuration"
-  variables:
-  - create_public_dns
-  - create_private_dns
-  - enable_public_api_lb
-  - enable_public_apps_lb
-  - zone_dns
-  - use_existing_network
-  - networking_compartment_ocid
-  - existing_vcn_id
-  - existing_private_ocp_subnet_id
-  - existing_private_bare_metal_subnet_id
-  - existing_public_subnet_id
-  - vcn_dns_label
-  - vcn_cidr
-  - public_cidr
-  - private_cidr_ocp
-  - private_cidr_bare_metal
-  - load_balancer_shape_details_maximum_bandwidth_in_mbps
-  - load_balancer_shape_details_minimum_bandwidth_in_mbps
+  - title: "Compute Node Configuration"
+    variables:
+      - compute_shape
+      - compute_count
+      - compute_capacity_reservation
+      - compute_ocpu
+      - compute_memory
+      - compute_boot_size
+      - compute_boot_volume_vpus_per_gb
+      - distribute_compute_instances_across_ads
+      - starting_ad_name_compute
+      - distribute_compute_instances_across_fds
+      - starting_fd_name_compute
+    visible:
+      and:
+        - create_openshift_instances
+        - eq:
+            - use_autoscaling_operator
+            - false
 
-- title: "Advanced Configurations"
-  variables:
-    - oci_driver_version
-    - use_existing_tags
-    - tag_namespace_name
-    - tag_namespace_compartment_ocid
-    - use_oracle_cloud_agent
-    - oracle_cloud_agent_repo_name
-    - region
+  - title: "Networking Configuration"
+    variables:
+      - create_public_dns
+      - create_private_dns
+      - enable_public_api_lb
+      - enable_public_apps_lb
+      - zone_dns
+      - use_existing_network
+      - vcn_compartment_ocid
+      - existing_vcn_id
+      - subnet_compartment_ocid
+      - existing_private_ocp_subnet_id
+      - existing_private_bare_metal_subnet_id
+      - existing_public_subnet_id
+      - vcn_dns_label
+      - vcn_cidr
+      - public_cidr
+      - private_cidr_ocp
+      - private_cidr_bare_metal
+      - load_balancer_shape_details_maximum_bandwidth_in_mbps
+      - load_balancer_shape_details_minimum_bandwidth_in_mbps
+
+  - title: "Advanced Configurations"
+    variables:
+      - oci_driver_version
+      - use_existing_tags
+      - tag_namespace_name
+      - tag_namespace_compartment_ocid
+      - use_oracle_cloud_agent
+      - oracle_cloud_agent_repo_name
+      - region
 
 ###########
 # VARIABLES
@@ -125,8 +147,8 @@ variables:
     type: enum
     title: Installation Method
     enum:
-    - Assisted
-    - Agent-based
+      - Assisted
+      - Agent-based
     default: Assisted
     required: true
 
@@ -339,6 +361,12 @@ variables:
     multipleOf: 10
     required: true
 
+  control_plane_capacity_reservation:
+    type: string
+    title: Control Plane Capacity Reservation OCID
+    description: Specify the OCID of the Control Plane Capacity Reservation to use for the control plane nodes.
+    required: false
+
   distribute_cp_instances_across_ads:
     type: boolean
     title: Distribute Control Plane Instances Across Availability Domains
@@ -349,7 +377,7 @@ variables:
     type: oci:identity:availabilitydomain:name
     title: Starting AD
     dependsOn:
-      compartmentId: ${compartment_ocid}
+      compartmentId: compartment_ocid
     required: false
 
   distribute_cp_instances_across_fds:
@@ -357,6 +385,19 @@ variables:
     title: Distribute Control Plane Instances Across Fault Domains
     default: true
     required: true
+
+  starting_fd_name_cp:
+    type: oci:identity:faultdomain:name
+    title: Starting FD
+    description: Specify the Fault Domain (FD) for initial node placement. Additional nodes will be automatically distributed across FDs in a round-robin sequence starting from your selected FD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      availabilityDomainName: ${starting_ad_name_cp}
+    required: false
+    visible:
+      eq:
+        - distribute_cp_instances_across_ads
+        - false
 
   #
   # Compute Configuration Variables
@@ -401,6 +442,12 @@ variables:
     multipleOf: 10
     required: true
 
+  compute_capacity_reservation:
+    type: string
+    title: Compute Capacity Reservation OCID
+    description: Specify the OCID of the Compute Capacity Reservation to use for the compute nodes.
+    required: false
+
   distribute_compute_instances_across_ads:
     type: boolean
     title: Distribute Compute Instances Across ADs
@@ -422,6 +469,19 @@ variables:
     description: Select the checkbox to have compute instances distributed across Fault Domains in a round-robin sequence. If false, then the OCI Compute service will distribute them for you based on shape availability and other criteria.
     default: true
     required: true
+
+  starting_fd_name_compute:
+    type: oci:identity:faultdomain:name
+    title: Starting FD
+    description: Specify the Fault Domain (FD) for initial node placement. Additional nodes will be automatically distributed across FDs in a round-robin sequence starting from your selected FD.
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      availabilityDomainName: ${starting_ad_name_compute}
+    required: false
+    visible:
+      eq:
+        - distribute_compute_instances_across_ads
+        - false
 
   #
   # Networking Configuration Variables
@@ -458,9 +518,9 @@ variables:
     default: false
     required: true
 
-  networking_compartment_ocid:
+  vcn_compartment_ocid:
     type: oci:identity:compartment:id
-    title: Networking Compartment
+    title: VCN Compartment
     default: compartment_ocid
     required: true
     visible:
@@ -472,7 +532,17 @@ variables:
     type: oci:core:vcn:id
     title: Existing VCN
     dependsOn:
-      compartmentId: ${networking_compartment_ocid}
+      compartmentId: ${vcn_compartment_ocid}
+    required: true
+    visible:
+      eq:
+        - use_existing_network
+        - true
+
+  subnet_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Subnet Compartment
+    default: ${compartment_ocid}
     required: true
     visible:
       eq:
@@ -483,7 +553,7 @@ variables:
     type: oci:core:subnet:id
     title: Existing Private Subnet for OCP
     dependsOn:
-      compartmentId: ${networking_compartment_ocid}
+      compartmentId: ${subnet_compartment_ocid}
       vcnId: ${existing_vcn_id}
     required: true
     visible:
@@ -495,7 +565,7 @@ variables:
     type: oci:core:subnet:id
     title: Existing Private Subnet for Bare Metal
     dependsOn:
-      compartmentId: ${networking_compartment_ocid}
+      compartmentId: ${subnet_compartment_ocid}
       vcnId: ${existing_vcn_id}
     required: true
     visible:
@@ -507,7 +577,7 @@ variables:
     type: oci:core:subnet:id
     title: Existing Public Subnet
     dependsOn:
-      compartmentId: ${networking_compartment_ocid}
+      compartmentId: ${subnet_compartment_ocid}
       vcnId: ${existing_vcn_id}
     required: true
     visible:
@@ -580,6 +650,102 @@ variables:
     minimum: 10
     maximum: 8000
     required: true
+
+  #
+  # Autoscaler configurations
+  #
+
+  use_autoscaling_operator:
+    type: boolean
+    title: Enable OCI OpenShift Autoscaler (Beta)
+    description: Select this option to enable OCI OpenShift Autoscaler (Beta). When enabled, node autoscaling will be managed by the OCI OpenShift Autoscaler Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands.
+    default: false
+
+  autoscaler_node_shape:
+    type: string
+    title: Autoscaler Node Shape
+    required: true
+    description: If you select a bare metal shape, provide Existing Private Subnet for Bare Metal. The OCP and bare metal subnet names are looked up automatically. Resource tagging is only needed for bare metal shapes so the autoscaler can pull the required iSCSI tags.
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscaler_node_ocpus:
+    type: integer
+    title: Autoscaler Node OCPU
+    default: 4
+    minimum: 1
+    maximum: 144
+    required: true
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscaler_node_memory:
+    type: integer
+    title: Autoscaler Node Memory
+    default: 24
+    minimum: 1
+    maximum: 1760
+    required: true
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscaler_node_image_source_uri:
+    type: string
+    title: Autoscaler Image Source URI
+    default: ""
+    required: true
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscaler_node_minimum_count:
+    type: integer
+    title: Minimum Autoscaler Node Count
+    required: true
+    default: 0
+    minimum: 0
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscaler_node_maximum_count:
+    type: integer
+    title: Maximum Autoscaler Node Count
+    required: true
+    default: 5
+    minimum: 0
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  cluster_network_cidr_block:
+    type: string
+    title: Cluster Network CIDR Block
+    required: true
+    default: "10.128.0.0/14"
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  service_network_cidr_block:
+    type: string
+    title: Service Network CIDR Block
+    required: true
+    default: "172.30.0.0/16"
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
 
   #
   # Advanced configurations

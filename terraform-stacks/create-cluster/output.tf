@@ -18,6 +18,11 @@ output "dynamic_custom_manifest" {
   value = module.manifests.dynamic_custom_manifest
 }
 
+output "autoscaling_manifest" {
+  description = "Autoscaling operator manifests for post-install OpenShift clusters."
+  value       = module.manifests.autoscaling_manifest
+}
+
 output "etc_hosts_entry" {
   value = <<EOT
 ${module.load_balancer.op_lb_openshift_api_lb_ip_addr}  api.${var.cluster_name}.${var.zone_dns}

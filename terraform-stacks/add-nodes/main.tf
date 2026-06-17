@@ -58,6 +58,10 @@ module "meta" {
   starting_ad_name_compute                = var.starting_ad_name_compute
   distribute_cp_instances_across_ads      = var.distribute_cp_instances_across_ads
   distribute_compute_instances_across_ads = var.distribute_compute_instances_across_ads
+  starting_fd_name_cp                     = var.starting_fd_name_cp
+  starting_fd_name_compute                = var.starting_fd_name_compute
+  distribute_cp_instances_across_fds      = var.distribute_cp_instances_across_fds
+  distribute_compute_instances_across_fds = var.distribute_compute_instances_across_fds
   current_cp_count                        = local.current_cp_count
   current_compute_count                   = local.current_compute_count
 }
@@ -65,7 +69,8 @@ module "meta" {
 module "network" {
   source = "./shared_modules/network_interface/network_validator"
 
-  compartment_ocid                      = var.networking_compartment_ocid
+  vcn_compartment_ocid                  = var.vcn_compartment_ocid
+  subnet_compartment_ocid               = var.subnet_compartment_ocid
   existing_vcn_id                       = var.existing_vcn_id
   existing_public_subnet_id             = var.existing_public_subnet_id
   existing_private_bare_metal_subnet_id = var.existing_private_bare_metal_subnet_id
@@ -92,6 +97,7 @@ module "compute" {
   compute_boot_volume_vpus_per_gb = var.compute_boot_volume_vpus_per_gb
   compute_memory                  = var.compute_memory
   compute_ocpu                    = var.compute_ocpu
+  compute_capacity_reservation    = var.compute_capacity_reservation
 
   distribute_cp_instances_across_fds      = var.distribute_cp_instances_across_fds
   distribute_compute_instances_across_fds = var.distribute_compute_instances_across_fds

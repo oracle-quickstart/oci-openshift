@@ -1,0 +1,108 @@
+# ----- 01-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oci-capi-operator
+  annotations:
+    workload.openshift.io/allowed: management
+  labels:
+    pod-security.kubernetes.io/enforce: "privileged"
+    pod-security.kubernetes.io/audit: "privileged"
+    pod-security.kubernetes.io/warn: "privileged"
+    security.openshift.io/scc.podSecurityLabelSync: "false"
+    pod-security.kubernetes.io/enforce-version: "v1.32"
+    control-plane: controller-manager
+
+---
+
+# 02-activator-service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: oci-capi-operator-activator
+  namespace: oci-capi-operator
+
+---
+
+# 03-activator-clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: oci-capi-operator-activator-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: oci-capi-operator-activator
+  namespace: oci-capi-operator
+
+---
+
+# 04-activate-after-install-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oci-capi-operator-activate-after-install
+  namespace: oci-capi-operator
+spec:
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: oci-capi-operator-activator
+      containers:
+      - name: wait-and-activate
+        image: quay.io/openshift/origin-cli:4.20
+        volumeMounts:
+        - mountPath: /runtime
+          name: runtime-manifest
+        command:
+        - /bin/sh
+        - -ec
+        - |
+          echo "Waiting for install convergence signal before applying autoscaler runtime resources"
+          timeout_seconds=21600
+          start="$(date +%s)"
+          while true; do
+            available="$(oc get clusterversion version -o jsonpath='{.status.conditions[?(@.type=="Available")].status}' 2>/dev/null || true)"
+            progressing="$(oc get clusterversion version -o jsonpath='{.status.conditions[?(@.type=="Progressing")].status}' 2>/dev/null || true)"
+            failing="$(oc get clusterversion version -o jsonpath='{.status.conditions[?(@.type=="Failing")].status}' 2>/dev/null || true)"
+            master_updated="$(oc get machineconfigpool master -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}' 2>/dev/null || true)"
+            master_degraded="$(oc get machineconfigpool master -o jsonpath='{.status.conditions[?(@.type=="Degraded")].status}' 2>/dev/null || true)"
+            worker_updated="$(oc get machineconfigpool worker -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}' 2>/dev/null || true)"
+            worker_degraded="$(oc get machineconfigpool worker -o jsonpath='{.status.conditions[?(@.type=="Degraded")].status}' 2>/dev/null || true)"
+
+            if [ "$available" = "True" ] && [ "$progressing" = "False" ] && [ "$failing" = "False" ] && [ "$master_updated" = "True" ] && [ "$master_degraded" = "False" ] && [ "$worker_updated" = "True" ] && [ "$worker_degraded" = "False" ]; then
+              echo "CVO and MCP converged; applying autoscaler runtime manifests"
+              break
+            fi
+
+            echo "Waiting: cv(available=$available, progressing=$progressing, failing=$failing) mcp(master: updated=$master_updated degraded=$master_degraded; worker: updated=$worker_updated degraded=$worker_degraded)"
+
+            now="$(date +%s)"
+            if [ $((now - start)) -ge "$timeout_seconds" ]; then
+              echo "Timed out waiting for CVO/MCP convergence"
+              exit 1
+            fi
+            sleep 30
+          done
+
+          oc apply -f /runtime/runtime.yaml
+          echo "Autoscaler runtime manifests applied; waiting for operator and providers to roll out"
+
+          oc rollout status deployment/oci-capi-operator-controller-manager -n oci-capi-operator --timeout=5m
+          oc wait --for=condition=complete job/oci-capi-operator-provider-installer -n oci-capi-operator --timeout=30m
+          oc rollout status deployment/capi-manager -n capi-system --timeout=10m
+          oc rollout status deployment/capoci-controller-manager -n cluster-api-provider-oci-system --timeout=10m
+          oc rollout status deployment/oci-cluster-autoscaler -n capi-system --timeout=10m
+
+          echo "Autoscaler stack is ready"
+      volumes:
+      - name: runtime-manifest
+        configMap:
+          name: oci-capi-operator-runtime-manifest
+
+---

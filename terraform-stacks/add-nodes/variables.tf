@@ -142,6 +142,18 @@ variable "starting_ad_name_compute" {
   default     = null
 }
 
+variable "starting_fd_name_cp" {
+  description = "Name of the FD to start node distribution from"
+  type        = string
+  default     = null
+}
+
+variable "starting_fd_name_compute" {
+  description = "Name of the FD to start node distribution from"
+  type        = string
+  default     = null
+}
+
 variable "tag_namespace_compartment_ocid_resource_tagging" {
   type        = string
   description = "The compartment where the tag namespace for OpenShift Resource Attribution tagging should be created."
@@ -177,9 +189,15 @@ variable "cluster_instance_role_tag_namespace" {
   default     = ""
 }
 
-variable "networking_compartment_ocid" {
+variable "vcn_compartment_ocid" {
   type        = string
-  description = "Select the compartment where the existing networking resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
+  description = "Select the compartment where the existing vcn resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
+  default     = ""
+}
+
+variable "subnet_compartment_ocid" {
+  type        = string
+  description = "Select the compartment where the existing subnet resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
   default     = ""
 }
 
@@ -205,4 +223,14 @@ variable "existing_public_subnet_id" {
   description = "The OCID of the existing public subnet to use when use_existing_network is true."
   type        = string
   default     = ""
+}
+
+variable "compute_capacity_reservation" {
+  description = "Capacity Reservation OCID to use for compute nodes (optional)."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.compute_capacity_reservation == null || var.compute_capacity_reservation == "" || can(regex("^ocid1\\.capacityreservation\\.oc1\\.[a-z0-9-]+\\.[a-z0-9]+$", var.compute_capacity_reservation))
+    error_message = "Invalid capacity reservation OCID"
+  }
 }

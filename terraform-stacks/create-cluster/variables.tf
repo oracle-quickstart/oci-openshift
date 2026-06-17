@@ -282,6 +282,17 @@ variable "distribute_compute_instances_across_fds" {
   default     = true
 }
 
+
+variable "starting_fd_name_cp" {
+  type    = string
+  default = null
+}
+
+variable "starting_fd_name_compute" {
+  type    = string
+  default = null
+}
+
 variable "create_public_dns" {
   type        = bool
   description = "Create a public DNS zone with your Base domain specified in Zone DNS. If this is not created, it is advised that you create a private DNS zone unless you are bringing your own DNS solution. To resolve cluster hostnames without DNS, users should add entries to /etc/hosts mapping the cluster hostnames to the IP address of the api_apps Load Balancer. The etc_hosts_entry output can be used for this purpose."
@@ -317,9 +328,15 @@ variable "use_existing_network" {
   default     = false
 }
 
-variable "networking_compartment_ocid" {
+variable "vcn_compartment_ocid" {
   type        = string
-  description = "Select the compartment where the existing networking resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
+  description = "Select the compartment where the existing vcn are located. This may be different or same from the main compartment where OpenShift resources will be created."
+  default     = ""
+}
+
+variable "subnet_compartment_ocid" {
+  type        = string
+  description = "Select the compartment where the existing subnet resources are located. This may be different or same from the main compartment where OpenShift resources will be created."
   default     = ""
 }
 
@@ -443,5 +460,90 @@ variable "tag_namespace_name" {
 variable "tag_namespace_compartment_ocid" {
   type        = string
   description = "The OCI of the compartment containing existing instance role tag namespace. Defaults to current compartment."
+  default     = ""
+}
+
+variable "control_plane_capacity_reservation" {
+  description = "Capacity Reservation OCID to use for control plane nodes (optional)."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.control_plane_capacity_reservation == null || var.control_plane_capacity_reservation == "" || can(regex("^ocid1\\.capacityreservation\\.oc1\\.[a-z0-9-]+\\.[a-z0-9]+$", var.control_plane_capacity_reservation))
+    error_message = "Invalid capacity reservation OCID"
+  }
+}
+
+variable "compute_capacity_reservation" {
+  description = "Capacity Reservation OCID to use for compute nodes (optional)."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.compute_capacity_reservation == null || var.compute_capacity_reservation == "" || can(regex("^ocid1\\.capacityreservation\\.oc1\\.[a-z0-9-]+\\.[a-z0-9]+$", var.compute_capacity_reservation))
+    error_message = "Invalid capacity reservation OCID"
+  }
+}
+variable "use_autoscaling_operator" {
+  type        = bool
+  description = "Enable the Oracle Cloud Autoscaler (beta). When enabled, node autoscaling will be managed by the Oracle Cloud Autoscaler Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands."
+  default     = false
+}
+
+variable "autoscaler_node_shape" {
+  default     = "VM.Standard.E5.Flex"
+  type        = string
+  description = "Compute shape of the autoscaler nodes. The default shape is VM.Standard.E5.Flex for VM setup and BM.Standard3.64 for BM setup. For more details regarding supported shapes, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>."
+}
+
+variable "autoscaler_node_minimum_count" {
+  default     = 0
+  type        = number
+  description = "The minimum number of autoscaled nodes in the cluster. The default value is 0."
+  validation {
+    condition     = var.autoscaler_node_minimum_count >= 0
+    error_message = "The autoscaler_node_minimum_count value must be greater than or equal to 0."
+  }
+}
+
+variable "autoscaler_node_maximum_count" {
+  default     = 5
+  type        = number
+  description = "The maximum number of autoscaled nodes in the cluster. The default value is 5."
+}
+
+variable "autoscaler_node_ocpus" {
+  default     = 4
+  type        = number
+  description = "The number of OCPUs for each autoscaled node. The default value is 4. For BM shapes, this value is ignored and determined by the shape selected."
+  validation {
+    condition     = var.autoscaler_node_ocpus >= 1 && var.autoscaler_node_ocpus <= 144
+    error_message = "The autoscaler_node_ocpus value must be between 1 and 144."
+  }
+}
+
+variable "autoscaler_node_memory" {
+  default     = 24
+  type        = number
+  description = "The amount of memory available for the shape of each autoscaled node, in gigabytes. The default value is 24. For BM shapes, this value is ignored and determined by the shape selected."
+  validation {
+    condition     = var.autoscaler_node_memory >= 1 && var.autoscaler_node_memory <= 1760
+    error_message = "The autoscaler_node_memory value must be between the value of 1 and 1760."
+  }
+}
+
+variable "cluster_network_cidr_block" {
+  default     = "10.128.0.0/14"
+  type        = string
+  description = "The CIDR block for the OpenShift cluster network."
+}
+
+variable "service_network_cidr_block" {
+  default     = "172.30.0.0/16"
+  type        = string
+  description = "The CIDR block for the OpenShift service network."
+}
+
+variable "autoscaler_node_image_source_uri" {
+  type        = string
+  description = "<strong><em>(Required)</em></strong> - The OCI Object Storage URL for the Autoscaler node image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block."
   default     = ""
 }

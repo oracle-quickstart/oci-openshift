@@ -7,59 +7,59 @@ check "vcn_availability" {
 
 check "required_gateways" {
   assert {
-    condition     = length(data.oci_core_internet_gateways.existing_ig.gateways) > 0
-    error_message = "❌ Missing Internet Gateway: No Internet Gateway found in VCN ${var.existing_vcn_id}. OpenShift requires an Internet Gateway for external connectivity."
+    condition     = length(local.found_igs) > 0
+    error_message = "❌ Missing Internet Gateway: No Internet Gateway found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}. OpenShift requires an Internet Gateway for external connectivity."
   }
 
   assert {
-    condition     = length(data.oci_core_service_gateways.existing_sgw.service_gateways) > 0
-    error_message = "❌ Missing Service Gateway: No Service Gateway found in VCN ${var.existing_vcn_id}. OpenShift requires a Service Gateway for OCI service access."
+    condition     = length(local.found_sgws) > 0
+    error_message = "❌ Missing Service Gateway: No Service Gateway found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}. OpenShift requires a Service Gateway for OCI service access."
   }
 
   assert {
-    condition     = length(data.oci_core_nat_gateways.existing_nat.nat_gateways) > 0
-    error_message = "❌ Missing NAT Gateway: No NAT Gateway found in VCN ${var.existing_vcn_id}. OpenShift requires a NAT Gateway for outbound internet access."
+    condition     = length(local.found_nats) > 0
+    error_message = "❌ Missing NAT Gateway: No NAT Gateway found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}. OpenShift requires a NAT Gateway for outbound internet access."
   }
 }
 
 check "required_nsgs" {
   assert {
-    condition     = length(data.oci_core_network_security_groups.existing_lb_nsgs.network_security_groups) > 0
-    error_message = "❌ Missing Load Balancer NSG: No NSG with *lb* pattern found in VCN ${var.existing_vcn_id}. OpenShift requires load balancer NSGs."
+    condition     = length(local.found_lb_nsgs) > 0
+    error_message = "❌ Missing Load Balancer NSG: No NSG with *lb* pattern found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}. OpenShift requires load balancer NSGs."
   }
 
   assert {
-    condition     = length(data.oci_core_network_security_groups.existing_controlplane_nsgs.network_security_groups) > 0
-    error_message = "❌ Missing Control Plane NSG: No NSG with *controlplane* pattern found in VCN ${var.existing_vcn_id}. OpenShift requires control plane NSGs."
+    condition     = length(local.found_controlplane_nsgs) > 0
+    error_message = "❌ Missing Control Plane NSG: No NSG with *controlplane* pattern found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}. OpenShift requires control plane NSGs."
   }
 
   assert {
-    condition     = length(data.oci_core_network_security_groups.existing_compute_nsgs.network_security_groups) > 0
-    error_message = "❌ Missing Compute NSG: No NSG with *compute* pattern found in VCN ${var.existing_vcn_id}. OpenShift requires compute NSGs."
+    condition     = length(local.found_compute_nsgs) > 0
+    error_message = "❌ Missing Compute NSG: No NSG with *compute* pattern found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}. OpenShift requires compute NSGs."
   }
 }
 
 check "required_security_lists" {
   assert {
-    condition     = length(data.oci_core_security_lists.existing_private.security_lists) > 0
-    error_message = "❌ Missing Private Security List: No security list with *private* pattern found in VCN ${var.existing_vcn_id}."
+    condition     = length(flatten([for d in data.oci_core_security_lists.private : d.security_lists])) > 0
+    error_message = "❌ Missing Private Security List: No security list with *private* pattern found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}."
   }
 
   assert {
-    condition     = length(data.oci_core_security_lists.existing_public.security_lists) > 0
-    error_message = "❌ Missing Public Security List: No security list with *public* pattern found in VCN ${var.existing_vcn_id}."
+    condition     = length(flatten([for d in data.oci_core_security_lists.public : d.security_lists])) > 0
+    error_message = "❌ Missing Public Security List: No security list with *public* pattern found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}."
   }
 }
 
 check "required_route_tables" {
   assert {
-    condition     = length(data.oci_core_route_tables.existing_private_routes.route_tables) > 0
-    error_message = "❌ Missing Private Route Table: No route table with *private* pattern found in VCN ${var.existing_vcn_id}."
+    condition     = length(flatten([for d in data.oci_core_route_tables.private : d.route_tables])) > 0
+    error_message = "❌ Missing Private Route Table: No route table with *private* pattern found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}."
   }
 
   assert {
-    condition     = length(data.oci_core_route_tables.existing_public_routes.route_tables) > 0
-    error_message = "❌ Missing Public Route Table: No route table with *public* pattern found in VCN ${var.existing_vcn_id}."
+    condition     = length(flatten([for d in data.oci_core_route_tables.public : d.route_tables])) > 0
+    error_message = "❌ Missing Public Route Table: No route table with *public* pattern found in VCN ${var.existing_vcn_id} in compartments ${join(", ", local.network_lookup_compartments)}."
   }
 }
 
@@ -97,15 +97,17 @@ check "subnet_configurations" {
 
 check "security_rules" {
   assert {
-    condition     = length(data.oci_core_network_security_group_security_rules.existing_lb_rules) > 0
-    error_message = "❌ Security Rule Error: LB NSG must have at least 1 rule."
+    condition     = try(length(data.oci_core_network_security_group_security_rules.lb_rules.security_rules), 0) > 0
+    error_message = "❌ Security Rule Error: LB NSG not found or contains no rules."
   }
+
   assert {
-    condition     = length(data.oci_core_network_security_group_security_rules.existing_controlplane_rules) > 0
-    error_message = "❌ Security Rule Error: Control Plane NSG must have at least 1 rule."
+    condition     = try(length(data.oci_core_network_security_group_security_rules.controlplane_rules.security_rules), 0) > 0
+    error_message = "❌ Security Rule Error: Control Plane NSG not found or contains no rules."
   }
+
   assert {
-    condition     = length(data.oci_core_network_security_group_security_rules.existing_compute_rules) > 0
-    error_message = "❌ Security Rule Error: Compute NSG must have at least 1 rule."
+    condition     = try(length(data.oci_core_network_security_group_security_rules.compute_rules.security_rules), 0) > 0
+    error_message = "❌ Security Rule Error: Compute NSG not found or contains no rules."
   }
 }

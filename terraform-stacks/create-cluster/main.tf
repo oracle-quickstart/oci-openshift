@@ -23,10 +23,14 @@ module "meta" {
   compartment_ocid                        = var.compartment_ocid
   starting_ad_name_cp                     = var.starting_ad_name_cp
   starting_ad_name_compute                = var.starting_ad_name_compute
+  starting_fd_name_cp                     = var.starting_fd_name_cp
+  starting_fd_name_compute                = var.starting_fd_name_compute
   distribute_cp_instances_across_ads      = var.distribute_cp_instances_across_ads
   distribute_compute_instances_across_ads = var.distribute_compute_instances_across_ads
+  distribute_cp_instances_across_fds      = var.distribute_cp_instances_across_fds
+  distribute_compute_instances_across_fds = var.distribute_compute_instances_across_fds
   control_plane_count                     = var.control_plane_count
-  compute_count                           = var.compute_count
+  compute_count                           = local.effective_compute_count
 }
 module "tags" {
   source = "./shared_modules/tags"
@@ -52,10 +56,11 @@ module "iam" {
 
   depends_on = [module.tags.wait_for_tag_consistency]
 
-  compartment_ocid            = var.compartment_ocid
-  tenancy_ocid                = var.tenancy_ocid
-  cluster_name                = var.cluster_name
-  networking_compartment_ocid = local.existing_networking_compartment_ocid
+  compartment_ocid        = var.compartment_ocid
+  tenancy_ocid            = var.tenancy_ocid
+  cluster_name            = var.cluster_name
+  vcn_compartment_ocid    = local.existing_vcn_compartment_ocid
+  subnet_compartment_ocid = local.existing_subnet_compartment_ocid
 
   // dependency on tags
   op_openshift_tag_namespace     = module.tags.op_openshift_tag_namespace
@@ -78,6 +83,11 @@ module "image" {
   control_plane_shape         = var.control_plane_shape
   compute_shape               = var.compute_shape
 
+  // autoscaler image generation
+  use_autoscaling_operator         = var.use_autoscaling_operator
+  autoscaler_node_image_source_uri = var.autoscaler_node_image_source_uri
+  autoscaler_node_shape            = var.autoscaler_node_shape
+
   // Depedency on tags
   defined_tags = module.resource_attribution_tags.openshift_resource_attribution_tag
 }
@@ -99,7 +109,8 @@ module "network" {
 
   # Parameters to use when using an exisiting network infrastructure
   use_existing_network                  = var.use_existing_network
-  networking_compartment_ocid           = var.networking_compartment_ocid
+  vcn_compartment_ocid                  = local.existing_vcn_compartment_ocid
+  subnet_compartment_ocid               = local.existing_subnet_compartment_ocid
   existing_vcn_id                       = var.existing_vcn_id
   existing_public_subnet_id             = var.existing_public_subnet_id
   existing_private_bare_metal_subnet_id = var.existing_private_bare_metal_subnet_id
@@ -184,12 +195,14 @@ module "compute" {
   control_plane_boot_volume_vpus_per_gb = var.control_plane_boot_volume_vpus_per_gb
   control_plane_memory                  = var.control_plane_memory
   control_plane_ocpu                    = var.control_plane_ocpu
+  control_plane_capacity_reservation    = var.control_plane_capacity_reservation
 
   compute_shape                   = var.compute_shape
   compute_boot_size               = var.compute_boot_size
   compute_boot_volume_vpus_per_gb = var.compute_boot_volume_vpus_per_gb
   compute_memory                  = var.compute_memory
   compute_ocpu                    = var.compute_ocpu
+  compute_capacity_reservation    = var.compute_capacity_reservation
 
   distribute_cp_instances_across_fds      = var.distribute_cp_instances_across_fds
   distribute_compute_instances_across_fds = var.distribute_compute_instances_across_fds
@@ -271,7 +284,6 @@ module "manifests" {
   https_proxy                  = var.https_proxy
   no_proxy                     = var.no_proxy
 
-
   // Depedency on networks
   op_vcn_openshift_vcn  = module.network.op_vcn_openshift_vcn
   op_apps_subnet        = local.apps_subnet_id
@@ -280,7 +292,7 @@ module "manifests" {
   zone_dns              = var.zone_dns
   rendezvous_ip         = var.rendezvous_ip
   control_plane_count   = var.control_plane_count
-  compute_count         = var.compute_count
+  compute_count         = local.effective_compute_count
   public_ssh_key        = var.public_ssh_key
   cluster_name          = var.cluster_name
   webserver_private_ip  = var.webserver_private_ip
@@ -288,6 +300,29 @@ module "manifests" {
   // Dependency on ocir
   use_oracle_cloud_agent = var.use_oracle_cloud_agent
   oca_image_pull_link    = module.ocir.image_pull_command
+
+  // newly added
+  region                                   = var.region
+  tenancy_ocid                             = var.tenancy_ocid
+  op_network_security_group_cluster_lb_nsg = module.network.op_network_security_group_cluster_lb_nsg
+  op_subnet_private_ocp                    = module.network.op_subnet_private_ocp
+  op_lb_openshift_api_lb                   = module.load_balancer.op_lb_openshift_api_lb
+  op_lb_openshift_api_lb_ip_addr           = module.load_balancer.op_lb_openshift_api_lb_ip_addr
+
+  // autoscaler
+  use_autoscaling_operator          = var.use_autoscaling_operator
+  autoscaler_node_shape             = var.autoscaler_node_shape
+  autoscaler_node_minimum_count     = var.autoscaler_node_minimum_count
+  autoscaler_node_maximum_count     = var.autoscaler_node_maximum_count
+  autoscaler_node_ocpus             = var.autoscaler_node_ocpus
+  autoscaler_node_memory            = var.autoscaler_node_memory
+  autoscaler_defined_tags_namespace = module.tags.op_openshift_tag_namespace
+  bare_metal_subnet_id              = local.is_autoscaler_bm_shape ? module.network.op_subnet_private_bare_metal : ""
+  bare_metal_subnet_name            = local.is_autoscaler_bm_shape ? data.oci_core_subnet.autoscaler_bare_metal_subnet[0].display_name : ""
+  ocp_subnet_name                   = data.oci_core_subnet.autoscaler_ocp_subnet.display_name
+  cluster_network_cidr_block        = var.cluster_network_cidr_block
+  service_network_cidr_block        = var.service_network_cidr_block
+  autoscaler_node_image_id          = module.image.op_image_openshift_autoscaling_image
 }
 
 module "resource_attribution_tags" {

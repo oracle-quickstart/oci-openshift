@@ -1,0 +1,151 @@
+title: OpenShift Cluster on OCI - Autoscaling Operator (Beta) - v1.5.1
+description: A Terraform Stack that discovers an existing OpenShift cluster's networking and LBs, builds the autoscaling node image, and outputs a manifest for the OCI autoscaling operator.
+schemaVersion: 1.5.1
+version: "20250213"
+locale: "en"
+
+variableGroups:
+- title: "Target Cluster"
+  variables:
+  - tenancy_ocid
+  - compartment_ocid
+  - region
+  - cluster_name
+
+- title: "Existing VCN"
+  variables:
+  - networking_compartment_ocid
+  - existing_vcn_id
+
+- title: "Existing Subnets"
+  variables:
+  - subnet_compartment_ocid
+  - existing_private_ocp_subnet_id
+  - bare_metal_subnet_id
+
+- title: "Autoscaling Configurations (Beta)"
+  variables:
+  - autoscaler_node_shape
+  - autoscaler_node_image_source_uri
+  - autoscaler_node_minimum_count
+  - autoscaler_node_maximum_count
+  - autoscaler_node_ocpus
+  - autoscaler_node_memory
+  - cluster_network_cidr_block
+  - service_network_cidr_block
+
+- title: "OpenShift TagNameSpace"
+  variables:
+  - autoscaler_defined_tags_namespace
+
+variables:
+  tenancy_ocid:
+    type: string
+    title: Tenancy OCID
+    required: true
+
+  compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Cluster Compartment
+    required: true
+
+  region:
+    type: string
+    title: OCI Region
+    required: true
+
+  cluster_name:
+    type: string
+    title: Cluster Name
+    pattern: "^[a-z0-9-]{1,54}$"
+    required: true
+
+  networking_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: VCN Compartment
+    required: false
+    default: ""
+
+  subnet_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Subnet Compartment
+    required: false
+    default: ""
+
+  existing_vcn_id:
+    type: oci:core:vcn:id
+    required: true
+    title: Existing VCN OCID
+    dependsOn:
+      compartmentId: ${networking_compartment_ocid}
+
+  existing_private_ocp_subnet_id:
+    type: oci:core:subnet:id
+    required: true
+    title: Existing Private OCP Subnet
+    dependsOn:
+      compartmentId: ${subnet_compartment_ocid}
+      vcnId: ${existing_vcn_id}
+
+  bare_metal_subnet_id:
+    type: oci:core:subnet:id
+    required: false
+    title: Existing Private Bare Metal Subnet
+    description: If you select a bare metal autoscaler node shape, provide the bare metal subnet ID. The bare metal subnet name is looked up automatically from this subnet.
+    dependsOn:
+      compartmentId: ${subnet_compartment_ocid}
+      vcnId: ${existing_vcn_id}
+
+  autoscaler_node_shape:
+    type: string
+    title: Autoscaler Node Shape
+    required: true
+    description: If you select a bare metal shape, provide Existing Private Subnet for Bare Metal. The OCP and bare metal subnet names are looked up automatically. Resource tagging is only needed for bare metal shapes so the autoscaler can pull the required iSCSI tags.
+
+  autoscaler_node_image_source_uri:
+    type: string
+    title: Autoscaler Image Source URI
+    description: (Required) The OCI Object Storage URL for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block. For more details, review Object Storage and PARs.
+    required: true
+
+  autoscaler_node_minimum_count:
+    type: integer
+    title: Minimum Autoscaler Node Count
+    default: 1
+    minimum: 0
+
+  autoscaler_node_maximum_count:
+    type: integer
+    title: Maximum Autoscaler Node Count
+    default: 10
+    minimum: 0
+
+  autoscaler_node_ocpus:
+    type: integer
+    title: Autoscaler Node OCPUs
+    default: 4
+    minimum: 1
+    maximum: 144
+
+  autoscaler_node_memory:
+    type: integer
+    title: Autoscaler Node Memory (GB)
+    default: 32
+    minimum: 1
+    maximum: 1760
+
+  cluster_network_cidr_block:
+    type: string
+    title: Cluster Network CIDR Block
+    default: "10.128.0.0/14"
+
+  service_network_cidr_block:
+    type: string
+    title: Service Network CIDR Block
+    default: "172.30.0.0/16"
+
+  autoscaler_defined_tags_namespace:
+    type: string
+    title: OpenShift Tag Namespace
+    description: Resource tagging is only needed for bare metal autoscaler shapes so the autoscaler can pull the required iSCSI tags.
+    default: ""

@@ -3,12 +3,30 @@ data "oci_core_vcn" "existing_vcn" {
   vcn_id = var.existing_vcn_id
 }
 
-
-# NSG lookup - Automatic discovery
-data "oci_core_network_security_groups" "existing_lb_nsgs" {
-  compartment_id = var.compartment_ocid
+# --- Gateways ---
+data "oci_core_internet_gateways" "lookup" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
   vcn_id         = var.existing_vcn_id
+}
 
+data "oci_core_nat_gateways" "lookup" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
+  vcn_id         = var.existing_vcn_id
+}
+
+data "oci_core_service_gateways" "lookup" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
+  vcn_id         = var.existing_vcn_id
+}
+
+# --- NSGs ---
+data "oci_core_network_security_groups" "lb" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
+  vcn_id         = var.existing_vcn_id
   filter {
     name   = "display_name"
     values = [".*lb.*"]
@@ -16,10 +34,10 @@ data "oci_core_network_security_groups" "existing_lb_nsgs" {
   }
 }
 
-data "oci_core_network_security_groups" "existing_controlplane_nsgs" {
-  compartment_id = var.compartment_ocid
+data "oci_core_network_security_groups" "controlplane" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
   vcn_id         = var.existing_vcn_id
-
   filter {
     name   = "display_name"
     values = [".*controlplane.*"]
@@ -27,10 +45,10 @@ data "oci_core_network_security_groups" "existing_controlplane_nsgs" {
   }
 }
 
-data "oci_core_network_security_groups" "existing_compute_nsgs" {
-  compartment_id = var.compartment_ocid
+data "oci_core_network_security_groups" "compute" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
   vcn_id         = var.existing_vcn_id
-
   filter {
     name   = "display_name"
     values = [".*compute.*"]
@@ -38,27 +56,11 @@ data "oci_core_network_security_groups" "existing_compute_nsgs" {
   }
 }
 
-# Gateway lookups - Automatic discovery
-data "oci_core_internet_gateways" "existing_ig" {
-  compartment_id = var.compartment_ocid
+# --- Security Lists & Route Tables ---
+data "oci_core_security_lists" "private" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
   vcn_id         = var.existing_vcn_id
-}
-
-data "oci_core_service_gateways" "existing_sgw" {
-  compartment_id = var.compartment_ocid
-  vcn_id         = var.existing_vcn_id
-}
-
-data "oci_core_nat_gateways" "existing_nat" {
-  compartment_id = var.compartment_ocid
-  vcn_id         = var.existing_vcn_id
-}
-
-# Security Lists - Automatic discovery
-data "oci_core_security_lists" "existing_private" {
-  compartment_id = var.compartment_ocid
-  vcn_id         = var.existing_vcn_id
-
   filter {
     name   = "display_name"
     values = [".*private.*"]
@@ -66,10 +68,10 @@ data "oci_core_security_lists" "existing_private" {
   }
 }
 
-data "oci_core_security_lists" "existing_public" {
-  compartment_id = var.compartment_ocid
+data "oci_core_security_lists" "public" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
   vcn_id         = var.existing_vcn_id
-
   filter {
     name   = "display_name"
     values = [".*public.*"]
@@ -77,11 +79,10 @@ data "oci_core_security_lists" "existing_public" {
   }
 }
 
-# Route Tables - Automatic discovery
-data "oci_core_route_tables" "existing_private_routes" {
-  compartment_id = var.compartment_ocid
+data "oci_core_route_tables" "private" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
   vcn_id         = var.existing_vcn_id
-
   filter {
     name   = "display_name"
     values = [".*private.*"]
@@ -89,10 +90,10 @@ data "oci_core_route_tables" "existing_private_routes" {
   }
 }
 
-data "oci_core_route_tables" "existing_public_routes" {
-  compartment_id = var.compartment_ocid
+data "oci_core_route_tables" "public" {
+  for_each       = toset(local.network_lookup_compartments)
+  compartment_id = each.value
   vcn_id         = var.existing_vcn_id
-
   filter {
     name   = "display_name"
     values = [".*public.*"]
@@ -100,17 +101,16 @@ data "oci_core_route_tables" "existing_public_routes" {
   }
 }
 
-# NSG Security Rules - for validation and rule management
-data "oci_core_network_security_group_security_rules" "existing_lb_rules" {
-  network_security_group_id = data.oci_core_network_security_groups.existing_lb_nsgs.network_security_groups[0].id
+data "oci_core_network_security_group_security_rules" "lb_rules" {
+  network_security_group_id = try(local.found_lb_nsgs[0].id, "none")
 }
 
-data "oci_core_network_security_group_security_rules" "existing_controlplane_rules" {
-  network_security_group_id = data.oci_core_network_security_groups.existing_controlplane_nsgs.network_security_groups[0].id
+data "oci_core_network_security_group_security_rules" "controlplane_rules" {
+  network_security_group_id = try(local.found_controlplane_nsgs[0].id, "none")
 }
 
-data "oci_core_network_security_group_security_rules" "existing_compute_rules" {
-  network_security_group_id = data.oci_core_network_security_groups.existing_compute_nsgs.network_security_groups[0].id
+data "oci_core_network_security_group_security_rules" "compute_rules" {
+  network_security_group_id = try(local.found_compute_nsgs[0].id, "none")
 }
 
 # Subnet data sources for property validation

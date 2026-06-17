@@ -5,3 +5,7 @@ output "op_image_openshift_image_paravirtualized" {
 output "op_image_openshift_image_native" {
   value = try(oci_core_image.openshift_image_native[0].id, null)
 }
+
+output "op_image_openshift_autoscaling_image" {
+  value = try(oci_core_image.autoscaling_image[0].id, null)
+}
