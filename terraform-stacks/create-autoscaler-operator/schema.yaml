@@ -1,6 +1,6 @@
-title: OpenShift Cluster on OCI - Autoscaling Operator (Beta) - v1.5.1
+title: OpenShift Cluster on OCI - Autoscaling Operator - v1.6.0
 description: A Terraform Stack that discovers an existing OpenShift cluster's networking and LBs, builds the autoscaling node image, and outputs a manifest for the OCI autoscaling operator.
-schemaVersion: 1.5.1
+schemaVersion: 1.6.0
 version: "20250213"
 locale: "en"
 
@@ -11,6 +11,7 @@ variableGroups:
   - compartment_ocid
   - region
   - cluster_name
+  - autoscaler_defined_tags_namespace
 
 - title: "Existing VCN"
   variables:
@@ -29,14 +30,11 @@ variableGroups:
   - autoscaler_node_image_source_uri
   - autoscaler_node_minimum_count
   - autoscaler_node_maximum_count
+  - autoscaler_pool_identifier
   - autoscaler_node_ocpus
   - autoscaler_node_memory
   - cluster_network_cidr_block
   - service_network_cidr_block
-
-- title: "OpenShift TagNameSpace"
-  variables:
-  - autoscaler_defined_tags_namespace
 
 variables:
   tenancy_ocid:
@@ -100,52 +98,75 @@ variables:
     type: string
     title: Autoscaler Node Shape
     required: true
-    description: If you select a bare metal shape, provide Existing Private Subnet for Bare Metal. The OCP and bare metal subnet names are looked up automatically. Resource tagging is only needed for bare metal shapes so the autoscaler can pull the required iSCSI tags.
+    default: "VM.Standard.E5.Flex"
+    description: Compute shape of the autoscaler nodes. The default shape is VM.Standard.E5.Flex for VM setup and BM.Standard3.64 for BM setup. For more details regarding supported shapes, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>.
 
   autoscaler_node_image_source_uri:
     type: string
     title: Autoscaler Image Source URI
-    description: (Required) The OCI Object Storage URL for the OpenShift image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block. For more details, review Object Storage and PARs.
+    default: ""
+    description: <strong><em>(Required)</em></strong> - The OCI Object Storage URL for the Autoscaler node image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block.
     required: true
 
   autoscaler_node_minimum_count:
     type: integer
     title: Minimum Autoscaler Node Count
-    default: 1
+    description: The minimum number of autoscaled nodes in the cluster. The default value is 0.
+    default: 0
     minimum: 0
+    required: true
 
   autoscaler_node_maximum_count:
     type: integer
     title: Maximum Autoscaler Node Count
-    default: 10
+    description: The maximum number of autoscaled nodes in the cluster. The default value is 5.
+    default: 5
     minimum: 0
+    required: true
+
+  autoscaler_pool_identifier:
+    type: string
+    title: Autoscaler Pool Identifier
+    description: Optional lowercase identifier appended to the CAPI cluster name when naming autoscaler node pool resources. Use up to 5 lowercase letters, numbers, or hyphens, such as bm01, vm01, or gpu01. The value must start and end with a lowercase letter or number.
+    default: ""
+    maxLength: 5
+    pattern: "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    required: false
 
   autoscaler_node_ocpus:
     type: integer
-    title: Autoscaler Node OCPUs
+    title: Autoscaler Node OCPU
+    description: The number of OCPUs for each autoscaled node. The default value is 4. For BM shapes, this value is ignored and determined by the shape selected.
     default: 4
     minimum: 1
     maximum: 144
+    required: true
 
   autoscaler_node_memory:
     type: integer
-    title: Autoscaler Node Memory (GB)
-    default: 32
+    title: Autoscaler Node Memory
+    description: The amount of memory available for the shape of each autoscaled node, in gigabytes. The default value is 24. For BM shapes, this value is ignored and determined by the shape selected.
+    default: 24
     minimum: 1
     maximum: 1760
+    required: true
 
   cluster_network_cidr_block:
     type: string
     title: Cluster Network CIDR Block
+    description: The CIDR block for the OpenShift cluster network.
     default: "10.128.0.0/14"
+    required: true
 
   service_network_cidr_block:
     type: string
     title: Service Network CIDR Block
+    description: The CIDR block for the OpenShift service network.
     default: "172.30.0.0/16"
+    required: true
 
   autoscaler_defined_tags_namespace:
     type: string
     title: OpenShift Tag Namespace
-    description: Resource tagging is only needed for bare metal autoscaler shapes so the autoscaler can pull the required iSCSI tags.
+    description: Required only for bare metal autoscaler shapes; VM shapes do not use it. By default, the Day 0 create-cluster stack uses openshift-{cluster_name}. If the target cluster uses a different tag namespace, enter that existing namespace here.
     default: ""

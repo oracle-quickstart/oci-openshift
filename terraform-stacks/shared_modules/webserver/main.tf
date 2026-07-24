@@ -53,6 +53,10 @@ resource "oci_core_instance" "webserver" {
   shape               = var.webserver_shape
   display_name        = var.webserver_display_name
 
+  instance_options {
+    are_legacy_imds_endpoints_disabled = true
+  }
+
   defined_tags = {
     "${var.openshift_tag_namespace}.${var.openshift_tag_instance_role}"               = "control_plane"
     "${var.openshift_attribution_tag_namespace}.${var.openshift_attribution_tag_key}" = var.openshift_tag_openshift_resource_value

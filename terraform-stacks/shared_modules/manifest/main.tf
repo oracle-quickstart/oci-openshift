@@ -39,6 +39,11 @@ output "autoscaling_manifest" {
     condition     = !var.use_autoscaling_operator || var.autoscaler_node_maximum_count >= var.autoscaler_node_minimum_count
     error_message = "The autoscaler_node_maximum_count value must be greater than or equal to autoscaler_node_minimum_count."
   }
+
+  precondition {
+    condition     = !var.use_autoscaling_operator || length(var.cluster_name) + 6 + (var.autoscaler_pool_identifier == "" ? 0 : 1 + length(var.autoscaler_pool_identifier)) <= 51
+    error_message = "The generated autoscaler node pool name must be no longer than 51 characters. Shorten cluster_name or autoscaler_pool_identifier."
+  }
 }
 
 output "agent_config" {

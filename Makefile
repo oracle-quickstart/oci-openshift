@@ -1,6 +1,6 @@
 SHELL = bash
 
-PKG_VERSION ?= v1.5.1
+PKG_VERSION ?= v1.6.0
 OCI_DRIVER_VERSION ?= v1.34.0
 
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
@@ -8,9 +8,9 @@ PODMAN := $(shell command -v podman 2> /dev/null)
 OC := $(shell command -v oc 2> /dev/null)
 
 REQUEST_TIMEOUT ?= 60s
-AUTOSCALER_NAMESPACE ?= oci-capi-operator
+AUTOSCALER_NAMESPACE ?= oci-openshift-autoscaling-operator
 AUTOSCALER_NAME ?= ociclusterautoscaler
-AUTOSCALER_CLUSTER_NAMESPACE ?= capi-system
+AUTOSCALER_CLUSTER_NAMESPACE ?= oci-openshift-autoscaling-operator
 AUTOSCALER_CLUSTER_NAME ?=
 AUTOSCALER_LABEL_SELECTOR ?= capi.openshift.io/managed-by=$(AUTOSCALER_NAME)
 AUTOSCALER_PROVIDER_INSTALLER_JOB ?= oci-capi-operator-provider-installer
@@ -150,11 +150,12 @@ ifdef OC
 	oc -n $(AUTOSCALER_NAMESPACE) delete deployment oci-capi-operator-controller-manager --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc -n $(AUTOSCALER_NAMESPACE) delete job $(AUTOSCALER_PROVIDER_INSTALLER_JOB) oci-capi-operator-activate-after-install --ignore-not-found=true --wait=false --request-timeout=$(REQUEST_TIMEOUT)
 	oc -n $(AUTOSCALER_NAMESPACE) delete configmap oci-capi-operator-config oci-capi-operator-runtime-manifest --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
+	oc -n $(AUTOSCALER_NAMESPACE) delete secret oci-capi-operator-capoci-auth-credentials --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc -n $(AUTOSCALER_NAMESPACE) delete serviceaccount oci-capi-operator-controller-manager oci-capi-operator-activator --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc -n $(AUTOSCALER_NAMESPACE) delete role oci-capi-operator-leader-election-role --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc -n $(AUTOSCALER_NAMESPACE) delete rolebinding oci-capi-operator-leader-election-rolebinding --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
-	oc delete clusterrole oci-capi-operator-manager-role oci-capi-operator-ociclusterautoscaler-editor-role oci-capi-operator-ociclusterautoscaler-viewer-role --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
-	oc delete clusterrolebinding oci-capi-operator-manager-rolebinding oci-capi-operator-oci-capi-operator-admin oci-capi-operator-activator-admin oci-capi-operator-capoci-privileged-scc --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
+	oc delete clusterrole oci-capi-operator-manager-role oci-capi-operator-metrics-auth-role oci-capi-operator-metrics-reader oci-capi-operator-ociclusterautoscaler-editor-role oci-capi-operator-ociclusterautoscaler-viewer-role --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
+	oc delete clusterrolebinding oci-capi-operator-manager-rolebinding oci-capi-operator-metrics-auth-rolebinding oci-capi-operator-oci-capi-operator-admin oci-capi-operator-activator-admin oci-capi-operator-capoci-privileged-scc --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc delete validatingwebhookconfiguration oci-capi-operator-validating-webhook-configuration --wait=false --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc delete mutatingwebhookconfiguration oci-capi-operator-mutating-webhook-configuration --wait=false --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc delete crd ociclusterautoscalers.capi.openshift.io --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
@@ -245,15 +246,15 @@ cleanup-provider-installer-resources:
 	@test "$(CONFIRM_PROVIDER_INSTALLER_CLEANUP)" = "true" || (echo "Refusing provider-installer cleanup. Re-run with CONFIRM_PROVIDER_INSTALLER_CLEANUP=true." >&2; exit 1)
 ifdef OC
 	oc -n $(AUTOSCALER_NAMESPACE) delete job $(AUTOSCALER_PROVIDER_INSTALLER_JOB) --ignore-not-found=true --wait=false --request-timeout=$(REQUEST_TIMEOUT)
-	oc -n capi-system delete deployment capi-manager capi-controller-manager oci-cluster-autoscaler --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
-	oc -n cluster-api-provider-oci-system delete deployment capoci-controller-manager --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
+	oc -n $(AUTOSCALER_CLUSTER_NAMESPACE) delete deployment capi-manager capi-controller-manager oci-cluster-autoscaler --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
+	oc -n $(AUTOSCALER_CLUSTER_NAMESPACE) delete deployment capoci-controller-manager --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc -n cert-manager delete deployment cert-manager cert-manager-cainjector cert-manager-webhook --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc delete validatingwebhookconfiguration capoci-validating-webhook-configuration capi-validating-webhook-configuration cert-manager-webhook --wait=false --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc delete mutatingwebhookconfiguration capoci-mutating-webhook-configuration capi-mutating-webhook-configuration cert-manager-webhook --wait=false --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc -n kube-system delete role cert-manager-cainjector:leaderelection cert-manager:leaderelection --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc -n kube-system delete rolebinding cert-manager-cainjector:leaderelection cert-manager:leaderelection --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	oc delete scc oci-capi --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
-	oc delete ns capi-system cluster-api-provider-oci-system cert-manager --wait=false --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
+	oc delete ns $(AUTOSCALER_CLUSTER_NAMESPACE) cert-manager --wait=false --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT)
 	@oc get crd -o name 2>/dev/null | grep -E '/((clusterclasses|clusters|machinedeployments|machinedrainrules|machinehealthchecks|machinepools|machines|machinesets)\.cluster\.x-k8s\.io|(clusterresourcesetbindings|clusterresourcesets)\.addons\.cluster\.x-k8s\.io|extensionconfigs\.runtime\.cluster\.x-k8s\.io|(ocicluster|ocimachine|ocimanaged|ocivirtual).*\.infrastructure\.cluster\.x-k8s\.io|(certificaterequests|certificates|clusterissuers|issuers)\.cert-manager\.io|(challenges|orders)\.acme\.cert-manager\.io)$$' | while read crd; do \
 		oc delete "$$crd" --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT); \
 	done || true
@@ -263,7 +264,7 @@ ifdef OC
 	@oc get clusterrolebinding -o name 2>/dev/null | grep -E '/(capi-|capoci-|cert-manager|oci-capi-operator-capoci-privileged-scc|oci-cluster-autoscaler)' | while read rolebinding; do \
 		oc delete "$$rolebinding" --ignore-not-found=true --request-timeout=$(REQUEST_TIMEOUT); \
 	done || true
-	@for ns in capi-system cluster-api-provider-oci-system cert-manager; do \
+	@for ns in $(AUTOSCALER_CLUSTER_NAMESPACE) cert-manager; do \
 		if oc get ns $$ns >/dev/null 2>&1; then \
 			oc patch ns $$ns --type=json -p '[{"op":"remove","path":"/spec/finalizers"}]' || true; \
 		fi; \

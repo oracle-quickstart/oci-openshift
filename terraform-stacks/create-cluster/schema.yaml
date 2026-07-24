@@ -1,6 +1,6 @@
-title: OpenShift Cluster on OCI - v1.5.1
+title: OpenShift Cluster on OCI - v1.6.0
 description: A Terraform Stack for creating resources required for installing OpenShift on OCI
-schemaVersion: 1.5.1
+schemaVersion: 1.6.0
 version: "20250916"
 locale: "en"
 
@@ -60,6 +60,7 @@ variableGroups:
       - autoscaler_node_image_source_uri
       - autoscaler_node_minimum_count
       - autoscaler_node_maximum_count
+      - autoscaler_pool_identifier
       - autoscaler_node_ocpus
       - autoscaler_node_memory
       - cluster_network_cidr_block
@@ -722,6 +723,19 @@ variables:
     required: true
     default: 5
     minimum: 0
+    visible:
+      eq:
+        - use_autoscaling_operator
+        - true
+
+  autoscaler_pool_identifier:
+    type: string
+    title: Autoscaler Pool Identifier
+    description: Optional lowercase identifier appended to the CAPI cluster name when naming autoscaler node pool resources. Use up to 5 lowercase letters, numbers, or hyphens, such as bm01, vm01, or gpu01. The value must start and end with a lowercase letter or number.
+    required: false
+    default: ""
+    maxLength: 5
+    pattern: "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
     visible:
       eq:
         - use_autoscaling_operator

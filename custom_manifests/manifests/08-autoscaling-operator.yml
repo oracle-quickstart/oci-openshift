@@ -2,10 +2,12 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: oci-capi-operator
+  name: oci-openshift-autoscaling-operator
   annotations:
     workload.openshift.io/allowed: management
   labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: oci-capi-autoscaling-operator
     pod-security.kubernetes.io/enforce: "privileged"
     pod-security.kubernetes.io/audit: "privileged"
     pod-security.kubernetes.io/warn: "privileged"
@@ -20,7 +22,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: oci-capi-operator-activator
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 
 ---
 
@@ -36,7 +38,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: oci-capi-operator-activator
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 
 ---
 
@@ -45,7 +47,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: oci-capi-operator-activate-after-install
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 spec:
   backoffLimit: 6
   ttlSecondsAfterFinished: 86400
@@ -93,11 +95,11 @@ spec:
           oc apply -f /runtime/runtime.yaml
           echo "Autoscaler runtime manifests applied; waiting for operator and providers to roll out"
 
-          oc rollout status deployment/oci-capi-operator-controller-manager -n oci-capi-operator --timeout=5m
-          oc wait --for=condition=complete job/oci-capi-operator-provider-installer -n oci-capi-operator --timeout=30m
-          oc rollout status deployment/capi-manager -n capi-system --timeout=10m
-          oc rollout status deployment/capoci-controller-manager -n cluster-api-provider-oci-system --timeout=10m
-          oc rollout status deployment/oci-cluster-autoscaler -n capi-system --timeout=10m
+          oc rollout status deployment/oci-capi-operator-controller-manager -n oci-openshift-autoscaling-operator --timeout=5m
+          oc wait --for=condition=complete job/oci-capi-operator-provider-installer -n oci-openshift-autoscaling-operator --timeout=30m
+          oc rollout status deployment/capi-manager -n oci-openshift-autoscaling-operator --timeout=10m
+          oc rollout status deployment/capoci-controller-manager -n oci-openshift-autoscaling-operator --timeout=10m
+          oc rollout status deployment/oci-cluster-autoscaler -n oci-openshift-autoscaling-operator --timeout=10m
 
           echo "Autoscaler stack is ready"
       volumes:

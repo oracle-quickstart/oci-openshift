@@ -11,20 +11,44 @@ storage:
     contents:
       inline: |
         #!/bin/bash
-        # Configure MTU=9000 on VLAN-backed bare metal interfaces
-        # This script runs at boot to ensure OVN-Kubernetes has sufficient MTU
-        # for its Geneve overlay (8900+ 58 bytes encapsulation = 8958 minimum)
-        #
-        # Problem: Bare metal shapes with VLAN-backed networking (like BM.Standard.E5.192,
-        #          BM.Standard.E6.256) default to MTU 1500 on RHCOS, causing OVN to fail.
-        #
-        # Solution: Dynamically detect VLAN interfaces and set MTU=9000 on parent+VLAN.
-        #          Uses ip commands directly (no NetworkManager dependency).
-        #          Includes guards to skip VM workers and already-configured nodes.
+        # Configure MTU=9000 on VLAN-backed bare metal interfaces.
+        # br-ex can be created after this boot-time service first runs, so the
+        # --wait-for-br-ex mode retries until OVN has created the bridge.
 
         set -euo pipefail
 
-        # Guard 1: No VLAN interfaces => no-op (virtual workers)
+        TARGET_MTU=9000
+        BR_EX_WAIT_ATTEMPTS="${BR_EX_WAIT_ATTEMPTS:-120}"
+        BR_EX_WAIT_SECONDS="${BR_EX_WAIT_SECONDS:-5}"
+        WAIT_FOR_BR_EX=false
+
+        if [ "${1:-}" = "--wait-for-br-ex" ]; then
+          WAIT_FOR_BR_EX=true
+        fi
+
+        set_link_mtu() {
+          local dev="$1"
+          local current_mtu
+
+          current_mtu=$(ip link show "$dev" 2>/dev/null | grep -oP 'mtu \K[0-9]+' || echo 0)
+          if [ "$current_mtu" -lt "$TARGET_MTU" ]; then
+            echo "[ACTION] Setting MTU=$TARGET_MTU on $dev"
+            ip link set dev "$dev" mtu "$TARGET_MTU"
+            echo "[SUCCESS] Set MTU=$TARGET_MTU on $dev"
+          else
+            echo "[INFO] $dev already has MTU >= $TARGET_MTU"
+          fi
+        }
+
+        set_ovs_mtu_request() {
+          local iface="$1"
+
+          if command -v ovs-vsctl &>/dev/null && ovs-vsctl --timeout=5 iface-to-br "$iface" &>/dev/null; then
+            ovs-vsctl --timeout=5 set Interface "$iface" mtu_request="$TARGET_MTU"
+            echo "[SUCCESS] Set OVS mtu_request=$TARGET_MTU on $iface"
+          fi
+        }
+
         vlans=$(ip -o link show type vlan | awk '{print $2}' | sed 's/:$//' | sed 's/@.*//' || true)
         if [ -z "$vlans" ]; then
           echo "[INFO] No VLAN interfaces found, exiting (no-op for VM workers)"
@@ -45,47 +69,40 @@ storage:
             continue
           fi
 
-          # Get current MTU from actual devices (not NetworkManager)
-          parent_mtu=$(ip link show "$parent" 2>/dev/null | grep -oP 'mtu \K[0-9]+' || echo 0)
-          vlan_mtu=$(ip link show "$vlan" 2>/dev/null | grep -oP 'mtu \K[0-9]+' || echo 0)
-
-          echo "[INFO] $parent: MTU=$parent_mtu, $vlan: MTU=$vlan_mtu"
-
-          # Guard 2: Already jumbo => no-op (idempotent)
-          if [ "$parent_mtu" -ge 9000 ] && [ "$vlan_mtu" -ge 9000 ]; then
-            echo "[INFO] $parent and $vlan already have MTU >= 9000, no changes needed"
-            continue
-          fi
-
-          echo "[ACTION] Setting MTU=9000 on $parent and $vlan"
-
-          # Set MTU on parent device (if needed)
-          if [ "$parent_mtu" -lt 9000 ]; then
-            ip link set dev "$parent" mtu 9000
-            echo "[SUCCESS] Set MTU=9000 on $parent"
-          fi
-
-          # Set MTU on VLAN device (if needed)
-          if [ "$vlan_mtu" -lt 9000 ]; then
-            ip link set dev "$vlan" mtu 9000
-            echo "[SUCCESS] Set MTU=9000 on $vlan"
-          fi
+          set_link_mtu "$parent"
+          set_link_mtu "$vlan"
+          set_ovs_mtu_request "$vlan"
 
           echo "[SUCCESS] MTU configuration complete for $parent and $vlan"
         done
 
-        # Also set br-ex MTU if it exists (OVS bridge created by ovs-configuration.service)
-        # This handles the case where the script runs after OVS has started
-        if ip link show br-ex &>/dev/null; then
-          br_ex_mtu=$(ip link show br-ex 2>/dev/null | grep -oP 'mtu \K[0-9]+' || echo 0)
-          if [ "$br_ex_mtu" -lt 9000 ]; then
-            echo "[ACTION] Setting MTU=9000 on br-ex"
-            if command -v ovs-vsctl &>/dev/null; then
-              ovs-vsctl set Interface br-ex mtu_request=9000 && echo "[SUCCESS] Set MTU=9000 on br-ex"
-            fi
-          else
-            echo "[INFO] br-ex already has MTU >= 9000"
+        configure_br_ex() {
+          if ! ip link show br-ex &>/dev/null; then
+            return 1
           fi
+
+          set_link_mtu br-ex
+          set_ovs_mtu_request br-ex
+          return 0
+        }
+
+        if [ "$WAIT_FOR_BR_EX" = true ]; then
+          attempt=1
+          while [ "$attempt" -le "$BR_EX_WAIT_ATTEMPTS" ]; do
+            if configure_br_ex; then
+              echo "[SUCCESS] br-ex MTU configuration complete"
+              exit 0
+            fi
+            echo "[INFO] br-ex not found yet, retrying ($attempt/$BR_EX_WAIT_ATTEMPTS)"
+            attempt=$((attempt + 1))
+            sleep "$BR_EX_WAIT_SECONDS"
+          done
+          echo "[WARN] br-ex was not found before retry timeout"
+          exit 0
+        fi
+
+        if ! configure_br_ex; then
+          echo "[INFO] br-ex does not exist yet; bm-mtu-configure-br-ex.service will retry later"
         fi
 
         echo "[INFO] bm-mtu-configure.sh completed successfully"
@@ -106,6 +123,24 @@ systemd:
       Type=oneshot
       ExecStart=/usr/local/sbin/bm-mtu-configure.sh
       RemainAfterExit=yes
+      StandardOutput=journal+console
+      StandardError=journal+console
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: bm-mtu-configure-br-ex.service
+    enabled: true
+    contents: |
+      [Unit]
+      Description=Retry MTU=9000 on OVN br-ex after it is created
+      Documentation=https://github.com/oracle-quickstart/oci-openshift/issues/78
+      After=kubelet.service crio.service ovs-configuration.service bm-mtu-configure.service
+      Wants=kubelet.service crio.service
+      ConditionPathExists=/usr/local/sbin/bm-mtu-configure.sh
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/sbin/bm-mtu-configure.sh --wait-for-br-ex
       StandardOutput=journal+console
       StandardError=journal+console
 

@@ -138,6 +138,15 @@ variable "autoscaler_node_maximum_count" {
   type = number
 }
 
+variable "autoscaler_pool_identifier" {
+  type = string
+
+  validation {
+    condition     = var.autoscaler_pool_identifier == "" || can(regex("^[a-z0-9]([-a-z0-9]{0,3}[a-z0-9])?$", var.autoscaler_pool_identifier))
+    error_message = "The autoscaler_pool_identifier value must be empty or up to 5 characters containing lowercase letters, numbers, and hyphens, and must start and end with a lowercase letter or number."
+  }
+}
+
 variable "autoscaler_node_ocpus" {
   type = number
 }

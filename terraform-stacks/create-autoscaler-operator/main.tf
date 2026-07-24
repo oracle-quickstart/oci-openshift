@@ -62,10 +62,12 @@ module "autoscaling_manifest" {
   op_network_security_group_cluster_lb_nsg = module.discovery.lb_nsg_id
   op_lb_openshift_api_lb                   = module.discovery.api_lb_id
   op_lb_openshift_api_lb_ip_addr           = module.discovery.api_lb_ip_addr
+  cluster_name                             = var.cluster_name
 
   autoscaler_node_shape             = var.autoscaler_node_shape
   autoscaler_node_minimum_count     = var.autoscaler_node_minimum_count
   autoscaler_node_maximum_count     = var.autoscaler_node_maximum_count
+  autoscaler_pool_identifier        = var.autoscaler_pool_identifier
   autoscaler_node_ocpus             = var.autoscaler_node_ocpus
   autoscaler_node_memory            = var.autoscaler_node_memory
   cluster_network_cidr_block        = var.cluster_network_cidr_block

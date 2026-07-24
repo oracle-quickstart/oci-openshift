@@ -51,6 +51,10 @@ resource "oci_core_instance" "control_plane_node" {
   metadata = {
     user_data = base64encode(file("${path.module}/userdata/iscsi-oci-configure-secondary-nic.sh"))
   }
+
+  instance_options {
+    are_legacy_imds_endpoints_disabled = true
+  }
 }
 
 # compute nodes
@@ -96,4 +100,9 @@ resource "oci_core_instance" "compute_node" {
   metadata = {
     user_data = base64encode(file("${path.module}/userdata/iscsi-oci-configure-secondary-nic.sh"))
   }
+
+  instance_options {
+    are_legacy_imds_endpoints_disabled = true
+  }
+
 }

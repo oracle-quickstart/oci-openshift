@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# Add OCI bare-metal iSCSI boot kernel args to an RHCOS qcow2 image.
+# Copyright (c) 2025, 2026, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/.
+
+# patch-rhcos-iscsi-karg.sh
+# Add iSCSI/network kernel args to an RHCOS qcow2 image (offline) using OSTree admin tools.
 
 set -euo pipefail
 
@@ -10,20 +14,18 @@ fi
 
 IN_IMG="$1"
 OUT_IMG="${2:-${IN_IMG%.qcow2}-iscsi.qcow2}"
-NBD_DEV="${NBD_DEV:-/dev/nbd0}"
-MNT_DIR="${MNT_DIR:-/mnt/rhcos-img}"
 
-for cmd in qemu-nbd blkid mount umount ostree modprobe; do
-  command -v "$cmd" >/dev/null 2>&1 || {
-    echo "Missing required command: $cmd"
-    exit 1
-  }
+for cmd in qemu-nbd blkid mount umount ostree; do
+  command -v "$cmd" >/dev/null 2>&1 || { echo "Missing required command: $cmd"; exit 1; }
 done
 
 if [[ $EUID -ne 0 ]]; then
-  echo "Run as root, for example: sudo $0 <input.qcow2> [output.qcow2]"
+  echo "Run as root (or via sudo)."
   exit 1
 fi
+
+NBD_DEV="/dev/nbd0"
+MNT_DIR="/mnt/rhcos-img"
 
 cleanup() {
   set +e
@@ -34,13 +36,14 @@ cleanup() {
 }
 trap cleanup EXIT
 
-echo "Copying image to $OUT_IMG"
+echo "Copying image -> $OUT_IMG"
 cp --reflink=auto "$IN_IMG" "$OUT_IMG"
 
 modprobe nbd max_part=16
 qemu-nbd -d "$NBD_DEV" >/dev/null 2>&1 || true
 qemu-nbd --connect="$NBD_DEV" "$OUT_IMG"
 
+# Wait for partition nodes
 for _ in {1..20}; do
   ls "${NBD_DEV}"p* >/dev/null 2>&1 && break
   sleep 0.5
@@ -63,7 +66,7 @@ if [[ -n "${EFI_PART:-}" ]]; then
   mount "$EFI_PART" "$MNT_DIR/boot/efi"
 fi
 
-echo "Setting iSCSI kernel args in OSTree deployment"
+echo "Setting kargs in OSTree deployment..."
 if ! ostree admin --sysroot="$MNT_DIR" instutil set-kargs --merge \
   --append=rd.neednet=1 \
   --append=ip=ibft \
@@ -72,23 +75,23 @@ if ! ostree admin --sysroot="$MNT_DIR" instutil set-kargs --merge \
   --append=rd.iscsi.ibft=1 \
   --append=rd.net.timeout.dhcp=30 \
   --append=rd.net.timeout.carrier=30 \
-  --append=ip=ens300f0np0:dhcp \
   --append=rd.iscsi.param=node.conn[0].timeo.noop_out_interval=30 \
-  --append=rd.iscsi.param=node.conn[0].timeo.noop_out_timeout=60 \
-  --append=rd.iscsi.param=node.session.timeo.replacement_timeout=120 \
+  --append=rd.iscsi.param=node.conn[0].timeo.noop_out_timeout=180 \
+  --append=rd.iscsi.param=node.session.timeo.replacement_timeout=600 \
   --append=rd.retry=10 \
   --append=rootwait \
   --append=rd.debug; then
+  # Fallback syntax on older ostree
   ostree admin --sysroot="$MNT_DIR" instutil set-kargs --merge \
     rd.neednet=1 ip=ibft rd.iscsi=1 rd.iscsi.firmware=1 rd.iscsi.ibft=1 \
-    rd.net.timeout.dhcp=30 rd.net.timeout.carrier=30 ip=ens300f0np0:dhcp \
+    rd.net.timeout.dhcp=30 rd.net.timeout.carrier=30 \
     'rd.iscsi.param=node.conn[0].timeo.noop_out_interval=30' \
-    'rd.iscsi.param=node.conn[0].timeo.noop_out_timeout=60' \
-    'rd.iscsi.param=node.session.timeo.replacement_timeout=120' \
+    'rd.iscsi.param=node.conn[0].timeo.noop_out_timeout=180' \
+    'rd.iscsi.param=node.session.timeo.replacement_timeout=600' \
     rd.retry=10 rootwait rd.debug
 fi
 
-echo "Verifying iSCSI kernel args"
+echo "Verifying..."
 grep -R --line-number 'rd.neednet=1' "$MNT_DIR/boot/loader/entries"/*.conf
 grep -R --line-number 'ip=ibft' "$MNT_DIR/boot/loader/entries"/*.conf
 grep -R --line-number 'rd.iscsi=1' "$MNT_DIR/boot/loader/entries"/*.conf
@@ -96,13 +99,16 @@ grep -R --line-number 'rd.iscsi.firmware=1' "$MNT_DIR/boot/loader/entries"/*.con
 grep -R --line-number 'rd.iscsi.ibft=1' "$MNT_DIR/boot/loader/entries"/*.conf
 grep -R --line-number 'rd.net.timeout.dhcp=30' "$MNT_DIR/boot/loader/entries"/*.conf
 grep -R --line-number 'rd.net.timeout.carrier=30' "$MNT_DIR/boot/loader/entries"/*.conf
-grep -R --line-number 'ip=ens300f0np0:dhcp' "$MNT_DIR/boot/loader/entries"/*.conf
+if grep -R --line-number 'ip=ens300f0np0:dhcp' "$MNT_DIR/boot/loader/entries"/*.conf; then
+  echo "Unexpected duplicate explicit NIC DHCP karg found: ip=ens300f0np0:dhcp"
+  exit 1
+fi
 grep -R --line-number 'rd.iscsi.param=node.conn\[0\].timeo.noop_out_interval=30' "$MNT_DIR/boot/loader/entries"/*.conf
-grep -R --line-number 'rd.iscsi.param=node.conn\[0\].timeo.noop_out_timeout=60' "$MNT_DIR/boot/loader/entries"/*.conf
-grep -R --line-number 'rd.iscsi.param=node.session.timeo.replacement_timeout=120' "$MNT_DIR/boot/loader/entries"/*.conf
+grep -R --line-number 'rd.iscsi.param=node.conn\[0\].timeo.noop_out_timeout=180' "$MNT_DIR/boot/loader/entries"/*.conf
+grep -R --line-number 'rd.iscsi.param=node.session.timeo.replacement_timeout=600' "$MNT_DIR/boot/loader/entries"/*.conf
 grep -R --line-number 'rd.retry=10' "$MNT_DIR/boot/loader/entries"/*.conf
 grep -R --line-number 'rootwait' "$MNT_DIR/boot/loader/entries"/*.conf
 grep -R --line-number 'rd.debug' "$MNT_DIR/boot/loader/entries"/*.conf
 
 sync
-echo "Done: $OUT_IMG"
+echo "Done: $OUT_IMG now has iBFT/iSCSI boot kargs and iSCSI timeout kargs."

@@ -314,6 +314,7 @@ module "manifests" {
   autoscaler_node_shape             = var.autoscaler_node_shape
   autoscaler_node_minimum_count     = var.autoscaler_node_minimum_count
   autoscaler_node_maximum_count     = var.autoscaler_node_maximum_count
+  autoscaler_pool_identifier        = var.autoscaler_pool_identifier
   autoscaler_node_ocpus             = var.autoscaler_node_ocpus
   autoscaler_node_memory            = var.autoscaler_node_memory
   autoscaler_defined_tags_namespace = module.tags.op_openshift_tag_namespace

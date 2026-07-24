@@ -2,10 +2,12 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: oci-capi-operator
+  name: oci-openshift-autoscaling-operator
   annotations:
     workload.openshift.io/allowed: management
   labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: oci-capi-autoscaling-operator
     pod-security.kubernetes.io/enforce: "privileged"
     pod-security.kubernetes.io/audit: "privileged"
     pod-security.kubernetes.io/warn: "privileged"
@@ -20,8 +22,11 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: oci-capi-autoscaling-operator
   name: oci-capi-operator-controller-manager
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 
 ---
 
@@ -32,12 +37,14 @@ metadata:
   name: oci-capi-operator-manager-role
 rules:
 - apiGroups:
-  - addons.cluster.x-k8s.io
-  - bootstrap.cluster.x-k8s.io
-  - controlplane.cluster.x-k8s.io
-  - infrastructure.cluster.x-k8s.io
+  - ""
   resources:
-  - '*'
+  - configmaps
+  - events
+  - namespaces
+  - secrets
+  - serviceaccounts
+  - services
   verbs:
   - create
   - delete
@@ -46,6 +53,20 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts/token
+  verbs:
+  - create
 - apiGroups:
   - admissionregistration.k8s.io
   resources:
@@ -61,12 +82,17 @@ rules:
   - watch
 - apiGroups:
   - apiextensions.k8s.io
-  - coordination.k8s.io
-  - security.openshift.io
   resources:
   - customresourcedefinitions
-  - leases
-  - securitycontextconstraints
+  verbs:
+  - create
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - deployments
   verbs:
   - create
   - delete
@@ -116,15 +142,6 @@ rules:
 - apiGroups:
   - cluster.x-k8s.io
   resources:
-  - '*/finalizers'
-  - '*/status'
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - cluster.x-k8s.io
-  resources:
   - clusterclasses
   - clusters
   - clusters/finalizers
@@ -157,14 +174,11 @@ rules:
   - list
   - watch
 - apiGroups:
-  - ""
+  - infrastructure.cluster.x-k8s.io
   resources:
-  - configmaps
-  - events
-  - namespaces
-  - secrets
-  - serviceaccounts
-  - services
+  - ociclusteridentities
+  - ociclusters
+  - ocimachinetemplates
   verbs:
   - create
   - delete
@@ -176,13 +190,10 @@ rules:
 - apiGroups:
   - infrastructure.cluster.x-k8s.io
   resources:
-  - ocicluster/status
   - ocimachines
   verbs:
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - ipam.cluster.x-k8s.io
@@ -223,14 +234,29 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 ---
 
 # 04-leader-election-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: oci-capi-autoscaling-operator
   name: oci-capi-operator-leader-election-role
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 rules:
 - apiGroups: [""]
   resources: [configmaps]
@@ -259,10 +285,47 @@ rules:
   - patch
 
 ---
+
+# 04a-metrics-auth-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: oci-capi-operator-metrics-auth-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+
+---
+
+# 04b-metrics-reader-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: oci-capi-operator-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+
+---
 # 05-editor-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: oci-capi-autoscaling-operator
   name: oci-capi-operator-ociclusterautoscaler-editor-role
 rules:
 - apiGroups:
@@ -291,7 +354,7 @@ kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: oci-capi-operator
+    app.kubernetes.io/name: oci-capi-autoscaling-operator
   name: oci-capi-operator-ociclusterautoscaler-viewer-role
 rules:
 - apiGroups:
@@ -314,8 +377,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: oci-capi-autoscaling-operator
   name: oci-capi-operator-leader-election-rolebinding
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -323,7 +389,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: oci-capi-operator-controller-manager
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 
 ---
 
@@ -331,6 +397,9 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: oci-capi-autoscaling-operator
   name: oci-capi-operator-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -339,7 +408,23 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: oci-capi-operator-controller-manager
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
+
+---
+
+# 08a-metrics-auth-rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: oci-capi-operator-metrics-auth-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: oci-capi-operator-metrics-auth-role
+subjects:
+- kind: ServiceAccount
+  name: oci-capi-operator-controller-manager
+  namespace: oci-openshift-autoscaling-operator
 
 ---
 
@@ -355,7 +440,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: oci-capi-operator-controller-manager
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 
 ---
 
@@ -373,10 +458,10 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: capoci-controller-manager
-  namespace: cluster-api-provider-oci-system
+  namespace: oci-openshift-autoscaling-operator
 - kind: ServiceAccount
   name: capi-manager
-  namespace: capi-system
+  namespace: oci-openshift-autoscaling-operator
 
 ---
 
@@ -386,7 +471,7 @@ kind: CustomResourceDefinition
 metadata:
   name: ociclusterautoscalers.capi.openshift.io
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.20.0
 spec:
   group: capi.openshift.io
   names:
@@ -399,8 +484,10 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: OCIClusterAutoscaler is the Schema for the ociclusterautoscalers
-          API
+        description: |-
+          OCIClusterAutoscaler is the Schema for the ociclusterautoscalers API.
+          The controller manages singleton cluster-scoped resources, so only one
+          OCIClusterAutoscaler may actively reconcile in a cluster.
         properties:
           apiVersion:
             description: |-
@@ -433,6 +520,7 @@ spec:
                     description: maxNodes is the maximum number of nodes in the autoscaling
                       group
                     format: int32
+                    minimum: 0
                     type: integer
                   minNodes:
                     description: minNodes is the minimum number of nodes in the autoscaling
@@ -440,6 +528,16 @@ spec:
                     format: int32
                     minimum: 0
                     type: integer
+                  poolIdentifier:
+                    description: |-
+                      PoolIdentifier is an optional lowercase identifier appended to the CAPI cluster name
+                      when naming autoscaler node pool resources.
+                    maxLength: 5
+                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                    type: string
+                    x-kubernetes-validations:
+                    - message: poolIdentifier is immutable
+                      rule: self == oldSelf
                   shape:
                     description: nodeShape is the OCI compute shape for autoscaling
                       nodes
@@ -450,22 +548,30 @@ spec:
                       cpus:
                         description: CPUs is the number of OCPUs
                         format: int32
+                        minimum: 1
                         type: integer
                       memory:
                         description: Memory is the amount of memory in GB
                         format: int32
+                        minimum: 1
                         type: integer
                     type: object
                 type: object
+                x-kubernetes-validations:
+                - message: minNodes must be less than or equal to maxNodes
+                  rule: '!has(self.minNodes) || !has(self.maxNodes) || self.minNodes
+                    <= self.maxNodes'
               capi:
                 description: CAPI deployment configuration
                 properties:
                   clusterName:
                     description: ClusterName is the name of the CAPI cluster
+                    maxLength: 63
+                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                     type: string
-                  namespace:
-                    description: Namespace where CAPI resources will be created
-                    type: string
+                    x-kubernetes-validations:
+                    - message: clusterName is immutable
+                      rule: self == oldSelf
                 type: object
               clusterAutoscaler:
                 description: ClusterAutoscaler deployment configuration
@@ -486,11 +592,12 @@ spec:
                     type: boolean
                   name:
                     description: Name is the name of the cluster-autoscaler deployment
+                    maxLength: 63
+                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                     type: string
-                  namespace:
-                    description: Namespace is the namespace where the cluster-autoscaler
-                      deployment will be installed
-                    type: string
+                    x-kubernetes-validations:
+                    - message: name is immutable
+                      rule: self == oldSelf
                   repositoryURL:
                     description: RepositoryURL is the URL for the helm chart of the
                       cluster-autoscaler
@@ -498,6 +605,8 @@ spec:
                   serviceAccountName:
                     description: ServiceAccountName is the name of the service account
                       the cluster-autoscaler deployment will use
+                    maxLength: 63
+                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                     type: string
                   version:
                     description: Version is the helm chart version of the cluster-autoscaler
@@ -507,6 +616,13 @@ spec:
             required:
             - autoscaling
             type: object
+            x-kubernetes-validations:
+            - message: spec.capi.clusterName and spec.autoscaling.poolIdentifier must
+                produce a node pool name no longer than 51 characters
+              rule: '!has(self.capi) || !has(self.capi.clusterName) || size(self.capi.clusterName)
+                == 0 || ((!has(self.autoscaling.poolIdentifier) || size(self.autoscaling.poolIdentifier)
+                == 0) ? size(self.capi.clusterName) <= 51 : size(self.capi.clusterName)
+                + size(self.autoscaling.poolIdentifier) + 1 <= 51)'
           status:
             description: OCIClusterAutoscalerStatus defines the observed state of
               OCIClusterAutoscaler
@@ -519,8 +635,11 @@ spec:
                   is deployed
                 type: boolean
               conditions:
-                description: Conditions represent the latest available observations
-                  of the autoscaler's current state
+                description: |-
+                  Conditions represent the latest available observations of the autoscaler's current state.
+                  Ready reflects the steady-state install/runtime path; CleanupSucceeded reports cleanup separately.
+                  Stable condition types are Ready, PolicyAccepted, ProvidersReady, AutoscalerReady,
+                  ScalingResourcesReady, and CleanupSucceeded.
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.
@@ -576,6 +695,9 @@ spec:
                   - type
                   type: object
                 type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
               observedGeneration:
                 description: ObservedGeneration is the last generation observed by
                   the controller
@@ -593,13 +715,26 @@ spec:
 
 ---
 
+# 10a-capoci-auth-credentials-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oci-capi-operator-capoci-auth-credentials
+  namespace: oci-openshift-autoscaling-operator
+type: Opaque
+data: {}
+
+---
+
 # 11-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: oci-capi-operator-controller-manager
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
   labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: oci-capi-autoscaling-operator
     control-plane: controller-manager
 spec:
   replicas: 1
@@ -611,33 +746,73 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
+        app.kubernetes.io/name: oci-capi-autoscaling-operator
         control-plane: controller-manager
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+                - arm64
       containers:
       - args:
         - run
         - --leader-elect
-        - --health-probe-bind-address=:8081
+        - --metrics-bind-address=:28080
+        - --health-probe-bind-address=:28081
         command:
         - /manager
         env:
-        - name: OCI_USE_INSTANCE_PRINCIPAL
-          value: "true"
+        - name: HOME
+          value: /tmp
+        - name: XDG_CACHE_HOME
+          value: /tmp/.cache
+        - name: OCI_CREDENTIALS_FINGERPRINT
+          valueFrom:
+            secretKeyRef:
+              key: fingerprint
+              name: oci-capi-operator-capoci-auth-credentials
+              optional: true
+        - name: OCI_CREDENTIALS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: privateKey
+              name: oci-capi-operator-capoci-auth-credentials
+              optional: true
+        - name: OCI_CREDENTIALS_PASSPHRASE
+          valueFrom:
+            secretKeyRef:
+              key: passphrase
+              name: oci-capi-operator-capoci-auth-credentials
+              optional: true
+        - name: OPERATOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         envFrom:
         - configMapRef:
             name: oci-capi-operator-config
-        image: ghcr.io/yutpeng/openshift-oracle-capi-autoscaling-dev-preview:v1.19
+        image: ghcr.io/oracle-samples/openshift-oracle-capi-autoscaling:latest
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 8081
+            port: 28081
           initialDelaySeconds: 15
           periodSeconds: 20
         name: manager
         readinessProbe:
           httpGet:
             path: /readyz
-            port: 8081
+            port: 28081
           initialDelaySeconds: 5
           periodSeconds: 10
         resources:
@@ -652,12 +827,21 @@ spec:
           capabilities:
             drop:
             - ALL
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
       initContainers:
       - args:
         - init
         command:
         - /manager
-        image: ghcr.io/yutpeng/openshift-oracle-capi-autoscaling-dev-preview:v1.19
+        image: ghcr.io/oracle-samples/openshift-oracle-capi-autoscaling:latest
+        env:
+        - name: HOME
+          value: /tmp
+        - name: XDG_CACHE_HOME
+          value: /tmp/.cache
         envFrom:
         - configMapRef:
             name: oci-capi-operator-config
@@ -667,9 +851,18 @@ spec:
           capabilities:
             drop:
             - ALL
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
       securityContext:
         runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: oci-capi-operator-controller-manager
       terminationGracePeriodSeconds: 10
+      volumes:
+      - emptyDir: {}
+        name: tmp
 
 ---

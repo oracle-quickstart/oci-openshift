@@ -11,11 +11,17 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: oci-capi-operator-config
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 data:
   CAPI_VERSION: "${var.capi_version}"
   CAPOCI_VERSION: "${var.capoci_version}"
   CERT_MANAGER_VERSION: "${local.cert_manager_version}"
+  CAPI_PROVIDER_NAMESPACE: "oci-openshift-autoscaling-operator"
+  CAPOCI_PROVIDER_NAMESPACE: "oci-openshift-autoscaling-operator"
+  MANAGED_RESOURCE_NAMESPACE: "oci-openshift-autoscaling-operator"
+  AUTOSCALER_NAMESPACE: "oci-openshift-autoscaling-operator"
+  AUTOSCALER_DISCOVERY_NAMESPACE: "oci-openshift-autoscaling-operator"
+  CSR_MACHINE_NAMESPACE: "oci-openshift-autoscaling-operator"
   API_SERVER_LOAD_BALANCER_ID: "${var.op_lb_openshift_api_lb}"
   AUTOSCALER_CPUS: "${var.autoscaler_node_ocpus}"
   AUTOSCALER_DEFINED_TAGS_NAMESPACE: "${var.autoscaler_defined_tags_namespace}"
@@ -33,10 +39,12 @@ data:
   SERVICE_NETWORK_CIDR_BLOCK: "${var.service_network_cidr_block}"
   OCI_REGION: "${var.region}"
   OCI_TENANCY_ID: "${var.tenancy_ocid}"
+  OCI_USER_ID: ""
   OCI_USE_INSTANCE_PRINCIPAL: "true"
   SUBNET_ID: "${var.op_subnet_private_ocp}"
   OCP_SUBNET_ID: "${var.op_subnet_private_ocp}"
   OCP_SUBNET_NAME: "${var.ocp_subnet_name}"
+  COMPUTE_NSG_NAME: "ComputeNSG"
   VCN_ID: "${var.op_vcn_id}"
 EOT
 
@@ -46,16 +54,26 @@ apiVersion: capi.openshift.io/v1alpha1
 kind: OCIClusterAutoscaler
 metadata:
   name: ociclusterautoscaler
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 spec:
   autoscaling:
     imageId: "${var.autoscaler_node_image_id != null ? var.autoscaler_node_image_id : ""}"
     maxNodes: ${var.autoscaler_node_maximum_count}
     minNodes: ${var.autoscaler_node_minimum_count}
+%{if var.autoscaler_pool_identifier != ""}
+    poolIdentifier: "${var.autoscaler_pool_identifier}"
+%{endif}
     shape: "${var.autoscaler_node_shape}"
     shapeConfig:
       cpus: ${var.autoscaler_node_ocpus}
       memory: ${var.autoscaler_node_memory}
+  clusterAutoscaler:
+    repositoryURL: https://kubernetes.github.io/autoscaler
+    name: oci-cluster-autoscaler
+    serviceAccountName: oci-cluster-autoscaler
+    cloudProvider: clusterapi
+    createRBAC: true
+    createServiceAccount: true
 EOT
 
   autoscaling_operator_provider_installer = <<EOT
@@ -64,7 +82,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: oci-capi-operator-provider-installer
-  namespace: oci-capi-operator
+  namespace: oci-openshift-autoscaling-operator
 spec:
   backoffLimit: 4
   ttlSecondsAfterFinished: 86400
@@ -100,16 +118,22 @@ spec:
             -e 's|$${EXP_MACHINE_SET_PREFLIGHT_CHECKS:=true}|true|g' \
             -e 's|$${EXP_MACHINE_WAITFORVOLUMEDETACH_CONSIDER_VOLUMEATTACHMENTS:=true}|true|g' \
             -e 's|$${EXP_PRIORITY_QUEUE:=false}|false|g' \
-            -e 's|$${EXP_RECONCILER_RATE_LIMITING:=false}|false|g' \
+            -e 's|$${EXP_RECONCILER_RATE_LIMITING:=false}|true|g' \
             -e 's|$${EXP_IN_PLACE_UPDATES:=false}|false|g' \
             -e 's|$${EXP_MACHINE_TAINT_PROPAGATION:=false}|false|g' \
+            -e 's|capi-system|oci-openshift-autoscaling-operator|g' \
             -e 's|name: capi-controller-manager|name: capi-manager|g' \
             /tmp/capi-core-components.yaml | oc apply -f -
+          for crd in $(oc get crd -l cluster.x-k8s.io/provider=cluster-api -o name); do
+            oc annotate "$crd" service.beta.openshift.io/inject-cabundle=true --overwrite
+            oc patch "$crd" --type=merge \
+              -p '{"spec":{"conversion":{"webhook":{"clientConfig":{"service":{"namespace":"oci-openshift-autoscaling-operator"}}}}}}'
+          done
           oc patch clusterrole capi-manager-role --type=json -p='[
             {"op":"add","path":"/rules/-","value":{"apiGroups":[""],"resources":["pods"],"verbs":["get"]}},
             {"op":"add","path":"/rules/-","value":{"apiGroups":[""],"resources":["nodes"],"verbs":["get","list","watch","patch","update"]}}
           ]'
-          oc rollout status deployment/capi-manager -n capi-system --timeout=10m
+          oc rollout status deployment/capi-manager -n oci-openshift-autoscaling-operator --timeout=10m
 
           echo "Creating OCIClusterAutoscaler custom resource"
           oc wait --for=condition=Established crd/ociclusterautoscalers.capi.openshift.io --timeout=5m
@@ -119,7 +143,7 @@ spec:
 
           echo "Waiting for CAPOCI auth configuration"
           for i in $(seq 1 120); do
-            if oc get secret capoci-auth-config -n cluster-api-provider-oci-system >/dev/null 2>&1; then
+            if oc get secret capoci-auth-config -n oci-openshift-autoscaling-operator >/dev/null 2>&1; then
               break
             fi
             if [ "$i" = "120" ]; then
@@ -137,6 +161,7 @@ spec:
             -e 's|$${LOG_FORMAT:=text}|text|g' \
             -e 's|$${INIT_OCI_CLIENTS_ON_STARTUP:=true}|false|g' \
             -e 's|$${ENABLE_INSTANCE_METADATA_SERVICE_LOOKUP:=false}|true|g' \
+            -e 's|cluster-api-provider-oci-system|oci-openshift-autoscaling-operator|g' \
             /tmp/capoci-infrastructure-components.yaml |
             awk '
               BEGIN { doc = "" }
@@ -154,8 +179,8 @@ spec:
                 }
               }
             ' | oc apply -f -
-          oc patch deployment/capoci-controller-manager -n cluster-api-provider-oci-system --type=merge -p '{"spec":{"template":{"spec":{"hostNetwork":true,"dnsPolicy":"ClusterFirstWithHostNet"}}}}'
-          oc rollout status deployment/capoci-controller-manager -n cluster-api-provider-oci-system --timeout=10m
+          oc patch deployment/capoci-controller-manager -n oci-openshift-autoscaling-operator --type=merge -p '{"spec":{"template":{"spec":{"hostNetwork":true,"dnsPolicy":"ClusterFirstWithHostNet"}}}}'
+          oc rollout status deployment/capoci-controller-manager -n oci-openshift-autoscaling-operator --timeout=10m
 EOT
 
   autoscaling_operator_runtime_bundle = join("\n---\n", [
@@ -172,5 +197,10 @@ output "autoscaling_manifest" {
   precondition {
     condition     = var.autoscaler_node_minimum_count >= 0 && var.autoscaler_node_maximum_count >= var.autoscaler_node_minimum_count
     error_message = "The autoscaler_node_minimum_count value must be greater than or equal to 0, and autoscaler_node_maximum_count must be greater than or equal to autoscaler_node_minimum_count."
+  }
+
+  precondition {
+    condition     = length(var.cluster_name) + 6 + (var.autoscaler_pool_identifier == "" ? 0 : 1 + length(var.autoscaler_pool_identifier)) <= 51
+    error_message = "The generated autoscaler node pool name must be no longer than 51 characters. Shorten cluster_name or autoscaler_pool_identifier."
   }
 }

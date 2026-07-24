@@ -33,3 +33,13 @@ data "oci_load_balancer_backends" "openshift_apps_ingress_http" {
   backendset_name  = "openshift_cluster_ingress_http"
   load_balancer_id = data.oci_load_balancer_load_balancers.openshift_apps_lb.load_balancers[0].id
 }
+
+data "oci_core_instances" "cluster_nodes" {
+  compartment_id = var.compartment_ocid
+
+  filter {
+    name   = "display_name"
+    values = [format("^%s-(cp|compute)-[0-9]+$", var.cluster_name)]
+    regex  = true
+  }
+}

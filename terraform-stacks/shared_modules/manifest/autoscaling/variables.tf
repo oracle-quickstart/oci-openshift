@@ -6,6 +6,7 @@ variable "op_subnet_private_ocp" { type = string }
 variable "op_network_security_group_cluster_lb_nsg" { type = string }
 variable "op_lb_openshift_api_lb" { type = string }
 variable "op_lb_openshift_api_lb_ip_addr" { type = string }
+variable "cluster_name" { type = string }
 variable "capi_version" {
   type    = string
   default = "v1.12.3"
@@ -38,6 +39,14 @@ variable "ocp_subnet_name" { type = string }
 variable "autoscaler_node_shape" { type = string }
 variable "autoscaler_node_minimum_count" { type = number }
 variable "autoscaler_node_maximum_count" { type = number }
+variable "autoscaler_pool_identifier" {
+  type = string
+
+  validation {
+    condition     = var.autoscaler_pool_identifier == "" || can(regex("^[a-z0-9]([-a-z0-9]{0,3}[a-z0-9])?$", var.autoscaler_pool_identifier))
+    error_message = "The autoscaler_pool_identifier value must be empty or up to 5 characters containing lowercase letters, numbers, and hyphens, and must start and end with a lowercase letter or number."
+  }
+}
 variable "autoscaler_node_ocpus" { type = number }
 variable "autoscaler_node_memory" { type = number }
 variable "autoscaler_node_image_id" { type = string }
