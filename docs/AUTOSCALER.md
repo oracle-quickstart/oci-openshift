@@ -1,6 +1,6 @@
-# OCI OpenShift Autoscaler Beta Guide
+# OCI OpenShift Autoscaler Guide
 
-The OCI OpenShift Autoscaler is available as a beta feature for OpenShift on OCI. Use this guide for Day 0 installation-time enablement and Day 1 post-install enablement.
+The OCI OpenShift Autoscaler is available for OpenShift on OCI. Use this guide for Day 0 installation-time enablement and Day 1 post-install enablement.
 
 ## Prerequisites
 
@@ -8,6 +8,7 @@ The OCI OpenShift Autoscaler is available as a beta feature for OpenShift on OCI
 - OCI permissions to upload to Object Storage and create a read PAR URL.
 - OCI permissions to import custom images.
 - OCI permissions to read the VCN, subnets, load balancers, and network security groups used by the cluster.
+- The `create-cluster` stack for Day 0, or the `create-autoscaler-operator` stack for Day 1.
 
 ## Prepare the Autoscaling RHCOS Image
 

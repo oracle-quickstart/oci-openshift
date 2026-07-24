@@ -484,7 +484,7 @@ variable "compute_capacity_reservation" {
 }
 variable "use_autoscaling_operator" {
   type        = bool
-  description = "Enable the Oracle Cloud Autoscaler (beta). When enabled, node autoscaling will be managed by the Oracle Cloud Autoscaler Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands."
+  description = "Enable the Oracle Cloud Autoscaler. When enabled, node autoscaling will be managed by the Oracle Cloud Autoscaler Operator, allowing the cluster to automatically adjust the number of nodes based on resource demands."
   default     = false
 }
 
