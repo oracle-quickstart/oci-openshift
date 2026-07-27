@@ -74,9 +74,8 @@ oc apply -f autoscaling-dynamic-output.yml
 Use the same checks for Day 0 and Day 1:
 
 ```sh
-oc get ns oci-openshift-autoscaling-operator cert-manager
+oc get ns oci-openshift-autoscaling-operator
 oc get pods -n oci-openshift-autoscaling-operator
-oc get pods -n cert-manager
 oc get ociclusterautoscalers.capi.openshift.io -n oci-openshift-autoscaling-operator
 oc get ociclusterautoscalers.capi.openshift.io ociclusterautoscaler -n oci-openshift-autoscaling-operator -o yaml
 ```
@@ -90,28 +89,37 @@ status:
   clusterAutoscalerDeployed: true
 ```
 
-## Update Autoscaler Node Limits
+## Scale Up And Down
 
 The Terraform inputs set the initial autoscaler node limits. For example, `autoscaler_node_maximum_count = 5` creates the `OCIClusterAutoscaler` custom resource with `spec.autoscaling.maxNodes: 5`.
 
-To change the live limit after the stack has been applied, patch the `OCIClusterAutoscaler` custom resource:
+To update the live minimum and maximum autoscaler node limits, patch the `OCIClusterAutoscaler` custom resource:
 
 ```sh
-oc patch ociclusterautoscaler ociclusterautoscaler \
-  -n oci-openshift-autoscaling-operator \
-  --type merge \
-  -p '{"spec":{"autoscaling":{"minNodes":1,"maxNodes":8}}}'
+oc patch ociclusterautoscaler.capi.openshift.io -n oci-openshift-autoscaling-operator ociclusterautoscaler \
+  --type=merge \
+  -p '{"spec":{"autoscaling":{"minNodes":1,"maxNodes":3}}}'
 ```
 
-Verify the updated value:
+Verify the updated values:
 
 ```sh
-oc get ociclusterautoscaler ociclusterautoscaler \
-  -n oci-openshift-autoscaling-operator \
+oc get ociclusterautoscaler.capi.openshift.io -n oci-openshift-autoscaling-operator ociclusterautoscaler \
   -o jsonpath='{.spec.autoscaling.minNodes}{" "}{.spec.autoscaling.maxNodes}{"\n"}'
 ```
 
-For Day 1 deployments, also update the Terraform variable, re-run `terraform apply`, export `autoscaling_manifest`, and re-apply it when you want the Terraform output to remain the source of truth:
+Watch the autoscaling resources:
+
+```sh
+oc get machinedeployments.cluster.x-k8s.io -n oci-openshift-autoscaling-operator
+oc get machinesets.cluster.x-k8s.io -n oci-openshift-autoscaling-operator
+oc get machines.cluster.x-k8s.io -n oci-openshift-autoscaling-operator -o wide
+oc get nodes
+```
+
+Cluster Autoscaler scales up when workload pods cannot be scheduled within the configured limits. To scale down, remove or reduce the workload demand and lower `minNodes` or `maxNodes` as needed; CAPI then reconciles the generated `MachineDeployment`, `MachineSet`, and `Machine` resources.
+
+For Day 1 deployments, also update the Terraform variable, re-run `terraform apply`, export `autoscaling_manifest`, and re-apply it when the Terraform output should remain the source of truth:
 
 ```sh
 terraform output -raw autoscaling_manifest > autoscaling-dynamic-output.yml
@@ -120,85 +128,190 @@ oc apply -f autoscaling-dynamic-output.yml
 
 ## Cleanup
 
-Use cleanup when the autoscaler stack is no longer needed. First scale down autoscaler-created capacity so CAPI can delete provider resources cleanly, then choose either the Makefile targets from this repository or the direct `oc` commands below.
+Use this when the autoscaler stack is no longer needed. The cleanup commands below remove CAPI/CAPOCI, autoscaler, cert-manager resources installed for this stack, webhooks, RBAC, namespaces, and CRDs by using `oc` directly; downloading this repository is not required.
 
-### Scale Down Completely
-
-To ensure no instances are left dangling, completely scale down CAPI-installed instances first.
-
-Scale down the test workload:
+First remove workload demand and scale down autoscaler-created capacity when possible:
 
 ```sh
 oc scale deployment -n default nginx --replicas=0
-```
-
-Scale down the MachineDeployment, if necessary:
-
-```sh
 oc scale md -n oci-openshift-autoscaling-operator <md-name> --replicas=0
-```
-
-Ensure all `OCIMachine` CRs are removed:
-
-```sh
 oc get ocimachine -n oci-openshift-autoscaling-operator
 ```
 
-### Operator-Only Uninstall
+### Remove CAPI/CAPOCI And Autoscaler Resources
 
-Use this when you only want to remove the OCI CAPI Operator resources and keep CAPI/CAPOCI installed. The Day 0 shortcut also removes the dedicated `oci-openshift-autoscaling-operator` namespace:
-
-```sh
-make cleanup-autoscaler
-```
-
-If your autoscaler CR name or namespace is not the Day 0 default, use the lower-level target:
+Run the full cleanup script:
 
 ```sh
-make cleanup-operator-only CONFIRM_OPERATOR_ONLY_TEARDOWN=true AUTOSCALER_NAMESPACE=<namespace> AUTOSCALER_NAME=<name> REQUEST_TIMEOUT=60s
-```
+export STACK_NAMESPACE=oci-openshift-autoscaling-operator
+export AUTOSCALER_NAME=ociclusterautoscaler
+export LABEL_SELECTOR="capi.openshift.io/managed-by=${AUTOSCALER_NAME}"
+export REQUEST_TIMEOUT=60s
 
-If the Makefile is not available, run the direct commands:
+export CAPI_CLUSTER_NAME="$(
+  oc get clusters.cluster.x-k8s.io -n ${STACK_NAMESPACE} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || \
+  oc get machinedeployments.cluster.x-k8s.io -n ${STACK_NAMESPACE} -o jsonpath='{.items[0].spec.clusterName}' 2>/dev/null
+)"
 
-```sh
-oc delete ociclusterautoscaler ociclusterautoscaler \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true \
-  --wait=false
+cleanup_capi_objects() {
+  echo "Cleaning CAPI/CAPOCI objects in ${STACK_NAMESPACE}, cluster=${CAPI_CLUSTER_NAME:-<unknown>}"
 
-oc patch ociclusterautoscaler ociclusterautoscaler \
-  -n oci-openshift-autoscaling-operator \
-  --type merge \
-  -p '{"metadata":{"finalizers":[]}}' || true
+  for kind in \
+    machinedeployments.cluster.x-k8s.io \
+    machinesets.cluster.x-k8s.io \
+    machines.cluster.x-k8s.io \
+    ocimachines.infrastructure.cluster.x-k8s.io \
+    ocimachinetemplates.infrastructure.cluster.x-k8s.io \
+    clusters.cluster.x-k8s.io \
+    ociclusters.infrastructure.cluster.x-k8s.io \
+    ociclusteridentities.infrastructure.cluster.x-k8s.io
+  do
+    oc delete ${kind} -n ${STACK_NAMESPACE} -l "${LABEL_SELECTOR}" \
+      --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+  done
 
-oc delete deployment oci-capi-operator-controller-manager \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true
+  if [ -n "${CAPI_CLUSTER_NAME}" ]; then
+    for kind in \
+      machinedeployments.cluster.x-k8s.io \
+      machinesets.cluster.x-k8s.io \
+      machines.cluster.x-k8s.io \
+      ocimachines.infrastructure.cluster.x-k8s.io \
+      ocimachinetemplates.infrastructure.cluster.x-k8s.io
+    do
+      oc delete ${kind} -n ${STACK_NAMESPACE} -l "cluster.x-k8s.io/cluster-name=${CAPI_CLUSTER_NAME}" \
+        --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+    done
 
-oc delete job oci-capi-operator-provider-installer oci-capi-operator-activate-after-install \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true \
-  --wait=false
+    for kind in \
+      clusters.cluster.x-k8s.io \
+      ociclusters.infrastructure.cluster.x-k8s.io \
+      ociclusteridentities.infrastructure.cluster.x-k8s.io
+    do
+      oc delete ${kind} -n ${STACK_NAMESPACE} ${CAPI_CLUSTER_NAME} \
+        --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+    done
+  fi
 
-oc delete configmap oci-capi-operator-config oci-capi-operator-runtime-manifest \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true
+  for kind in \
+    machinedeployments.cluster.x-k8s.io \
+    machinesets.cluster.x-k8s.io \
+    machines.cluster.x-k8s.io \
+    ocimachines.infrastructure.cluster.x-k8s.io \
+    ocimachinetemplates.infrastructure.cluster.x-k8s.io \
+    clusters.cluster.x-k8s.io \
+    ociclusters.infrastructure.cluster.x-k8s.io \
+    ociclusteridentities.infrastructure.cluster.x-k8s.io
+  do
+    oc get ${kind} -n ${STACK_NAMESPACE} -l "${LABEL_SELECTOR}" -o name 2>/dev/null | while read r; do
+      oc patch "$r" -n ${STACK_NAMESPACE} --type=merge -p '{"metadata":{"finalizers":[]}}' \
+        --request-timeout=${REQUEST_TIMEOUT} || true
+    done
+  done
 
-oc delete secret oci-capi-operator-capoci-auth-credentials \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true
+  if [ -n "${CAPI_CLUSTER_NAME}" ]; then
+    for kind in \
+      machinedeployments.cluster.x-k8s.io \
+      machinesets.cluster.x-k8s.io \
+      machines.cluster.x-k8s.io \
+      ocimachines.infrastructure.cluster.x-k8s.io \
+      ocimachinetemplates.infrastructure.cluster.x-k8s.io
+    do
+      oc get ${kind} -n ${STACK_NAMESPACE} -l "cluster.x-k8s.io/cluster-name=${CAPI_CLUSTER_NAME}" -o name 2>/dev/null | while read r; do
+        oc patch "$r" -n ${STACK_NAMESPACE} --type=merge -p '{"metadata":{"finalizers":[]}}' \
+          --request-timeout=${REQUEST_TIMEOUT} || true
+      done
+    done
 
-oc delete serviceaccount oci-capi-operator-controller-manager oci-capi-operator-activator \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true
+    for kind in \
+      clusters.cluster.x-k8s.io \
+      ociclusters.infrastructure.cluster.x-k8s.io \
+      ociclusteridentities.infrastructure.cluster.x-k8s.io
+    do
+      oc get ${kind} -n ${STACK_NAMESPACE} ${CAPI_CLUSTER_NAME} -o name 2>/dev/null | while read r; do
+        oc patch "$r" -n ${STACK_NAMESPACE} --type=merge -p '{"metadata":{"finalizers":[]}}' \
+          --request-timeout=${REQUEST_TIMEOUT} || true
+      done
+    done
+  fi
+}
 
-oc delete role oci-capi-operator-leader-election-role \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true
+oc delete job -n ${STACK_NAMESPACE} \
+  oci-capi-operator-provider-installer \
+  oci-capi-operator-activate-after-install \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
 
-oc delete rolebinding oci-capi-operator-leader-election-rolebinding \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true
+oc delete deployment -n ${STACK_NAMESPACE} oci-capi-operator-controller-manager \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete ociclusterautoscaler -n ${STACK_NAMESPACE} ${AUTOSCALER_NAME} \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc wait --for=delete ociclusterautoscaler -n ${STACK_NAMESPACE} ${AUTOSCALER_NAME} \
+  --timeout=${REQUEST_TIMEOUT} || \
+oc patch ociclusterautoscaler -n ${STACK_NAMESPACE} ${AUTOSCALER_NAME} \
+  --type=merge -p '{"metadata":{"finalizers":[]}}' \
+  --request-timeout=${REQUEST_TIMEOUT} || true
+
+cleanup_capi_objects
+
+oc delete validatingwebhookconfiguration \
+  oci-capi-operator-validating-webhook-configuration \
+  capoci-validating-webhook-configuration \
+  capi-validating-webhook-configuration \
+  cert-manager-webhook \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete mutatingwebhookconfiguration \
+  oci-capi-operator-mutating-webhook-configuration \
+  capoci-mutating-webhook-configuration \
+  capi-mutating-webhook-configuration \
+  cert-manager-webhook \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete deployment -n ${STACK_NAMESPACE} \
+  capi-manager \
+  capi-controller-manager \
+  oci-cluster-autoscaler \
+  capoci-controller-manager \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete deployment -n cert-manager cert-manager cert-manager-cainjector cert-manager-webhook \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+sleep 10
+cleanup_capi_objects
+
+oc delete configmap -n ${STACK_NAMESPACE} \
+  oci-capi-operator-config \
+  oci-capi-operator-runtime-manifest \
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete secret -n ${STACK_NAMESPACE} \
+  oci-capi-operator-capoci-auth-credentials \
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete serviceaccount -n ${STACK_NAMESPACE} \
+  oci-capi-operator-controller-manager \
+  oci-capi-operator-activator \
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete role -n ${STACK_NAMESPACE} \
+  oci-capi-operator-leader-election-role \
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete rolebinding -n ${STACK_NAMESPACE} \
+  oci-capi-operator-leader-election-rolebinding \
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete role -n kube-system \
+  cert-manager-cainjector:leaderelection \
+  cert-manager:leaderelection \
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete rolebinding -n kube-system \
+  cert-manager-cainjector:leaderelection \
+  cert-manager:leaderelection \
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
 
 oc delete clusterrole \
   oci-capi-operator-manager-role \
@@ -206,200 +319,185 @@ oc delete clusterrole \
   oci-capi-operator-metrics-reader \
   oci-capi-operator-ociclusterautoscaler-editor-role \
   oci-capi-operator-ociclusterautoscaler-viewer-role \
-  --ignore-not-found=true
+  capi-manager-role \
+  capi-aggregated-manager-role \
+  capoci-manager-role \
+  capoci-metrics-reader \
+  capoci-proxy-role \
+  oci-cluster-autoscaler \
+  oci-cluster-autoscaler-extra \
+  cert-manager-cainjector \
+  cert-manager-cluster-view \
+  cert-manager-controller-approve:cert-manager-io \
+  cert-manager-controller-certificates \
+  cert-manager-controller-certificatesigningrequests \
+  cert-manager-controller-challenges \
+  cert-manager-controller-clusterissuers \
+  cert-manager-controller-ingress-shim \
+  cert-manager-controller-issuers \
+  cert-manager-controller-orders \
+  cert-manager-edit \
+  cert-manager-view \
+  cert-manager-webhook:subjectaccessreviews \
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
 
 oc delete clusterrolebinding \
   oci-capi-operator-manager-rolebinding \
   oci-capi-operator-metrics-auth-rolebinding \
   oci-capi-operator-oci-capi-operator-admin \
   oci-capi-operator-activator-admin \
+  capi-manager-rolebinding \
+  capoci-manager-rolebinding \
+  capoci-proxy-rolebinding \
   oci-capi-operator-capoci-privileged-scc \
-  --ignore-not-found=true
-
-oc delete validatingwebhookconfiguration oci-capi-operator-validating-webhook-configuration \
-  --ignore-not-found=true \
-  --wait=false
-
-oc delete mutatingwebhookconfiguration oci-capi-operator-mutating-webhook-configuration \
-  --ignore-not-found=true \
-  --wait=false
-
-oc delete crd ociclusterautoscalers.capi.openshift.io \
-  --ignore-not-found=true
-
-oc delete namespace oci-openshift-autoscaling-operator \
-  --ignore-not-found=true \
-  --wait=false
-```
-
-### Remove CAPI and Autoscaler Deployments
-
-This is a destructive provider teardown. It stops the operator, deletes the selected `OCIClusterAutoscaler` CR, clears provider-managed resource finalizers before CRD deletion, then removes the single autoscaler namespace, provider CRDs, provider-installer resources, cert-manager resources installed by the Day 0 provider installer, and related RBAC/CRDs.
-
-For the Day 0 manifest defaults:
-
-```sh
-make cleanup-autoscaler-full
-```
-
-If your autoscaler CR name or namespace is not the Day 0 default, use:
-
-```sh
-make cleanup-capi-autoscaler CONFIRM_PROVIDER_TEARDOWN=true AUTOSCALER_NAMESPACE=<namespace> AUTOSCALER_NAME=<name> REQUEST_TIMEOUT=60s
-```
-
-If the Makefile is not available and you want to remove the autoscaler plus the CAPI/CAPOCI provider stack, run the direct commands:
-
-```sh
-oc delete job oci-capi-operator-provider-installer \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true \
-  --wait=false
-
-oc delete deployment oci-capi-operator-controller-manager \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true \
-  --wait=true
-
-oc delete ociclusterautoscaler ociclusterautoscaler \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true \
-  --wait=false
-
-oc patch ociclusterautoscaler ociclusterautoscaler \
-  -n oci-openshift-autoscaling-operator \
-  --type merge \
-  -p '{"metadata":{"finalizers":[]}}' || true
-
-for resource in \
-  machines.cluster.x-k8s.io \
-  machinesets.cluster.x-k8s.io \
-  machinedeployments.cluster.x-k8s.io \
-  ocimachines.infrastructure.cluster.x-k8s.io \
-  ocimachinetemplates.infrastructure.cluster.x-k8s.io \
-  clusters.cluster.x-k8s.io \
-  ociclusters.infrastructure.cluster.x-k8s.io \
-  ociclusteridentities.infrastructure.cluster.x-k8s.io; do
-  oc delete "$resource" \
-    -n oci-openshift-autoscaling-operator \
-    -l capi.openshift.io/managed-by=ociclusterautoscaler \
-    --ignore-not-found=true \
-    --wait=false
-done
-
-for resource in \
-  machines.cluster.x-k8s.io \
-  machinesets.cluster.x-k8s.io \
-  machinedeployments.cluster.x-k8s.io \
-  ocimachines.infrastructure.cluster.x-k8s.io \
-  ocimachinetemplates.infrastructure.cluster.x-k8s.io \
-  clusters.cluster.x-k8s.io \
-  ociclusters.infrastructure.cluster.x-k8s.io \
-  ociclusteridentities.infrastructure.cluster.x-k8s.io; do
-  oc get "$resource" \
-    -n oci-openshift-autoscaling-operator \
-    -l capi.openshift.io/managed-by=ociclusterautoscaler \
-    --no-headers \
-    -o custom-columns='NAMESPACE:.metadata.namespace,NAME:.metadata.name' 2>/dev/null | while read namespace name; do
-      [ -n "$name" ] || continue
-      oc patch "$resource" "$name" \
-        -n "$namespace" \
-        --type merge \
-        -p '{"metadata":{"finalizers":[]}}' || true
-    done
-done
-
-oc delete deployment capi-manager capi-controller-manager oci-cluster-autoscaler \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true
-
-oc delete deployment capoci-controller-manager \
-  -n oci-openshift-autoscaling-operator \
-  --ignore-not-found=true
-
-oc delete deployment cert-manager cert-manager-cainjector cert-manager-webhook \
-  -n cert-manager \
-  --ignore-not-found=true
-
-oc delete validatingwebhookconfiguration \
-  capoci-validating-webhook-configuration \
-  capi-validating-webhook-configuration \
-  cert-manager-webhook \
-  --ignore-not-found=true \
-  --wait=false
-
-oc delete mutatingwebhookconfiguration \
-  capoci-mutating-webhook-configuration \
-  capi-mutating-webhook-configuration \
-  cert-manager-webhook \
-  --ignore-not-found=true \
-  --wait=false
-
-oc delete namespace \
-  oci-openshift-autoscaling-operator \
-  cert-manager \
-  --ignore-not-found=true \
-  --wait=false
-
-oc get crd -o name 2>/dev/null | grep -E '/((clusterclasses|clusters|machinedeployments|machinedrainrules|machinehealthchecks|machinepools|machines|machinesets)\.cluster\.x-k8s\.io|(clusterresourcesetbindings|clusterresourcesets)\.addons\.cluster\.x-k8s\.io|extensionconfigs\.runtime\.cluster\.x-k8s\.io|(ocicluster|ocimachine|ocimanaged|ocivirtual).*\.infrastructure\.cluster\.x-k8s\.io|ociclusterautoscalers\.capi\.openshift\.io|(certificaterequests|certificates|clusterissuers|issuers)\.cert-manager\.io|(challenges|orders)\.acme\.cert-manager\.io)$' | while read crd; do
-  oc delete "$crd" --ignore-not-found=true
-done || true
-
-oc get clusterrole -o name 2>/dev/null | grep -E '/(oci-capi|capi-|capoci-|cert-manager|oci-cluster-autoscaler)' | while read role; do
-  oc delete "$role" --ignore-not-found=true
-done || true
-
-oc get clusterrolebinding -o name 2>/dev/null | grep -E '/(oci-capi|capi-|capoci-|cert-manager|oci-cluster-autoscaler)' | while read rolebinding; do
-  oc delete "$rolebinding" --ignore-not-found=true
-done || true
-
-oc delete role cert-manager-cainjector:leaderelection cert-manager:leaderelection \
-  -n kube-system \
-  --ignore-not-found=true
-
-oc delete rolebinding cert-manager-cainjector:leaderelection cert-manager:leaderelection \
-  -n kube-system \
-  --ignore-not-found=true
+  oci-cluster-autoscaler \
+  oci-cluster-autoscaler-extra \
+  cert-manager-cainjector \
+  cert-manager-controller-approve:cert-manager-io \
+  cert-manager-controller-certificates \
+  cert-manager-controller-certificatesigningrequests \
+  cert-manager-controller-challenges \
+  cert-manager-controller-clusterissuers \
+  cert-manager-controller-ingress-shim \
+  cert-manager-controller-issuers \
+  cert-manager-controller-orders \
+  cert-manager-webhook:subjectaccessreviews \
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
 
 oc delete scc oci-capi \
-  --ignore-not-found=true
+  --ignore-not-found=true --request-timeout=${REQUEST_TIMEOUT} || true
 
-for namespace in oci-openshift-autoscaling-operator cert-manager; do
-  if oc get namespace "$namespace" >/dev/null 2>&1; then
-    oc patch namespace "$namespace" \
-      --type json \
-      -p '[{"op":"remove","path":"/spec/finalizers"}]' || true
+oc delete namespace \
+  ${STACK_NAMESPACE} \
+  cert-manager \
+  capi-system \
+  cluster-api-provider-oci-system \
+  oci-capi-operator \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+sleep 10
+cleanup_capi_objects
+
+oc delete crd ociclusterautoscalers.capi.openshift.io \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete crd -l cluster.x-k8s.io/provider \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+oc delete crd \
+  certificaterequests.cert-manager.io \
+  certificates.cert-manager.io \
+  challenges.acme.cert-manager.io \
+  clusterissuers.cert-manager.io \
+  issuers.cert-manager.io \
+  orders.acme.cert-manager.io \
+  --ignore-not-found=true --wait=false --request-timeout=${REQUEST_TIMEOUT} || true
+
+for ns in ${STACK_NAMESPACE} cert-manager capi-system cluster-api-provider-oci-system oci-capi-operator; do
+  if oc get ns "$ns" >/dev/null 2>&1; then
+    oc patch ns "$ns" --type=json -p '[{"op":"remove","path":"/spec/finalizers"}]' \
+      --request-timeout=${REQUEST_TIMEOUT} || true
   fi
 done
-```
-
-For stuck deletions, the target removes provider finalizers only after attempting normal deletion and waiting up to `REQUEST_TIMEOUT`. It first uses `AUTOSCALER_LABEL_SELECTOR`, then discovers CAPI cluster names from `AUTOSCALER_CLUSTER_NAMESPACE` and cleans generated resources such as `MachineSet` objects using `cluster.x-k8s.io/cluster-name`. If discovery is not possible, pass the CAPI cluster name explicitly:
-
-```sh
-make cleanup-capi-autoscaler \
-  CONFIRM_PROVIDER_TEARDOWN=true \
-  AUTOSCALER_NAMESPACE=oci-openshift-autoscaling-operator \
-  AUTOSCALER_NAME=ociclusterautoscaler \
-  AUTOSCALER_CLUSTER_NAME=<capi-cluster-name> \
-  REQUEST_TIMEOUT=60s
-```
-
-Check the OCI CAPI Operator logs:
-
-```sh
-oc logs -n oci-openshift-autoscaling-operator deploy/oci-capi-operator-controller-manager
 ```
 
 Verify cleanup:
 
 ```sh
-oc get ns oci-openshift-autoscaling-operator cert-manager --ignore-not-found
-oc get ociclusterautoscalers.capi.openshift.io -A 2>/dev/null || true
-oc get crd | grep -E 'ociclusterautoscalers\.capi\.openshift\.io|clusterclasses\.cluster\.x-k8s\.io|machinedeployments\.cluster\.x-k8s\.io|machinesets\.cluster\.x-k8s\.io|machines\.cluster\.x-k8s\.io|ocimachines\.infrastructure\.cluster\.x-k8s\.io|ociclusters\.infrastructure\.cluster\.x-k8s\.io|cert-manager\.io|acme\.cert-manager\.io' || true
-oc get clusterrole,clusterrolebinding | grep -E 'oci-capi|capi-|capoci|cert-manager|oci-cluster-autoscaler' || true
-oc get role,rolebinding -n kube-system | grep -E 'cert-manager.*leaderelection' || true
-oc get scc | grep -E 'oci-capi' || true
-oc get deployment -A | grep -E 'oci-capi|capi-manager|capoci|oci-cluster-autoscaler|cert-manager' || true
+oc get ns oci-openshift-autoscaling-operator oci-capi-operator capi-system cluster-api-provider-oci-system cert-manager --ignore-not-found
+oc api-resources | grep ociclusterautoscalers || true
+oc get crd | grep -E 'cluster\.x-k8s\.io|infrastructure\.cluster\.x-k8s\.io|cert-manager\.io|acme\.cert-manager\.io' || true
 ```
 
-OpenShift-owned CRDs such as `ipaddressclaims.ipam.cluster.x-k8s.io` or unrelated platform CRDs such as `metal3remediations.infrastructure.cluster.x-k8s.io` may still exist and are not owned by this cleanup target. The OpenShift-owned `openshift-machine-api/cluster-autoscaler-operator` deployment is also expected to remain.
+Expected:
+
+- No listed autoscaler/CAPI/CAPOCI/cert-manager namespaces remain.
+- No `OCIClusterAutoscaler` API remains.
+- No CAPI/CAPOCI/cert-manager CRDs remain.
+
+## Monitor And Investigate
+
+The autoscaler manifest installs the OCI CAPI operator in the `oci-openshift-autoscaling-operator` namespace. After the `OCIClusterAutoscaler` custom resource is created, the operator installs or uses CAPI, CAPOCI, cert-manager, and Cluster Autoscaler. The operator then creates autoscaling resources in `oci-openshift-autoscaling-operator`, including `OCICluster`, `OCIClusterIdentity`, bootstrap secret, `OCIMachineTemplate`, `MachineDeployment`, and `MachineHealthCheck`.
+
+When workload pods cannot be scheduled, Cluster Autoscaler increases the `MachineDeployment` replica count. CAPI creates `Machine` and `MachineSet` resources. CAPOCI then provisions OCI compute instances. After the instance boots, the worker fetches ignition, submits CSRs, and joins the OpenShift cluster.
+
+Export environment variables:
+
+```sh
+export STACK_NAMESPACE=oci-openshift-autoscaling-operator
+export AUTOSCALER_NAME=ociclusterautoscaler
+```
+
+Check the provisioning chain:
+
+```sh
+oc get ociclusterautoscaler -n ${STACK_NAMESPACE} ${AUTOSCALER_NAME} -o yaml
+oc get machinedeployments.cluster.x-k8s.io -n ${STACK_NAMESPACE}
+oc get machinesets.cluster.x-k8s.io -n ${STACK_NAMESPACE}
+oc get machines.cluster.x-k8s.io -n ${STACK_NAMESPACE} -o wide
+oc get ocimachines.infrastructure.cluster.x-k8s.io -n ${STACK_NAMESPACE} -o wide
+oc get nodes -o wide
+```
+
+Check events for provisioning failures:
+
+```sh
+oc get events -n ${STACK_NAMESPACE} --sort-by=.lastTimestamp
+
+# For a specific stuck Machine:
+export MACHINE_NAME=<machine-name>
+oc describe machine.cluster.x-k8s.io -n ${STACK_NAMESPACE} ${MACHINE_NAME}
+oc get event -n ${STACK_NAMESPACE} \
+  --field-selector involvedObject.name=${MACHINE_NAME} \
+  --sort-by=.lastTimestamp
+
+# Find the related OCIMachine:
+oc get machine.cluster.x-k8s.io -n ${STACK_NAMESPACE} ${MACHINE_NAME} \
+  -o jsonpath='{.spec.infrastructureRef.name}{"\n"}'
+
+export OCI_MACHINE_NAME=<ocimachine-name>
+oc describe ocimachine.infrastructure.cluster.x-k8s.io -n ${STACK_NAMESPACE} ${OCI_MACHINE_NAME}
+oc get ocimachine.infrastructure.cluster.x-k8s.io -n ${STACK_NAMESPACE} ${OCI_MACHINE_NAME} -o yaml
+```
+
+Check controller logs:
+
+```sh
+# OCI CAPI operator logs
+oc logs -n ${STACK_NAMESPACE} \
+  deployment/oci-capi-operator-controller-manager \
+  -c manager \
+  --tail=300
+
+# CAPOCI provider logs: most useful for OCI provisioning errors
+oc logs -n ${STACK_NAMESPACE} \
+  deployment/capoci-controller-manager \
+  --tail=500
+
+# CAPI controller logs
+oc logs -n ${STACK_NAMESPACE} \
+  deployment/capi-manager \
+  --tail=500
+
+# Cluster Autoscaler logs: useful if no Machine was created
+oc logs -n ${STACK_NAMESPACE} \
+  deployment/oci-cluster-autoscaler \
+  --tail=500
+```
+
+Common failure signals:
+
+```sh
+# No new Machine:
+oc logs -n ${STACK_NAMESPACE} deployment/oci-cluster-autoscaler --tail=500
+
+# Machine exists, but OCIMachine has no providerID:
+oc describe ocimachine.infrastructure.cluster.x-k8s.io -n ${STACK_NAMESPACE} ${OCI_MACHINE_NAME}
+oc logs -n ${STACK_NAMESPACE} deployment/capoci-controller-manager --tail=500
+
+# OCI instance exists, but no OpenShift node joined:
+oc get csr
+oc get nodes
+oc get mcp
+oc get co machine-config
+```
