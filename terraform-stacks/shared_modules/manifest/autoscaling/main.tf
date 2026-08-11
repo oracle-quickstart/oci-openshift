@@ -117,8 +117,8 @@ spec:
             -e 's|$${EXP_RUNTIME_SDK:=false}|false|g' \
             -e 's|$${EXP_MACHINE_SET_PREFLIGHT_CHECKS:=true}|true|g' \
             -e 's|$${EXP_MACHINE_WAITFORVOLUMEDETACH_CONSIDER_VOLUMEATTACHMENTS:=true}|true|g' \
-            -e 's|$${EXP_PRIORITY_QUEUE:=false}|false|g' \
-            -e 's|$${EXP_RECONCILER_RATE_LIMITING:=false}|true|g' \
+            -e 's|$${EXP_PRIORITY_QUEUE:=true}|true|g' \
+            -e 's|$${EXP_RECONCILER_RATE_LIMITING:=true}|true|g' \
             -e 's|$${EXP_IN_PLACE_UPDATES:=false}|false|g' \
             -e 's|$${EXP_MACHINE_TAINT_PROPAGATION:=false}|false|g' \
             -e 's|capi-system|oci-openshift-autoscaling-operator|g' \

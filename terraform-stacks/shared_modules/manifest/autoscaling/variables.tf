@@ -9,7 +9,7 @@ variable "op_lb_openshift_api_lb_ip_addr" { type = string }
 variable "cluster_name" { type = string }
 variable "capi_version" {
   type    = string
-  default = "v1.12.3"
+  default = "v1.14.0"
 }
 
 variable "capoci_version" {
