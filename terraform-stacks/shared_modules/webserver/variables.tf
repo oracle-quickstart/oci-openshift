@@ -3,6 +3,12 @@ variable "is_disconnected_installation" {
   default = false
 }
 
+variable "create_webserver_instance" {
+  type        = bool
+  description = "Create a dedicated webserver VM. Set to false when using the bastion as the webserver."
+  default     = true
+}
+
 variable "openshift_installer_version" {
   type        = string
   description = "The version of openshift-installer."
@@ -60,7 +66,7 @@ variable "webserver_ocpus" {
 
 variable "webserver_image_source_id" {
   type        = string
-  description = "source_id of image to use for webserver instance, default is an OEL 9 instance"
+  description = "source_id of image to use for webserver instance (RHEL 9 or OEL 9)"
   default     = "ocid1.image.oc1.us-sanjose-1.aaaaaaaawgtwtqmz5j2kbvwgk6lm5yx2bnom456skma7q62jb5ltw7zoac4a"
 }
 

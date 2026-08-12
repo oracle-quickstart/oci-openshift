@@ -42,8 +42,8 @@ wget -nv https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/opensh
 tar -xf openshift-client-linux.tar.gz
 sudo mv oc /usr/local/bin/.
 
-sudo dnf -y install oraclelinux-developer-release-el9
-sudo dnf -y install python39-oci-cli
+#sudo dnf -y install oraclelinux-developer-release-el9
+#sudo dnf -y install python39-oci-cli
 
 # Prepare OpenShift agent-based deployment directory
 mkdir -p "${agent_install_dir}/openshift"

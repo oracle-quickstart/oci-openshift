@@ -47,7 +47,7 @@ resource "time_sleep" "wait_for_objects" {
 }
 
 resource "oci_core_instance" "webserver" {
-  count               = var.is_disconnected_installation ? 1 : 0
+  count               = var.create_webserver_instance ? 1 : 0
   availability_domain = var.webserver_availability_domain
   compartment_id      = var.webserver_compartment_ocid
   shape               = var.webserver_shape
@@ -84,7 +84,7 @@ resource "oci_core_instance" "webserver" {
       http_proxy                     = var.http_proxy
       https_proxy                    = var.https_proxy
       no_proxy                       = var.no_proxy
-      agent_install_dir              = "/home/opc/${var.cluster_name}-agentBasedInstallation"
+      agent_install_dir              = "/home/cloud-user/${var.cluster_name}-agentBasedInstallation"
       agent_config_object            = oci_objectstorage_object.agent_config.object
       install_config_object          = oci_objectstorage_object.install_config.object
       dynamic_custom_manifest_object = oci_objectstorage_object.dynamic_custom_manifest.object

@@ -48,6 +48,12 @@ variable "is_disconnected_installation" {
   default     = false
 }
 
+variable "create_webserver_instance" {
+  type        = bool
+  description = "Create a dedicated webserver VM for the disconnected installation. Set to false when using an existing bastion host as the combined webserver. When false, the webserver_private_ip should be set to the bastion's IP. Object Storage uploads of install manifests still occur when is_disconnected_installation is true."
+  default     = true
+}
+
 variable "set_openshift_installer_version" {
   type        = bool
   description = "If you don't want to use the latest version of openshift-installer, specify a specific supported version. For example, 4.19.1."
@@ -75,7 +81,7 @@ variable "redhat_pull_secret" {
 variable "webserver_private_ip" {
   default     = "10.0.0.200"
   type        = string
-  description = "The Private IP of the server where you want to upload the rootfs image. This parameter is required only for disconnected environments. This IP should be included in the bootArtifactsBaseURL value in your agent-config file."
+  description = "The private IP of the host serving boot artifacts over HTTP. In a combined bastion setup, set this to the bastion's private IP. This value is used as the bootArtifactsBaseURL in agent-config.yaml for disconnected installations."
 }
 
 variable "webserver_shape" {
@@ -87,7 +93,7 @@ variable "webserver_shape" {
 variable "webserver_image_source_id" {
   default     = "ocid1.image.oc1.us-sanjose-1.aaaaaaaawgtwtqmz5j2kbvwgk6lm5yx2bnom456skma7q62jb5ltw7zoac4a"
   type        = string
-  description = "The source_id of image to use for webserver instance. The default is an OEL 9 instance."
+  description = "The source_id of the image to use for the webserver instance (RHEL 9 or OEL 9). Only used when create_webserver_instance is true."
 }
 
 variable "webserver_ocpus" {

@@ -24,3 +24,6 @@ checksums/
 **/.terraform/*
 **/.terrafor*
 .terraform.lock.hcl
+
+# Ignore custom tf vars
+*.tfvars

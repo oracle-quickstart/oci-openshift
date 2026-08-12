@@ -1,0 +1,334 @@
+# =============================================================================
+# OpenShift on OCI — Terraform Variables (Disconnected, Combined Bastion)
+# =============================================================================
+# Source: fork of oracle-quickstart/oci-openshift (create-cluster stack)
+# Docs:   https://access.redhat.com/documentation/en-us/openshift_container_platform/4.19/html-single/installing_on_oci/index
+#
+# Usage:
+#   1. Copy this file to openshift-on-oci.tfvars
+#   2. Fill in all values marked with empty quotes ""
+#   3. cd oci-openshift-mine/terraform-stacks/create-cluster
+#   4. terraform init
+#   5. terraform plan  -var-file=../../openshift-on-oci.tfvars
+#   6. terraform apply -var-file=../../openshift-on-oci.tfvars
+#
+# DO NOT commit the filled-in .tfvars file — it contains OCIDs, SSH keys,
+# PAR URLs, and pull secrets. Add *.tfvars to .gitignore.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 1. OCI Identity & Region (REQUIRED)
+# -----------------------------------------------------------------------------
+
+# OCID of your OCI tenancy (Home > Tenancy Details)
+tenancy_ocid = ""
+
+# OCID of the compartment where the cluster will be created
+compartment_ocid = ""
+
+# OCI region identifier (e.g. "us-gov-ashburn-1", "us-sanjose-1")
+region = ""
+
+
+# -----------------------------------------------------------------------------
+# 2. Cluster Identity (REQUIRED)
+# -----------------------------------------------------------------------------
+
+# Cluster name — lowercase alphanumeric and hyphens only, 1-54 characters.
+# Must be DNS-compatible. This becomes part of the cluster's FQDN.
+cluster_name = ""
+
+# DNS zone for the cluster (e.g. "example.com").
+# Must match the base domain used when generating the discovery ISO.
+zone_dns = ""
+
+
+# -----------------------------------------------------------------------------
+# 3. Installation Method (REQUIRED)
+# -----------------------------------------------------------------------------
+
+# Using the Agent-based Installer (ABI) for this deployment.
+# The alternative is "Assisted" (Assisted Installer via console.redhat.com).
+installation_method = "Agent-based"
+
+# Set to true to create compute instances as part of the stack.
+# Set to false if you are provisioning instances separately.
+create_openshift_instances = true
+
+# Rendezvous IP — the IP assigned to the bootstrap node that orchestrates
+# the Agent-based installation. Must be within the private_cidr_ocp subnet.
+# This IP must also match the rendezvousIP in your agent-config.yaml.
+rendezvous_ip = "10.40.16.20"
+
+
+# -----------------------------------------------------------------------------
+# 4. OpenShift Image (REQUIRED)
+# -----------------------------------------------------------------------------
+
+# Pre-Authenticated Request (PAR) URL to the RHCOS QCOW2 image in
+# OCI Object Storage. The Terraform image module imports this as an
+# OCI custom image that cluster VMs boot from.
+#
+# WARNING: PAR URLs contain a time-limited access token. Do not commit
+# this value to version control. Generate a new PAR when needed.
+openshift_image_source_uri = ""
+
+
+# -----------------------------------------------------------------------------
+# 5. Resource Attribution Tags (REQUIRED)
+# -----------------------------------------------------------------------------
+
+# OCID of the compartment containing the OpenShift resource attribution
+# tag namespace. These tags are mandatory — create them first using the
+# create-resource-attribution-tags stack.
+tag_namespace_compartment_ocid_resource_tagging = ""
+
+
+# -----------------------------------------------------------------------------
+# 6. Control Plane Nodes
+# -----------------------------------------------------------------------------
+
+# Compute shape for control plane nodes
+control_plane_shape = "VM.Standard.E5.Flex"
+
+# Number of control plane nodes (typically 3)
+control_plane_count = 3
+
+# OCPUs per control plane node (range: 1-144)
+control_plane_ocpu = 4
+
+# Memory per control plane node in GB (range: 1-1760)
+control_plane_memory = 24
+
+# Boot volume size per control plane node in GB (range: 50-32768)
+control_plane_boot_size = 1024
+
+# Boot volume performance: VPUs per GB (range: 10-120, multiples of 10)
+# 10 = Lower Cost, 20 = Balanced, 30-120 = Higher Performance
+control_plane_boot_volume_vpus_per_gb = 100
+
+# Distribute control plane instances across Availability Domains (round-robin)
+distribute_cp_instances_across_ads = true
+
+# Distribute control plane instances across Fault Domains
+distribute_cp_instances_across_fds = true
+
+# (Optional) Specific AD to start control plane placement from
+# starting_ad_name_cp = null
+
+# (Optional) Specific Fault Domain to start control plane placement from
+# starting_fd_name_cp = null
+
+# (Optional) Capacity Reservation OCID for control plane nodes
+# control_plane_capacity_reservation = null
+
+
+# -----------------------------------------------------------------------------
+# 7. Compute (Worker) Nodes
+# -----------------------------------------------------------------------------
+
+# Compute shape for worker nodes
+compute_shape = "VM.Standard.E5.Flex"
+
+# Number of worker nodes
+compute_count = 3
+
+# OCPUs per worker node (range: 1-144)
+compute_ocpu = 6
+
+# Memory per worker node in GB (range: 1-1760)
+compute_memory = 32
+
+# Boot volume size per worker node in GB (range: 50-32768)
+compute_boot_size = 300
+
+# Boot volume performance: VPUs per GB (range: 10-120, multiples of 10)
+compute_boot_volume_vpus_per_gb = 30
+
+# Distribute compute instances across Availability Domains (round-robin)
+distribute_compute_instances_across_ads = true
+
+# Distribute compute instances across Fault Domains
+distribute_compute_instances_across_fds = true
+
+# (Optional) Specific AD to start compute placement from
+# starting_ad_name_compute = null
+
+# (Optional) Specific Fault Domain to start compute placement from
+# starting_fd_name_compute = null
+
+# (Optional) Capacity Reservation OCID for compute nodes
+# compute_capacity_reservation = null
+
+
+# -----------------------------------------------------------------------------
+# 8. Networking
+# -----------------------------------------------------------------------------
+
+# Create a public DNS zone with the base domain
+create_public_dns = false
+
+# Create a private DNS zone with the base domain
+create_private_dns = true
+
+# Expose the API load balancer on a public IP
+enable_public_api_lb = false
+
+# Expose the Apps (Ingress) load balancer on a public IP
+enable_public_apps_lb = true
+
+# Use an existing VCN instead of creating one.
+# If true, fill in the existing_* variables below.
+use_existing_network = false
+
+# --- New VCN settings (used when use_existing_network = false) ---
+
+# DNS label for the VCN (1-15 chars, alphanumeric, starts with letter)
+vcn_dns_label = "openshiftvcn"
+
+# VCN CIDR block
+vcn_cidr = "10.40.0.0/16"
+
+# Public subnet CIDR (load balancers, bastion)
+public_cidr = "10.40.0.0/20"
+
+# Private subnet CIDR for OpenShift nodes
+private_cidr_ocp = "10.40.16.0/20"
+
+# Private subnet CIDR for Bare Metal nodes
+private_cidr_bare_metal = "10.40.32.0/20"
+
+# --- Existing VCN settings (used when use_existing_network = true) ---
+
+# vcn_compartment_ocid                  = ""
+# existing_vcn_id                       = ""
+# subnet_compartment_ocid               = ""
+# existing_private_ocp_subnet_id        = ""
+# existing_private_bare_metal_subnet_id = ""
+# existing_public_subnet_id             = ""
+
+# Load Balancer bandwidth (Mbps, range: 10-8000)
+load_balancer_shape_details_minimum_bandwidth_in_mbps = 10
+load_balancer_shape_details_maximum_bandwidth_in_mbps = 50
+
+
+# -----------------------------------------------------------------------------
+# 9. Disconnected / Air-Gapped Installation (Agent-based only)
+# -----------------------------------------------------------------------------
+
+# Set to true for disconnected (air-gapped) installations.
+# This enables bootArtifactsBaseURL in agent-config.yaml and uploads
+# manifests to Object Storage.
+is_disconnected_installation = true
+
+# Set to false to skip webserver VM creation. The bastion host serves
+# as the webserver. See docs/disconnected-bastion-setup.md.
+create_webserver_instance = false
+
+# SSH public key for instance access.
+# Paste the contents of your public key (e.g. ~/.ssh/id_rsa.pub).
+public_ssh_key = ""
+
+# Red Hat pull secret — REQUIRED. The default value "PULL SECRET" in
+# variables.tf is not valid. Load from a file on the bastion:
+#   redhat_pull_secret = file("/home/cloud-user/pull-secret.txt")
+#
+# Or paste the raw JSON string (single line) from:
+#   console.redhat.com/openshift/downloads#tool-pull-secret
+#
+# NOTE: jsondecode() does NOT work here — redhat_pull_secret is type
+# string, not an object. Use file() to read the raw JSON string.
+#
+# WARNING: The pull secret is a credential. Do not commit it to git.
+# redhat_pull_secret = ""
+
+# OCI Object Storage namespace and bucket (manifests are uploaded here)
+object_storage_namespace = ""
+object_storage_bucket    = ""
+
+# Bastion / webserver private IP — used as bootArtifactsBaseURL in
+# agent-config.yaml. Must be reachable from the private OCP subnet
+# on port 80.
+webserver_private_ip = "10.40.0.20"
+
+# Webserver VM settings (only used when create_webserver_instance = true)
+# webserver_shape           = "VM.Standard.E5.Flex"
+# webserver_image_source_id = ""
+# webserver_ocpus           = 2
+# webserver_memory_in_gbs   = 8
+
+
+# -----------------------------------------------------------------------------
+# 10. OpenShift Version Override
+# -----------------------------------------------------------------------------
+
+# Set to true to pin a specific openshift-installer version
+set_openshift_installer_version = false
+
+# Version string (only used when set_openshift_installer_version = true)
+# openshift_installer_version = "latest"
+
+
+# -----------------------------------------------------------------------------
+# 11. Proxy Configuration
+# -----------------------------------------------------------------------------
+
+# Set to true if instances need a proxy to reach the internet
+set_proxy = false
+
+# http_proxy  = ""
+# https_proxy = ""
+# no_proxy    = ""
+
+
+# -----------------------------------------------------------------------------
+# 12. Autoscaling (Optional)
+# -----------------------------------------------------------------------------
+
+# Enable the Oracle Cloud Autoscaler Operator
+use_autoscaling_operator = false
+
+# autoscaler_node_shape            = "VM.Standard.E5.Flex"
+# autoscaler_node_ocpus            = 4
+# autoscaler_node_memory           = 24
+# autoscaler_node_minimum_count    = 0
+# autoscaler_node_maximum_count    = 5
+# autoscaler_pool_identifier       = ""
+# autoscaler_node_image_source_uri = ""
+
+# OpenShift network CIDRs (required when autoscaler is enabled)
+# cluster_network_cidr_block  = "10.128.0.0/14"
+# service_network_cidr_block  = "172.30.0.0/16"
+
+
+# -----------------------------------------------------------------------------
+# 13. Instance Role Tags
+# -----------------------------------------------------------------------------
+
+# Reuse existing instance role tags instead of creating new ones
+use_existing_tags = true
+
+# Name of the existing tag namespace (must start with "openshift-")
+tag_namespace_name             = ""
+
+# Compartment containing the tag namespace
+tag_namespace_compartment_ocid = ""
+
+
+# -----------------------------------------------------------------------------
+# 14. OCI CCM / CSI Driver Version
+# -----------------------------------------------------------------------------
+
+# Version of the OCI Cloud Controller Manager and CSI drivers
+oci_driver_version = "v1.34.0"
+
+
+# -----------------------------------------------------------------------------
+# 15. Oracle Cloud Agent (Optional)
+# -----------------------------------------------------------------------------
+
+# Enable Oracle Cloud Agent in the cluster
+use_oracle_cloud_agent = false
+
+# oracle_cloud_agent_repo_name = "openshift-oca"

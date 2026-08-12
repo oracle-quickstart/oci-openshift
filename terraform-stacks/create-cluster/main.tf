@@ -141,11 +141,14 @@ module "load_balancer" {
   op_network_security_group_cluster_lb_nsg = module.network.op_network_security_group_cluster_lb_nsg
 }
 
-## Web Server for creating OCP install images and hosting rootfs and ignition files
+## Web Server for creating OCP install images and hosting rootfs and ignition files.
+## When create_webserver_instance is false, the module still uploads manifests to
+## Object Storage but skips VM creation (bastion acts as the webserver).
 module "webserver" {
   count  = var.is_disconnected_installation ? 1 : 0
   source = "./shared_modules/webserver"
 
+  create_webserver_instance    = var.create_webserver_instance
   is_disconnected_installation = var.is_disconnected_installation
   set_proxy                    = var.set_proxy
   http_proxy                   = var.http_proxy
