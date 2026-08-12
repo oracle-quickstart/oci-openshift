@@ -183,7 +183,7 @@ variable "service_network_cidr_block" {
 
 variable "capi_version" {
   type    = string
-  default = "v1.12.3"
+  default = "v1.14.0"
 }
 
 variable "capoci_version" {
