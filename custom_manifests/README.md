@@ -24,9 +24,38 @@ View usage during [installation](/README.md#documentation-and-installation-instr
 
 Previously, the `oci_ccm_config` output from the OCI Resource Manager Stack (RMS) job was used to replace configuration values in `manifests/01-oci-ccm.yml` and `manifests/01-oci-csi.yml`, and then all required manifests were uploaded individually during cluster creation. This workflow is still valid, but the configuration values to be replaced are now located in [manifests/01-oci-driver-configs.yml](./manifests/01-oci-driver-configs.yml).
 
-### Dynamic Custom Manifest Output
+### Individual Manifest Outputs (Agent-based Installer)
 ---
-Most of our terraform-stacks have an output called `dynamic_custom_manifest`. This output contains all required manifests, concatenated and pre-formatted with the configuration values for CCM and CSI. This output can be copied and used to create a single manifest file which can then be uploaded during the cluster installation process.
+The `create-cluster` stack provides individual terraform outputs for each manifest, suitable for the agent-based installer's `openshift/` directory (which requires one manifest per file). Write them to disk with:
+
+```bash
+mkdir -p openshift
+for m in manifest_oci_ccm manifest_oci_csi manifest_oci_ccm_config manifest_oci_csi_config \
+         manifest_machineconfig_ccm manifest_machineconfig_csi manifest_machineconfig_device_path \
+         manifest_cluster_network manifest_machineconfig_eval_user_data manifest_machineconfig_bm_vlan_mtu; do
+  terraform output -raw "$m" > "openshift/${m}.yaml"
+done
+```
+
+| Output | Contents |
+| --- | --- |
+| `manifest_oci_ccm` | OCI Cloud Controller Manager (Namespace, SA, ClusterRole, ClusterRoleBinding, DaemonSet) |
+| `manifest_oci_csi` | OCI CSI driver resources |
+| `manifest_oci_ccm_config` | CCM cloud-provider config Secret |
+| `manifest_oci_csi_config` | CSI volume-provisioner config Secret |
+| `manifest_machineconfig_ccm` | MachineConfig for CCM provider-id |
+| `manifest_machineconfig_csi` | MachineConfig for iscsid service |
+| `manifest_machineconfig_device_path` | MachineConfig for consistent device paths |
+| `manifest_cluster_network` | Network operator config (internalMasqueradeSubnet) |
+| `manifest_machineconfig_eval_user_data` | MachineConfig for OCI eval user-data |
+| `manifest_machineconfig_bm_vlan_mtu` | MachineConfig for bare metal VLAN MTU |
+| `manifest_oca` | Oracle Cloud Agent (null when `use_oracle_cloud_agent = false`) |
+| `manifest_autoscaler_operator` | Autoscaler operator bootstrap (null when `use_autoscaling_operator = false`) |
+| `manifest_autoscaler_runtime_configmap` | Autoscaler runtime manifest ConfigMap (null when `use_autoscaling_operator = false`) |
+
+### Dynamic Custom Manifest Output (legacy)
+---
+The `dynamic_custom_manifest` output is still available for backward compatibility. It contains all required manifests concatenated into a single multi-document YAML string. This format works with the Assisted Installer and `oc apply -f` but is **not compatible** with the agent-based installer's `openshift/` directory, which requires individual files.
 
 ### Autoscaler Manifest Output
 ---

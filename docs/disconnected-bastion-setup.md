@@ -12,9 +12,8 @@ is a two-pass Terraform apply with a manual ISO creation step in between:
 
 1. **First `terraform apply`** with `create_openshift_instances = false`
    - Creates networking, DNS, load balancers, tags, IAM
-   - Generates `agent-config.yaml`, `install-config.yaml`, and custom manifests
-     as Terraform outputs
-   - Uploads manifests to OCI Object Storage as a backup
+   - Generates `agent-config.yaml`, `install-config.yaml`, and individual OCI
+     manifests as Terraform outputs
 
 2. **Create the agent ISO** on the bastion (between the two applies)
    - Write the Terraform outputs to disk
@@ -99,7 +98,15 @@ terraform apply -var-file=../../openshift-on-oci.tfvars
 mkdir -p ~/<cluster>-agentBasedInstallation/openshift
 terraform output -raw agent_config    > ~/<cluster>-agentBasedInstallation/agent-config.yaml
 terraform output -raw install_config  > ~/<cluster>-agentBasedInstallation/install-config.yaml
-terraform output -raw dynamic_custom_manifest > ~/<cluster>-agentBasedInstallation/openshift/dynamic-custom-manifest.yaml
+
+# Write each OCI manifest as an individual file in the openshift/ directory.
+# The agent-based installer does not accept a single concatenated multi-document
+# YAML file — each manifest must be a separate file in openshift/.
+for m in manifest_oci_ccm manifest_oci_csi manifest_oci_ccm_config manifest_oci_csi_config \
+         manifest_machineconfig_ccm manifest_machineconfig_csi manifest_machineconfig_device_path \
+         manifest_cluster_network manifest_machineconfig_eval_user_data manifest_machineconfig_bm_vlan_mtu; do
+  terraform output -raw "$m" > ~/<cluster>-agentBasedInstallation/openshift/${m}.yaml
+done
 
 # 6. Backup
 cp -R ~/<cluster>-agentBasedInstallation ~/<cluster>-agentBasedInstallation-backup

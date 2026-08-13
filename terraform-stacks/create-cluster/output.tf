@@ -18,6 +18,58 @@ output "dynamic_custom_manifest" {
   value = module.manifests.dynamic_custom_manifest
 }
 
+output "manifest_oci_ccm" {
+  value = module.manifests.manifest_oci_ccm
+}
+
+output "manifest_oci_csi" {
+  value = module.manifests.manifest_oci_csi
+}
+
+output "manifest_oci_ccm_config" {
+  value = module.manifests.manifest_oci_ccm_config
+}
+
+output "manifest_oci_csi_config" {
+  value = module.manifests.manifest_oci_csi_config
+}
+
+output "manifest_machineconfig_ccm" {
+  value = module.manifests.manifest_machineconfig_ccm
+}
+
+output "manifest_machineconfig_csi" {
+  value = module.manifests.manifest_machineconfig_csi
+}
+
+output "manifest_machineconfig_device_path" {
+  value = module.manifests.manifest_machineconfig_device_path
+}
+
+output "manifest_cluster_network" {
+  value = module.manifests.manifest_cluster_network
+}
+
+output "manifest_machineconfig_eval_user_data" {
+  value = module.manifests.manifest_machineconfig_eval_user_data
+}
+
+output "manifest_machineconfig_bm_vlan_mtu" {
+  value = module.manifests.manifest_machineconfig_bm_vlan_mtu
+}
+
+output "manifest_oca" {
+  value = module.manifests.manifest_oca
+}
+
+output "manifest_autoscaler_operator" {
+  value = module.manifests.manifest_autoscaler_operator
+}
+
+output "manifest_autoscaler_runtime_configmap" {
+  value = module.manifests.manifest_autoscaler_runtime_configmap
+}
+
 output "autoscaling_manifest" {
   description = "Autoscaling operator manifests for post-install OpenShift clusters."
   value       = module.manifests.autoscaling_manifest
