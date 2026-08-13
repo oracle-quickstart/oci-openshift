@@ -60,6 +60,18 @@ variable "enable_fips" {
   default     = false
 }
 
+variable "private_registry" {
+  type        = string
+  description = "Hostname and optional port of the private registry mirror for disconnected installations (e.g. 'registry.example.com:8443'). When non-empty, imageDigestSources entries are added to install-config.yaml mapping quay.io release sources to this registry."
+  default     = ""
+}
+
+variable "additional_trust_bundle" {
+  type        = string
+  description = "PEM-encoded CA certificate bundle for the private registry. When non-empty, additionalTrustBundle is added to install-config.yaml. Cannot use file() in .tfvars — pass via -var flag or heredoc."
+  default     = ""
+}
+
 variable "set_openshift_installer_version" {
   type        = bool
   description = "If you don't want to use the latest version of openshift-installer, specify a specific supported version. For example, 4.19.1."

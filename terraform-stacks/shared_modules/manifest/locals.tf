@@ -348,6 +348,18 @@ proxy:
 PROXY
 : "")}
 ${var.enable_fips ? "fips: true" : ""}
+${var.additional_trust_bundle != "" ? "additionalTrustBundlePolicy: Always" : ""}
+${var.additional_trust_bundle != "" ? "additionalTrustBundle: |\n${indent(2, var.additional_trust_bundle)}" : ""}
+${var.private_registry != "" ? trimspace(<<-MIRRORS
+imageDigestSources:
+- mirrors:
+  - ${var.private_registry}/openshift/release
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+- mirrors:
+  - ${var.private_registry}/openshift/release-images
+  source: quay.io/openshift-release-dev/ocp-release
+MIRRORS
+) : ""}
 sshKey: '${var.public_ssh_key}'
 pullSecret: '${var.redhat_pull_secret}'
   EOT

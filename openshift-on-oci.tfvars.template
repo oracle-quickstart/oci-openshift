@@ -231,19 +231,43 @@ create_webserver_instance = false
 # FIPS-enabled RHEL 9 bastion.
 enable_fips = false
 
+# Private registry mirror for disconnected installs. Set to the
+# hostname:port of your mirror registry (e.g. "registry.example.com:8443").
+# Adds imageDigestSources to install-config.yaml.
+# private_registry = ""
+
+# PEM-encoded CA certificate for the private registry. Adds
+# additionalTrustBundle to install-config.yaml.
+#
+# IMPORTANT: The file() function does NOT work in .tfvars files.
+# .tfvars only supports literal values — no Terraform functions.
+#
+# Options to provide this value:
+#   1. CLI flag:  terraform apply -var-file=... -var="additional_trust_bundle=$(cat /path/to/ca.pem)"
+#   2. Env var:   export TF_VAR_additional_trust_bundle=$(cat /path/to/ca.pem)
+#   3. Heredoc in this file (uncomment and paste cert):
+#
+# additional_trust_bundle = <<-EOT
+#   -----BEGIN CERTIFICATE-----
+#   MIIx...
+#   -----END CERTIFICATE-----
+#   EOT
+
 # SSH public key for instance access.
 # Paste the contents of your public key (e.g. ~/.ssh/id_rsa.pub).
 public_ssh_key = ""
 
 # Red Hat pull secret — REQUIRED. The default value "PULL SECRET" in
-# variables.tf is not valid. Load from a file on the bastion:
-#   redhat_pull_secret = file("/home/cloud-user/pull-secret.txt")
+# variables.tf is not valid.
 #
-# Or paste the raw JSON string (single line) from:
-#   console.redhat.com/openshift/downloads#tool-pull-secret
+# IMPORTANT: The file() function does NOT work in .tfvars files.
+# .tfvars only supports literal values — no Terraform functions.
 #
-# NOTE: jsondecode() does NOT work here — redhat_pull_secret is type
-# string, not an object. Use file() to read the raw JSON string.
+# Options to provide the pull secret:
+#   1. Paste the raw JSON string (single line) from:
+#      console.redhat.com/openshift/downloads#tool-pull-secret
+#   2. CLI flag:  terraform apply -var-file=... -var="redhat_pull_secret=$(cat /path/to/pull-secret.txt)"
+#   3. Env var:   export TF_VAR_redhat_pull_secret=$(cat /path/to/pull-secret.txt)
 #
 # WARNING: The pull secret is a credential. Do not commit it to git.
 # redhat_pull_secret = ""

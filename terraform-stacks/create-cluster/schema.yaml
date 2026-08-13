@@ -23,6 +23,8 @@ variableGroups:
       - rendezvous_ip
       - is_disconnected_installation
       - enable_fips
+      - private_registry
+      - additional_trust_bundle
       - create_webserver_instance
       - set_openshift_installer_version
       - openshift_installer_version
@@ -206,6 +208,24 @@ variables:
     default: false
     required: true
     visible: true
+
+  private_registry:
+    type: string
+    title: Private Registry Mirror
+    description: "Hostname:port of the private registry for disconnected installs (e.g. registry.example.com:8443). Adds imageDigestSources to install-config.yaml."
+    default: ""
+    required: false
+    visible:
+      is_disconnected_installation
+
+  additional_trust_bundle:
+    type: string
+    title: Additional Trust Bundle (PEM)
+    description: "PEM-encoded CA certificate for the private registry. Adds additionalTrustBundle to install-config.yaml. Pass via -var flag or heredoc in tfvars."
+    default: ""
+    required: false
+    visible:
+      is_disconnected_installation
 
   create_webserver_instance:
     type: boolean

@@ -283,6 +283,8 @@ module "manifests" {
   redhat_pull_secret           = var.redhat_pull_secret
   is_disconnected_installation = var.is_disconnected_installation
   enable_fips                  = var.enable_fips
+  private_registry             = var.private_registry
+  additional_trust_bundle      = var.additional_trust_bundle
   set_proxy                    = var.set_proxy
   http_proxy                   = var.http_proxy
   https_proxy                  = var.https_proxy
