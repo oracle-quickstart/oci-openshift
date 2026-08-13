@@ -27,3 +27,5 @@ checksums/
 
 # Ignore custom tf vars
 *.tfvars
+*.tfstate
+*.tfstate.backup
