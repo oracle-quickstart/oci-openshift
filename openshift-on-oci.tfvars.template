@@ -218,13 +218,7 @@ load_balancer_shape_details_maximum_bandwidth_in_mbps = 50
 # -----------------------------------------------------------------------------
 
 # Set to true for disconnected (air-gapped) installations.
-# This enables bootArtifactsBaseURL in agent-config.yaml and uploads
-# manifests to Object Storage.
 is_disconnected_installation = true
-
-# Set to false to skip webserver VM creation. The bastion host serves
-# as the webserver. See docs/disconnected-bastion-setup.md.
-create_webserver_instance = false
 
 # Enable FIPS 140-3 mode on the OpenShift cluster. Adds "fips: true"
 # to install-config.yaml. Requires openshift-install-fips run from a
@@ -271,21 +265,6 @@ public_ssh_key = ""
 #
 # WARNING: The pull secret is a credential. Do not commit it to git.
 # redhat_pull_secret = ""
-
-# OCI Object Storage namespace and bucket (manifests are uploaded here)
-object_storage_namespace = ""
-object_storage_bucket    = ""
-
-# Bastion / webserver private IP — used as bootArtifactsBaseURL in
-# agent-config.yaml. Must be reachable from the private OCP subnet
-# on port 80.
-webserver_private_ip = "10.40.0.20"
-
-# Webserver VM settings (only used when create_webserver_instance = true)
-# webserver_shape           = "VM.Standard.E5.Flex"
-# webserver_image_source_id = ""
-# webserver_ocpus           = 2
-# webserver_memory_in_gbs   = 8
 
 
 # -----------------------------------------------------------------------------

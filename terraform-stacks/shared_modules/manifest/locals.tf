@@ -310,7 +310,6 @@ metadata:
   name: ${var.cluster_name}
   namespace: ${var.cluster_name}
 rendezvousIP: ${var.rendezvous_ip}
-${var.is_disconnected_installation ? "bootArtifactsBaseURL: http://${var.webserver_private_ip}" : ""}
   EOT
 
   install_config = <<EOT

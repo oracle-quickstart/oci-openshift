@@ -1,145 +1,131 @@
-# Disconnected Bastion Setup — Combined Bastion + Webserver
+# Disconnected Bastion Setup — Agent ISO to OCI Custom Image
 
 When deploying OpenShift on OCI in a disconnected (air-gapped) environment with
-FIPS enabled, the `openshift-install` command must run from a FIPS-enabled
-RHEL 9 server. This guide describes how to collapse the Terraform-managed
-webserver VM and the bastion (where Terraform runs) into a single RHEL 9 host.
+FIPS enabled, the `openshift-install-fips` command must run from a FIPS-enabled
+RHEL 9 server. This guide describes how to use the bastion (where Terraform
+runs) to generate the agent ISO and import it as an OCI custom image.
+
+## Boot flow
+
+VMs in OCI cannot PXE boot. Instead, the agent-based installer workflow on OCI
+is a two-pass Terraform apply with a manual ISO creation step in between:
+
+1. **First `terraform apply`** with `create_openshift_instances = false`
+   - Creates networking, DNS, load balancers, tags, IAM
+   - Generates `agent-config.yaml`, `install-config.yaml`, and custom manifests
+     as Terraform outputs
+   - Uploads manifests to OCI Object Storage as a backup
+
+2. **Create the agent ISO** on the bastion (between the two applies)
+   - Write the Terraform outputs to disk
+   - Run `openshift-install-fips agent create image` to produce `agent.x86_64.iso`
+   - Upload the ISO to OCI Object Storage
+   - Create a Pre-Authenticated Request (PAR) URL for the ISO
+
+3. **Second `terraform apply`** with `create_openshift_instances = true`
+   - Set `openshift_image_source_uri` to the PAR URL of the agent ISO
+   - OCI imports the ISO as a custom image (UEFI boot, QCOW2 type)
+   - Compute instances boot from this custom image
+   - The agent installer embedded in the ISO orchestrates the cluster install
+
+All configuration (install-config, agent-config, custom manifests) is baked into
+the ISO. No httpd, no rootfs serving, no `bootArtifactsBaseURL` needed.
 
 ## Terraform configuration
 
-Set the following in your tfvars to use the bastion as the webserver:
+Set the following in your tfvars:
 
 ```hcl
 is_disconnected_installation = true
 create_webserver_instance    = false
-webserver_private_ip         = "10.40.0.20"  # bastion's private IP
+enable_fips                  = true
+create_openshift_instances   = false   # first pass
 ```
 
-This keeps `is_disconnected_installation = true` so that:
+After creating the ISO and uploading it, update for the second pass:
 
-- `bootArtifactsBaseURL` is set in `agent-config.yaml` (pointing at the
-  bastion's httpd)
-- The three install manifests are uploaded to OCI Object Storage as a backup
-- Proxy settings and other disconnected fields remain available
-
-But skips creation of the webserver VM (`create_webserver_instance = false`).
-
-The manifests are also available as Terraform outputs — write them directly
-to disk after `terraform apply` instead of pulling from Object Storage:
-
-```bash
-terraform output -raw agent_config    > ~/<cluster>-agentBasedInstallation/agent-config.yaml
-terraform output -raw install_config  > ~/<cluster>-agentBasedInstallation/install-config.yaml
-terraform output -raw dynamic_custom_manifest > ~/<cluster>-agentBasedInstallation/openshift/dynamic-custom-manifest.yaml
+```hcl
+create_openshift_instances   = true
+openshift_image_source_uri   = "<PAR URL to agent.x86_64.iso>"
 ```
 
-## What the webserver setup script installs
+## Bastion prerequisites
 
-The cloud-init script (`setup-webserver.sh.tpl`) installs the following on
-the webserver VM. On a combined bastion these must be pre-staged before
-running Terraform.
-
-### Packages (via dnf)
+### Packages
 
 | Package | Purpose |
 |---------|---------|
-| `httpd` | Apache HTTP server — serves boot artifacts to cluster nodes |
 | `tar` | Extract OpenShift client and installer tarballs |
 
-The upstream script also installs `oraclelinux-developer-release-el9` and
-`python39-oci-cli`, which are Oracle Linux packages. On RHEL 9, install the
-OCI CLI via `pip install oci-cli` or the
-[Oracle install script](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm)
-if you need it. On the bastion you authenticate with an API key or session
-token rather than instance principal.
+### Binaries (pre-staged from a connected host or mirror)
 
-### Binaries (downloaded from mirror.openshift.com)
-
-These are fetched via `wget` from `mirror.openshift.com`, which is
-unreachable in an air-gapped environment. Pre-stage them on the bastion.
-
-| Binary | Source tarball | Install location |
-|--------|--------------|------------------|
-| `openshift-install` | `openshift-install-linux.tar.gz` (or `openshift-install-rhel9-amd64.tar.gz` for FIPS) | `/usr/local/bin/openshift-install` |
-| `oc` | `openshift-client-linux.tar.gz` | `/usr/local/bin/oc` |
+| Binary | Purpose |
+|--------|---------|
+| `openshift-install-fips` | Agent-based installer (FIPS build for RHEL 9) |
+| `oc` | OpenShift CLI |
 
 For FIPS-enabled deployments, use the RHEL 9 FIPS-specific installer binary
-(`openshift-install-rhel9`) from the OpenShift mirror or your disconnected
-mirror registry.
+from the OpenShift mirror or your disconnected mirror registry.
 
-### Firewall and services
+### System requirements
 
-| Configuration | Command | Notes |
-|--------------|---------|-------|
-| Enable httpd | `systemctl enable --now httpd.service` | Must survive reboot |
-| Open HTTP port | `firewall-cmd --add-service=http --permanent` | Required for cluster nodes to reach boot artifacts |
-| Open port 80 | `firewall-cmd --add-port=80/tcp --permanent` | Redundant with the above but present in the upstream script |
-| Reload firewall | `firewall-cmd --reload` | |
-| SELinux permissive | `setenforce 0` | The upstream script disables SELinux enforcement. On RHEL with FIPS you may prefer to keep enforcing and use `setsebool -P httpd_read_user_content 1` instead |
+| Requirement | How to verify |
+|-------------|---------------|
+| FIPS mode enabled | `fips-mode-setup --check` → "FIPS mode is enabled." |
+| SELinux enforcing | `getenforce` → "Enforcing" |
+| Terraform installed | `terraform version` |
 
-### Directory structure
+## Complete bastion workflow
 
-The setup script creates the following directory tree (where `<cluster>` is
-the value of `cluster_name`, e.g. `ocp-deployment`):
+```bash
+# 1. Install packages
+sudo dnf -y install tar
 
-```
-/home/cloud-user/<cluster>-agentBasedInstallation/
-├── agent-config.yaml
-├── install-config.yaml
-└── openshift/
-    └── dynamic-custom-manifest.yaml
+# 2. Pre-stage OpenShift binaries (copied from a connected host or mirror)
+sudo cp openshift-install-fips /usr/local/bin/
+sudo cp oc /usr/local/bin/
+sudo chmod +x /usr/local/bin/openshift-install-fips /usr/local/bin/oc
 
-/home/cloud-user/<cluster>-agentBasedInstallation-backup/
-└── (copy of the above)
+# 3. Verify FIPS mode
+fips-mode-setup --check
+# Should report: "FIPS mode is enabled."
+
+# 4. First terraform apply (infrastructure only, no instances)
+cd oci-openshift-mine/terraform-stacks/create-cluster
+terraform init
+terraform apply -var-file=../../openshift-on-oci.tfvars
+
+# 5. Capture Terraform outputs
+mkdir -p ~/<cluster>-agentBasedInstallation/openshift
+terraform output -raw agent_config    > ~/<cluster>-agentBasedInstallation/agent-config.yaml
+terraform output -raw install_config  > ~/<cluster>-agentBasedInstallation/install-config.yaml
+terraform output -raw dynamic_custom_manifest > ~/<cluster>-agentBasedInstallation/openshift/dynamic-custom-manifest.yaml
+
+# 6. Backup
+cp -R ~/<cluster>-agentBasedInstallation ~/<cluster>-agentBasedInstallation-backup
+
+# 7. Create the agent ISO
+cd ~/<cluster>-agentBasedInstallation
+openshift-install-fips agent create image
+
+# 8. Upload ISO to OCI Object Storage and create a PAR URL
+# (use OCI Console or oci-cli)
+
+# 9. Second terraform apply (create instances from the ISO)
+# Update tfvars: create_openshift_instances = true
+#                openshift_image_source_uri = "<PAR URL>"
+cd oci-openshift-mine/terraform-stacks/create-cluster
+terraform apply -var-file=../../openshift-on-oci.tfvars
+
+# 10. Monitor installation
+openshift-install-fips agent wait-for install-complete \
+  --dir ~/<cluster>-agentBasedInstallation
 ```
 
 ## Network requirements
 
 The bastion must have:
 
-- Connectivity to the **private OCP subnet** (where cluster nodes live) on
-  port 80, so nodes can reach httpd for boot artifacts
 - Connectivity to OCI API endpoints for Terraform and Object Storage
+- Connectivity to the private OCP subnet (for monitoring the install)
 - Its IP allowed through the cluster NSGs if it is on a different subnet
-  than the webserver would have been (the webserver is normally placed on
-  the public subnet)
-
-## Complete bastion setup checklist
-
-```bash
-# 1. Install packages
-sudo dnf -y install httpd tar
-
-# 2. Enable and configure httpd
-sudo systemctl enable --now httpd.service
-sudo firewall-cmd --add-service=http --permanent
-sudo firewall-cmd --reload
-
-# 3. Pre-stage OpenShift binaries (copied from a connected host or mirror)
-sudo cp openshift-install /usr/local/bin/
-sudo cp oc /usr/local/bin/
-sudo chmod +x /usr/local/bin/openshift-install /usr/local/bin/oc
-
-# 4. (Optional) Install OCI CLI
-pip install oci-cli
-
-# 5. Verify FIPS mode
-fips-mode-setup --check
-# Should report: "FIPS mode is enabled."
-
-# 6. Create install directory
-mkdir -p ~/<cluster>-agentBasedInstallation/openshift
-
-# 7. Run terraform apply, then capture outputs
-terraform output -raw agent_config    > ~/<cluster>-agentBasedInstallation/agent-config.yaml
-terraform output -raw install_config  > ~/<cluster>-agentBasedInstallation/install-config.yaml
-terraform output -raw dynamic_custom_manifest > ~/<cluster>-agentBasedInstallation/openshift/dynamic-custom-manifest.yaml
-
-# 8. Backup
-cp -R ~/<cluster>-agentBasedInstallation ~/<cluster>-agentBasedInstallation-backup
-
-# 9. Run agent-based installer
-cd ~/<cluster>-agentBasedInstallation
-openshift-install agent create image
-openshift-install agent wait-for install-complete
-```

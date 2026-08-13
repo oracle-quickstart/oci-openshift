@@ -48,12 +48,6 @@ variable "is_disconnected_installation" {
   default     = false
 }
 
-variable "create_webserver_instance" {
-  type        = bool
-  description = "Create a dedicated webserver VM for the disconnected installation. Set to false when using an existing bastion host as the combined webserver. When false, the webserver_private_ip should be set to the bastion's IP. Object Storage uploads of install manifests still occur when is_disconnected_installation is true."
-  default     = true
-}
-
 variable "enable_fips" {
   type        = bool
   description = "Enable FIPS mode on the OpenShift cluster. When true, 'fips: true' is added to install-config.yaml. Requires that the openshift-install-fips binary is run from a FIPS-enabled RHEL 9 host."
@@ -86,7 +80,7 @@ variable "openshift_installer_version" {
 
 variable "public_ssh_key" {
   type        = string
-  description = "Public SSH key for access to your OpenShift instances and webserver."
+  description = "Public SSH key for access to your OpenShift instances."
   default     = ""
 }
 
@@ -94,36 +88,6 @@ variable "redhat_pull_secret" {
   type        = string
   default     = "PULL SECRET"
   description = "The pull secret that you need for authenticate purposes when downloading container images for OpenShift Container Platform components and services, such as Quay.io. See Install OpenShift Container Platform 4 from the Red Hat Hybrid Cloud Console."
-}
-
-variable "webserver_private_ip" {
-  default     = "10.0.0.200"
-  type        = string
-  description = "The private IP of the host serving boot artifacts over HTTP. In a combined bastion setup, set this to the bastion's private IP. This value is used as the bootArtifactsBaseURL in agent-config.yaml for disconnected installations."
-}
-
-variable "webserver_shape" {
-  default     = "VM.Standard.E5.Flex"
-  type        = string
-  description = "Compute shape of webserver instance. The default shape is VM.Standard.E5.Flex. For more details, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>."
-}
-
-variable "webserver_image_source_id" {
-  default     = "ocid1.image.oc1.us-sanjose-1.aaaaaaaawgtwtqmz5j2kbvwgk6lm5yx2bnom456skma7q62jb5ltw7zoac4a"
-  type        = string
-  description = "The source_id of the image to use for the webserver instance (RHEL 9 or OEL 9). Only used when create_webserver_instance is true."
-}
-
-variable "webserver_ocpus" {
-  type        = number
-  description = "The number of OCPUs for the webserver instance."
-  default     = 2
-}
-
-variable "webserver_memory_in_gbs" {
-  type        = number
-  description = "The amount of memory for the webserver instance, in GBs."
-  default     = 8
 }
 
 variable "set_proxy" {
@@ -388,23 +352,6 @@ variable "existing_public_subnet_id" {
   default     = ""
 }
 
-variable "object_storage_namespace" {
-  type        = string
-  description = "The OCI Object Storage namespace for the tenancy. See https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/understandingnamespaces.htm"
-  default     = ""
-}
-
-variable "object_storage_bucket" {
-  type        = string
-  description = "Name of the OCI Object Storage bucket where the OpenShift installation files will be stored."
-  default     = ""
-}
-
-# variable "openshift_iso_object_name" {
-#   type        = string
-#   description = "Name for the ISO object to be uploaded to OCI Object Storage (e.g., my-cluster-agent.iso)."
-#   default     = ""
-# }
 variable "vcn_dns_label" {
   default     = "openshiftvcn"
   type        = string

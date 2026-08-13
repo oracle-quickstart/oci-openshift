@@ -35,10 +35,6 @@ variable "rendezvous_ip" {
   type = string
 }
 
-variable "webserver_private_ip" {
-  type = string
-}
-
 variable "vcn_cidr" {
   type = string
 }
@@ -72,11 +68,6 @@ variable "https_proxy" {
 variable "no_proxy" {
   type    = string
   default = "fake no_proxy"
-}
-
-variable "is_disconnected_installation" {
-  type    = bool
-  default = false
 }
 
 variable "enable_fips" {

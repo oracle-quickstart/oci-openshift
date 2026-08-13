@@ -25,18 +25,10 @@ variableGroups:
       - enable_fips
       - private_registry
       - additional_trust_bundle
-      - create_webserver_instance
       - set_openshift_installer_version
       - openshift_installer_version
       - public_ssh_key
       - redhat_pull_secret
-      - object_storage_namespace
-      - object_storage_bucket
-      - webserver_private_ip
-      - webserver_shape
-      - webserver_image_source_id
-      - webserver_ocpus
-      - webserver_memory_in_gbs
       - set_proxy
       - http_proxy
       - https_proxy
@@ -227,15 +219,6 @@ variables:
     visible:
       is_disconnected_installation
 
-  create_webserver_instance:
-    type: boolean
-    title: Create Webserver VM
-    description: "Create a dedicated webserver VM. Disable when the bastion host serves as the webserver."
-    default: true
-    required: true
-    visible:
-      is_disconnected_installation
-
   set_openshift_installer_version:
     type: boolean
     title: Set Openshift Installer Version
@@ -264,67 +247,6 @@ variables:
     default: Specify your redhat pull secret. The default value is "PULL SECRET".
     visible:
       is_disconnected_installation
-
-  object_storage_namespace:
-    type: string
-    title: Object Storage Namespace
-    required: true
-    visible:
-      is_disconnected_installation
-
-  object_storage_bucket:
-    type: string
-    title: Object Storage Bucket
-    required: true
-    visible:
-      is_disconnected_installation
-
-  webserver_private_ip:
-    type: string
-    title: Webserver / Bastion Private IP
-    description: "IP address that cluster nodes use to reach boot artifacts over HTTP. When using a combined bastion, set to the bastion's private IP."
-    required: true
-    visible:
-      is_disconnected_installation
-
-  webserver_shape:
-    type: string
-    title: Webserver Shape
-    default: "VM.Standard.E5.Flex"
-    required: true
-    visible:
-      create_webserver_instance
-
-  webserver_image_source_id:
-    title: Webserver Image
-    type: oci:core:image:id
-    required: true
-    visible:
-      create_webserver_instance
-    dependsOn:
-      compartmentId: ${compartment_ocid}
-      operatingSystem: "RHEL"
-      shape: ${webserver_shape}
-
-  webserver_ocpus:
-    type: integer
-    title: Webserver OCPU
-    default: 2
-    minimum: 1
-    maximum: 144
-    required: true
-    visible:
-      create_webserver_instance
-
-  webserver_memory_in_gbs:
-    type: integer
-    title: Webserver Memory
-    default: 8
-    minimum: 1
-    maximum: 1760
-    required: true
-    visible:
-      create_webserver_instance
 
   set_proxy:
     type: boolean
