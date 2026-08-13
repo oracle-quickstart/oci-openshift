@@ -22,6 +22,8 @@ variableGroups:
     variables:
       - rendezvous_ip
       - is_disconnected_installation
+      - enable_fips
+      - create_webserver_instance
       - set_openshift_installer_version
       - openshift_installer_version
       - public_ssh_key
@@ -196,6 +198,14 @@ variables:
       eq:
         - installation_method
         - Agent-based
+
+  enable_fips:
+    type: boolean
+    title: Enable FIPS Mode
+    description: "Enable FIPS 140-2 mode on the OpenShift cluster. Requires openshift-install-fips run from a FIPS-enabled RHEL 9 host."
+    default: false
+    required: true
+    visible: true
 
   create_webserver_instance:
     type: boolean

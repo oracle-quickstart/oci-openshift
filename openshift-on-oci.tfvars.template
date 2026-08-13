@@ -226,6 +226,11 @@ is_disconnected_installation = true
 # as the webserver. See docs/disconnected-bastion-setup.md.
 create_webserver_instance = false
 
+# Enable FIPS 140-3 mode on the OpenShift cluster. Adds "fips: true"
+# to install-config.yaml. Requires openshift-install-fips run from a
+# FIPS-enabled RHEL 9 bastion.
+enable_fips = false
+
 # SSH public key for instance access.
 # Paste the contents of your public key (e.g. ~/.ssh/id_rsa.pub).
 public_ssh_key = ""
