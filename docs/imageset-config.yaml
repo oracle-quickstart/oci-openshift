@@ -30,3 +30,9 @@ mirror:
     # Oracle Cloud Agent (optional — not available in Gov Cloud)
     # Pull URL is tenancy-specific from OCIR, e.g.:
     # - name: <region>.ocir.io/<namespace>/<repo>:<version>
+
+  operators:
+    - catalog: registry.redhat.io/redhat/redhat-operator-index:v4.22
+      packages:
+        # Integrates with OCI Vault for mounting secrets as volumes
+        - name: secrets-store-csi-driver-operator
