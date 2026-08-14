@@ -227,10 +227,12 @@ module "dns" {
 
 module "ocir" {
   source = "./shared_modules/ocir"
+  count  = var.use_oracle_cloud_agent ? 1 : 0
 
-  compartment_ocid = var.compartment_ocid
-  oca_repo_name    = var.oracle_cloud_agent_repo_name
-  region           = local.current_region_key
+  compartment_ocid           = var.compartment_ocid
+  oca_repo_name              = var.oracle_cloud_agent_repo_name
+  oca_marketplace_listing_id = var.oca_marketplace_listing_id
+  region                     = local.current_region_key
 }
 
 module "manifests" {
@@ -263,7 +265,7 @@ module "manifests" {
 
   // Dependency on ocir
   use_oracle_cloud_agent = var.use_oracle_cloud_agent
-  oca_image_pull_link    = module.ocir.image_pull_command
+  oca_image_pull_link    = var.use_oracle_cloud_agent ? module.ocir[0].image_pull_command : ""
 
   // newly added
   region                                   = var.region
