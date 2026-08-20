@@ -11,7 +11,7 @@ output "oci_ccm_config" {
 output "dynamic_custom_manifest" {
   description = "The custom manifests to be applied during OpenShift cluster installation process."
   value       = <<-EOT
-    ${file("${path.module}/oci-ccm-csi-drivers/${var.oci_driver_version}/01-oci-ccm.yml")}
+    ${local.oci_ccm}
     ${local.oci_csi}
     ${local.oci_ccm_config_secret}
     ${local.oci_csi_config_secret}
@@ -33,7 +33,7 @@ output "dynamic_custom_manifest" {
 
 output "manifest_oci_ccm" {
   description = "OCI Cloud Controller Manager resources (Namespace, ServiceAccount, ClusterRole, ClusterRoleBinding, DaemonSet)."
-  value       = trimspace(file("${path.module}/oci-ccm-csi-drivers/${var.oci_driver_version}/01-oci-ccm.yml"))
+  value       = trimspace(local.oci_ccm)
 }
 
 output "manifest_oci_csi" {

@@ -136,6 +136,18 @@ variable "region" {
   type = string
 }
 
+variable "realm_domain_component" {
+  description = "The OCI realm domain component (e.g. 'oraclegovcloud.com' for OC3, 'oraclecloud14.com' for OC14). Used for OCIR URL construction. Leave empty for commercial OC1."
+  type        = string
+  default     = ""
+}
+
+variable "enable_realm_specific_endpoints" {
+  description = "Enable realm-specific service endpoint templates in the OCI Terraform provider and OCI SDK. Required for isolated realms (OC6, OC7, OC11, OC12) where API endpoint URL patterns differ from commercial OC1. Can also be enabled via the OCI_REALM_SPECIFIC_SERVICE_ENDPOINT_TEMPLATE_ENABLED environment variable."
+  type        = bool
+  default     = false
+}
+
 variable "control_plane_shape" {
   default     = "VM.Standard.E5.Flex"
   type        = string

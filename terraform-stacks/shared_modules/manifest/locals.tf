@@ -213,10 +213,17 @@ data:
 EOT
 
   oci_csi = templatefile("${path.module}/manifest-templates/01-oci-csi.yml.tpl", {
-    region_metadata              = var.region_metadata
-    oci_driver_version           = var.oci_driver_version
-    oci_image_source             = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
-    pod_security_enforce_version = lookup(local.oci_pod_security_enforce_versions, var.oci_driver_version, "v1.34")
+    region_metadata                 = var.region_metadata
+    enable_realm_specific_endpoints = var.enable_realm_specific_endpoints
+    oci_driver_version              = var.oci_driver_version
+    oci_image_source                = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
+    pod_security_enforce_version    = lookup(local.oci_pod_security_enforce_versions, var.oci_driver_version, "v1.34")
+  })
+
+  oci_ccm = templatefile("${path.module}/manifest-templates/01-oci-ccm.yml.tpl", {
+    region_metadata                 = var.region_metadata
+    enable_realm_specific_endpoints = var.enable_realm_specific_endpoints
+    oci_image_source                = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
   })
 
   common_config = <<-COMMONCONFIG

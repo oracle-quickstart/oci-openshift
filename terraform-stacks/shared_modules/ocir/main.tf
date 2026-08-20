@@ -37,5 +37,7 @@ locals {
 
   namespace = data.oci_objectstorage_namespace.namespace_details.namespace
 
-  image_pull_command = "${lower(var.region)}.ocir.io/${local.namespace}/${try(local.filtered_images[0].display_name, "no-image-found")}"
+  ocir_domain = var.realm_domain_component != "" ? "ocir.${var.realm_domain_component}" : "ocir.io"
+
+  image_pull_command = "${lower(var.region)}.${local.ocir_domain}/${local.namespace}/${try(local.filtered_images[0].display_name, "no-image-found")}"
 }

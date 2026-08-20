@@ -16,6 +16,7 @@ terraform {
 provider "oci" {
   alias  = "home"
   region = local.home_region
+  realm_specific_service_endpoint_template_enabled = var.enable_realm_specific_endpoints
 }
 
 module "meta" {
@@ -232,15 +233,17 @@ module "ocir" {
   compartment_ocid           = var.compartment_ocid
   oca_repo_name              = var.oracle_cloud_agent_repo_name
   oca_marketplace_listing_id = var.oca_marketplace_listing_id
+  realm_domain_component     = var.realm_domain_component
   region                     = local.current_region_key
 }
 
 module "manifests" {
   source = "./shared_modules/manifest"
 
-  compartment_ocid   = var.compartment_ocid
-  oci_driver_version = var.oci_driver_version
-  region_metadata    = module.meta.region_metadata
+  compartment_ocid                = var.compartment_ocid
+  oci_driver_version              = var.oci_driver_version
+  region_metadata                 = module.meta.region_metadata
+  enable_realm_specific_endpoints = var.enable_realm_specific_endpoints
 
   redhat_pull_secret           = var.redhat_pull_secret
   enable_fips                  = var.enable_fips

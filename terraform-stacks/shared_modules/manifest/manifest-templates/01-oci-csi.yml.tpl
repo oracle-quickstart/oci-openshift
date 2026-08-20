@@ -121,6 +121,10 @@ spec:
           env:
             - name: OCI_REGION_METADATA
               value: '${region_metadata}'
+            %{~ if enable_realm_specific_endpoints ~}
+            - name: OCI_REALM_SPECIFIC_SERVICE_ENDPOINT_TEMPLATE_ENABLED
+              value: "true"
+            %{~ endif ~}
           %{~ endif ~}
           imagePullPolicy: IfNotPresent
           volumeMounts:
@@ -292,6 +296,10 @@ spec:
             %{~ if region_metadata != "" ~}
             - name: OCI_REGION_METADATA
               value: '${region_metadata}'
+            %{~ if enable_realm_specific_endpoints ~}
+            - name: OCI_REALM_SPECIFIC_SERVICE_ENDPOINT_TEMPLATE_ENABLED
+              value: "true"
+            %{~ endif ~}
             %{~ endif ~}
           image: ${oci_image_source}
           securityContext:

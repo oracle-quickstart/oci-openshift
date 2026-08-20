@@ -104,6 +104,11 @@ variable "region_metadata" {
   type = string
 }
 
+variable "enable_realm_specific_endpoints" {
+  type    = bool
+  default = false
+}
+
 variable "region" {
   type = string
 }
