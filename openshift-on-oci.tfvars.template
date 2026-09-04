@@ -220,6 +220,20 @@ load_balancer_shape_details_maximum_bandwidth_in_mbps = 50
 # Set to true for disconnected (air-gapped) installations.
 is_disconnected_installation = true
 
+# Path to the rootfs image produced by 'openshift-install agent create image'
+# at boot-artifacts/agent.x86_64-rootfs.img. The agent installer always
+# creates a minimal ISO for platform: external (OCI), which requires nodes
+# to download the rootfs over HTTP at boot time. Terraform uploads this file
+# to OCI Object Storage and creates a PAR that nodes fetch it from.
+#
+# Leave empty during pass 1 (infrastructure only). Set during pass 2 after
+# running 'agent create image'.
+# rootfs_file_path = "/path/to/boot-artifacts/agent.x86_64-rootfs.img"
+
+# Hours until the rootfs PAR expires (default: 168 = 7 days).
+# Must remain valid through the entire cluster installation.
+# rootfs_par_expiry_hours = 168
+
 # Enable FIPS 140-3 mode on the OpenShift cluster. Adds "fips: true"
 # to install-config.yaml. Requires openshift-install-fips run from a
 # FIPS-enabled RHEL 9 bastion.

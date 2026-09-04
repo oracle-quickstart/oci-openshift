@@ -85,6 +85,11 @@ variable "additional_trust_bundle" {
   default = ""
 }
 
+variable "boot_artifacts_base_url" {
+  type    = string
+  default = ""
+}
+
 variable "set_proxy" {
   type    = bool
   default = false

@@ -317,6 +317,7 @@ metadata:
   name: ${var.cluster_name}
   namespace: ${var.cluster_name}
 rendezvousIP: ${var.rendezvous_ip}
+${var.boot_artifacts_base_url != "" ? "bootArtifactsBaseURL: ${var.boot_artifacts_base_url}" : ""}
   EOT
 
   install_config = <<EOT

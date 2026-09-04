@@ -48,6 +48,18 @@ variable "is_disconnected_installation" {
   default     = false
 }
 
+variable "rootfs_file_path" {
+  type        = string
+  description = "Local path to the agent.x86_64-rootfs.img file produced by 'openshift-install agent create image' in the boot-artifacts/ directory. Required for disconnected installs. Leave empty during pass 1 (infrastructure only); set during pass 2 after generating the ISO."
+  default     = ""
+}
+
+variable "rootfs_par_expiry_hours" {
+  type        = number
+  description = "Hours until the rootfs PAR expires. Must remain valid through the entire cluster installation."
+  default     = 168
+}
+
 variable "enable_fips" {
   type        = bool
   description = "Enable FIPS mode on the OpenShift cluster. When true, 'fips: true' is added to install-config.yaml. Requires that the openshift-install-fips binary is run from a FIPS-enabled RHEL 9 host."

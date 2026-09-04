@@ -226,6 +226,21 @@ module "dns" {
   op_vcn_openshift_vcn = module.network.op_vcn_openshift_vcn
 }
 
+module "rootfs_storage" {
+  source = "./shared_modules/rootfs_storage"
+  count  = var.is_disconnected_installation ? 1 : 0
+
+  depends_on = [module.tags.wait_for_tag_consistency]
+
+  compartment_ocid = var.compartment_ocid
+  cluster_name     = var.cluster_name
+  rootfs_file_path = var.rootfs_file_path
+  region           = var.region
+  realm_domain     = var.realm_domain_component != "" ? var.realm_domain_component : "oraclecloud.com"
+  par_expiry_hours = var.rootfs_par_expiry_hours
+  defined_tags     = module.resource_attribution_tags.openshift_resource_attribution_tag
+}
+
 module "ocir" {
   source = "./shared_modules/ocir"
   count  = var.use_oracle_cloud_agent ? 1 : 0
@@ -265,6 +280,9 @@ module "manifests" {
   compute_count         = local.effective_compute_count
   public_ssh_key        = var.public_ssh_key
   cluster_name          = var.cluster_name
+
+  // Dependency on rootfs_storage
+  boot_artifacts_base_url = var.is_disconnected_installation ? module.rootfs_storage[0].boot_artifacts_base_url : ""
 
   // Dependency on ocir
   use_oracle_cloud_agent = var.use_oracle_cloud_agent
