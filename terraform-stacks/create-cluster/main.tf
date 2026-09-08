@@ -236,7 +236,7 @@ module "rootfs_storage" {
   cluster_name     = var.cluster_name
   rootfs_file_path = var.rootfs_file_path
   region           = var.region
-  realm_domain     = var.realm_domain_component != "" ? var.realm_domain_component : "oraclecloud.com"
+  realm_domain     = local.realm_domain
   par_expiry_hours = var.rootfs_par_expiry_hours
   defined_tags     = module.resource_attribution_tags.openshift_resource_attribution_tag
 }
