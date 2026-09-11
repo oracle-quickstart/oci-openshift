@@ -79,12 +79,7 @@ variableGroups:
       - starting_ad_name_compute
       - distribute_compute_instances_across_fds
       - starting_fd_name_compute
-    visible:
-      and:
-        - create_openshift_instances
-        - eq:
-            - use_autoscaling_operator
-            - false
+    visible: create_openshift_instances
 
   - title: "Networking Configuration"
     variables:
