@@ -20,6 +20,8 @@ resource "oci_objectstorage_bucket" "boot_artifacts" {
   defined_tags   = var.defined_tags
 }
 
+# --- rootfs ---
+
 resource "oci_objectstorage_object" "rootfs" {
   count     = var.rootfs_file_path != "" ? 1 : 0
   namespace = data.oci_objectstorage_namespace.ns.namespace
@@ -34,6 +36,29 @@ resource "oci_objectstorage_preauthrequest" "rootfs" {
   name        = "${var.cluster_name}-rootfs-par"
   access_type = "ObjectRead"
   object_name = "agent.x86_64-rootfs.img"
+  time_expires = timeadd(timestamp(), "${var.par_expiry_hours}h")
+
+  lifecycle {
+    ignore_changes = [time_expires]
+  }
+}
+
+# --- agent ISO ---
+
+resource "oci_objectstorage_object" "iso" {
+  count     = var.iso_file_path != "" ? 1 : 0
+  namespace = data.oci_objectstorage_namespace.ns.namespace
+  bucket    = oci_objectstorage_bucket.boot_artifacts.name
+  object    = "agent.x86_64.iso"
+  source    = var.iso_file_path
+}
+
+resource "oci_objectstorage_preauthrequest" "iso" {
+  namespace   = data.oci_objectstorage_namespace.ns.namespace
+  bucket      = oci_objectstorage_bucket.boot_artifacts.name
+  name        = "${var.cluster_name}-iso-par"
+  access_type = "ObjectRead"
+  object_name = "agent.x86_64.iso"
   time_expires = timeadd(timestamp(), "${var.par_expiry_hours}h")
 
   lifecycle {

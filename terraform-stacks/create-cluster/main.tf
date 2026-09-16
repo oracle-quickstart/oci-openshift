@@ -80,7 +80,7 @@ module "image" {
   image_name                  = var.cluster_name
   is_control_plane_iscsi_type = local.is_control_plane_iscsi_type
   is_compute_iscsi_type       = local.is_compute_iscsi_type
-  openshift_image_source_uri  = var.openshift_image_source_uri
+  openshift_image_source_uri  = var.is_disconnected_installation ? module.boot_artifacts[0].iso_par_url : var.openshift_image_source_uri
   control_plane_shape         = var.control_plane_shape
   compute_shape               = var.compute_shape
 
@@ -226,8 +226,8 @@ module "dns" {
   op_vcn_openshift_vcn = module.network.op_vcn_openshift_vcn
 }
 
-module "rootfs_storage" {
-  source = "./shared_modules/rootfs_storage"
+module "boot_artifacts" {
+  source = "./shared_modules/boot_artifacts"
   count  = var.is_disconnected_installation ? 1 : 0
 
   depends_on = [module.tags.wait_for_tag_consistency]
@@ -235,6 +235,7 @@ module "rootfs_storage" {
   compartment_ocid = var.compartment_ocid
   cluster_name     = var.cluster_name
   rootfs_file_path = var.rootfs_file_path
+  iso_file_path    = var.iso_file_path
   region           = var.region
   realm_domain     = local.realm_domain
   par_expiry_hours = var.rootfs_par_expiry_hours
@@ -281,8 +282,8 @@ module "manifests" {
   public_ssh_key        = var.public_ssh_key
   cluster_name          = var.cluster_name
 
-  // Dependency on rootfs_storage
-  boot_artifacts_base_url = var.is_disconnected_installation ? module.rootfs_storage[0].boot_artifacts_base_url : ""
+  // Dependency on boot_artifacts
+  boot_artifacts_base_url = var.is_disconnected_installation ? module.boot_artifacts[0].boot_artifacts_base_url : ""
 
   // Dependency on ocir
   use_oracle_cloud_agent = var.use_oracle_cloud_agent

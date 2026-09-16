@@ -11,6 +11,11 @@ variable "rootfs_file_path" {
   default = ""
 }
 
+variable "iso_file_path" {
+  type    = string
+  default = ""
+}
+
 variable "region" {
   type = string
 }

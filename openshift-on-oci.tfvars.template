@@ -63,12 +63,15 @@ rendezvous_ip = "10.40.16.20"
 
 
 # -----------------------------------------------------------------------------
-# 4. OpenShift Image (REQUIRED)
+# 4. OpenShift Image (REQUIRED for connected installs)
 # -----------------------------------------------------------------------------
 
 # Pre-Authenticated Request (PAR) URL to the RHCOS QCOW2 image in
 # OCI Object Storage. The Terraform image module imports this as an
 # OCI custom image that cluster VMs boot from.
+#
+# For disconnected installs (is_disconnected_installation = true), this is
+# auto-generated from the boot_artifacts module — set iso_file_path instead.
 #
 # WARNING: PAR URLs contain a time-limited access token. Do not commit
 # this value to version control. Generate a new PAR when needed.
@@ -220,17 +223,16 @@ load_balancer_shape_details_maximum_bandwidth_in_mbps = 50
 # Set to true for disconnected (air-gapped) installations.
 is_disconnected_installation = true
 
-# Path to the rootfs image produced by 'openshift-install agent create image'
-# at boot-artifacts/agent.x86_64-rootfs.img. The agent installer always
-# creates a minimal ISO for platform: external (OCI), which requires nodes
-# to download the rootfs over HTTP at boot time. Terraform uploads this file
-# to OCI Object Storage and creates a PAR that nodes fetch it from.
+# Paths to the agent ISO and rootfs produced by 'openshift-install agent create image'.
+# Terraform uploads both to OCI Object Storage and creates PARs automatically.
+# The ISO PAR replaces the manual openshift_image_source_uri for disconnected installs.
 #
 # Leave empty during pass 1 (infrastructure only). Set during pass 2 after
 # running 'agent create image'.
+# iso_file_path    = "/path/to/agent.x86_64.iso"
 # rootfs_file_path = "/path/to/boot-artifacts/agent.x86_64-rootfs.img"
 
-# Hours until the rootfs PAR expires (default: 168 = 7 days).
+# Hours until the boot artifact PARs expire (default: 168 = 7 days).
 # Must remain valid through the entire cluster installation.
 # rootfs_par_expiry_hours = 168
 

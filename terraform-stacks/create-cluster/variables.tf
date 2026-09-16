@@ -54,6 +54,12 @@ variable "rootfs_file_path" {
   default     = ""
 }
 
+variable "iso_file_path" {
+  type        = string
+  description = "Local path to the agent.x86_64.iso file produced by 'openshift-install agent create image'. Required for disconnected installs. Leave empty during pass 1 (infrastructure only); set during pass 2 after generating the ISO."
+  default     = ""
+}
+
 variable "rootfs_par_expiry_hours" {
   type        = number
   description = "Hours until the rootfs PAR expires. Must remain valid through the entire cluster installation."
