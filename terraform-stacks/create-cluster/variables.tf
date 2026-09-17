@@ -155,7 +155,7 @@ variable "region" {
 }
 
 variable "realm_domain_component" {
-  description = "The OCI realm domain component (e.g. 'oraclegovcloud.com' for OC3, 'oraclecloud14.com' for OC14). Used for OCIR URL construction. Leave empty for commercial OC1."
+  description = "OCI realm domain override. Normally auto-detected from IMDS when running on a bastion inside OCI. Only set this if running terraform from outside OCI (e.g. 'oraclegovcloud.com' for OC3, 'oraclecloud.eu' for OC19)."
   type        = string
   default     = ""
 }

@@ -30,31 +30,12 @@ locals {
 
   openshift_installer_version = var.set_openshift_installer_version ? var.openshift_installer_version : "latest"
 
-  # Derive the OCI realm domain. Priority order:
-  #   1. Explicit var.realm_domain_component (user override)
-  #   2. IMDS realmDomainComponent (authoritative, from the instance metadata service)
-  #   3. Hardcoded map keyed on tenancy OCID realm segment (fallback for running outside OCI)
-  realm_id = split(".", var.tenancy_ocid)[2]
-  realm_domain_map = {
-    "oc1"  = "oraclecloud.com"
-    "oc2"  = "oraclegovcloud.com"
-    "oc3"  = "oraclegovcloud.com"
-    "oc4"  = "oraclegovcloud.uk"
-    "oc5"  = "oraclecloud5.com"
-    "oc8"  = "oraclecloud8.com"
-    "oc9"  = "oraclecloud9.com"
-    "oc10" = "oraclecloud10.com"
-    "oc14" = "oraclecloud14.com"
-    "oc19" = "oraclecloud19.com"
-    "oc20" = "oraclecloud20.com"
-    "oc21" = "oraclecloud21.com"
-    "oc24" = "oraclecloud24.com"
-    "oc26" = "oraclecloud26.com"
-  }
-  imds_realm_domain  = try(jsondecode(module.meta.region_metadata)["realmDomainComponent"], "")
-  map_realm_domain   = lookup(local.realm_domain_map, local.realm_id, "oraclecloud.com")
-  derived_realm_domain = local.imds_realm_domain != "" ? local.imds_realm_domain : local.map_realm_domain
-  realm_domain = var.realm_domain_component != "" ? var.realm_domain_component : local.derived_realm_domain
+  # Derive the OCI realm domain from the instance metadata service (IMDS).
+  # IMDS is authoritative and works for every realm including restricted ones
+  # like OC6 that aren't in any hardcoded map. If IMDS is unavailable (running
+  # terraform from outside OCI), set var.realm_domain_component explicitly.
+  imds_realm_domain = try(jsondecode(module.meta.region_metadata)["realmDomainComponent"], "")
+  realm_domain      = var.realm_domain_component != "" ? var.realm_domain_component : local.imds_realm_domain
 
   # how long resource creation will be paused to allow for newly created tagging resources to reach consistency
   wait_for_new_tag_consistency_wait_time = "30s"
