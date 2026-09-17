@@ -30,8 +30,10 @@ locals {
 
   openshift_installer_version = var.set_openshift_installer_version ? var.openshift_installer_version : "latest"
 
-  # Derive the OCI realm domain from the tenancy OCID.
-  # OCID format: ocid1.<resource>.<realm>.<region>.<unique_id>
+  # Derive the OCI realm domain. Priority order:
+  #   1. Explicit var.realm_domain_component (user override)
+  #   2. IMDS realmDomainComponent (authoritative, from the instance metadata service)
+  #   3. Hardcoded map keyed on tenancy OCID realm segment (fallback for running outside OCI)
   realm_id = split(".", var.tenancy_ocid)[2]
   realm_domain_map = {
     "oc1"  = "oraclecloud.com"
@@ -49,7 +51,9 @@ locals {
     "oc24" = "oraclecloud24.com"
     "oc26" = "oraclecloud26.com"
   }
-  derived_realm_domain = lookup(local.realm_domain_map, local.realm_id, "oraclecloud.com")
+  imds_realm_domain  = try(jsondecode(module.meta.region_metadata)["realmDomainComponent"], "")
+  map_realm_domain   = lookup(local.realm_domain_map, local.realm_id, "oraclecloud.com")
+  derived_realm_domain = local.imds_realm_domain != "" ? local.imds_realm_domain : local.map_realm_domain
   realm_domain = var.realm_domain_component != "" ? var.realm_domain_component : local.derived_realm_domain
 
   # how long resource creation will be paused to allow for newly created tagging resources to reach consistency
