@@ -1,12 +1,12 @@
 locals {
-  default_oci_driver_image = "ghcr.io/nikhisin3001/cloud-provider-oci:v1.34.0"
+  default_oci_driver_image = "ghcr.io/oracle/cloud-provider-oci:v1.34.0"
   is_autoscaler_bm_shape   = can(regex("^BM\\..*$", var.autoscaler_node_shape))
   cert_manager_version     = "v1.16.3"
 
   oci_image_sources = {
     "v1.33.1"     = "ghcr.io/oracle/cloud-provider-oci:v1.33.1"
     "v1.32.2"     = "ghcr.io/oracle/cloud-provider-oci:v1.32.2"
-    "v1.34.0"     = "ghcr.io/nikhisin3001/cloud-provider-oci:v1.34.0"
+    "v1.34.0"     = "ghcr.io/oracle/cloud-provider-oci:v1.34.0"
     "v1.32.0-UHP" = "ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA"
   }
 
@@ -365,6 +365,34 @@ imageDigestSources:
 - mirrors:
   - ${var.private_registry}/openshift/release-images
   source: quay.io/openshift-release-dev/ocp-release
+imageTagSources:
+- mirrors:
+  - ${var.private_registry}/oracle/cloud-provider-oci
+  source: ghcr.io/oracle/cloud-provider-oci
+- mirrors:
+  - ${var.private_registry}/oracle/cloud-provider-oci
+  source: ghcr.io/nikhisin3001/cloud-provider-oci
+- mirrors:
+  - ${var.private_registry}/sig-storage/csi-provisioner
+  source: registry.k8s.io/sig-storage/csi-provisioner
+- mirrors:
+  - ${var.private_registry}/sig-storage/csi-attacher
+  source: registry.k8s.io/sig-storage/csi-attacher
+- mirrors:
+  - ${var.private_registry}/sig-storage/csi-resizer
+  source: registry.k8s.io/sig-storage/csi-resizer
+- mirrors:
+  - ${var.private_registry}/sig-storage/csi-node-driver-registrar
+  source: registry.k8s.io/sig-storage/csi-node-driver-registrar
+- mirrors:
+  - ${var.private_registry}/sig-storage/csi-snapshotter
+  source: registry.k8s.io/sig-storage/csi-snapshotter
+- mirrors:
+  - ${var.private_registry}/sig-storage/snapshot-controller
+  source: registry.k8s.io/sig-storage/snapshot-controller
+- mirrors:
+  - ${var.private_registry}/openshift/origin-cli
+  source: quay.io/openshift/origin-cli
 MIRRORS
 ) : ""}
 sshKey: '${var.public_ssh_key}'
