@@ -90,6 +90,11 @@ variable "boot_artifacts_base_url" {
   default = ""
 }
 
+variable "additional_ntp_sources" {
+  type    = list(string)
+  default = []
+}
+
 variable "set_proxy" {
   type    = bool
   default = false

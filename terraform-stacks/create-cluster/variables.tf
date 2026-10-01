@@ -66,6 +66,12 @@ variable "rootfs_par_expiry_hours" {
   default     = 168
 }
 
+variable "additional_ntp_sources" {
+  type        = list(string)
+  description = "Additional NTP sources (hostname or IP) added to all cluster nodes via agent-config.yaml. On OCI, set to [\"169.254.169.254\"] to use the instance metadata endpoint as the NTP server."
+  default     = ["169.254.169.254"]
+}
+
 variable "enable_fips" {
   type        = bool
   description = "Enable FIPS mode on the OpenShift cluster. When true, 'fips: true' is added to install-config.yaml. Requires that the openshift-install-fips binary is run from a FIPS-enabled RHEL 9 host."

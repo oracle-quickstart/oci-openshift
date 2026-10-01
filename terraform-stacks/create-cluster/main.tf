@@ -285,6 +285,9 @@ module "manifests" {
   // Dependency on boot_artifacts
   boot_artifacts_base_url = var.is_disconnected_installation ? module.boot_artifacts[0].boot_artifacts_base_url : ""
 
+  // NTP
+  additional_ntp_sources = var.additional_ntp_sources
+
   // Dependency on ocir
   use_oracle_cloud_agent = var.use_oracle_cloud_agent
   oca_image_pull_link    = var.use_oracle_cloud_agent ? module.ocir[0].image_pull_command : ""
