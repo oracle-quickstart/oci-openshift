@@ -41,7 +41,7 @@ Upload the `*-iscsi.qcow2` file to Object Storage, create a read PAR URL, and us
 
 Use the `terraform-stacks/create-cluster` stack and set:
 
-```hcl
+```
 use_autoscaling_operator = true
 
 autoscaler_node_shape            = "<autoscaling-worker-shape>"
