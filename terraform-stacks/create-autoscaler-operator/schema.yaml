@@ -1,6 +1,6 @@
 title: OpenShift Cluster on OCI - Autoscaling Operator
 description: A Terraform Stack that discovers an existing OpenShift cluster's networking and LBs, builds the autoscaling node image, and outputs a manifest for the OCI autoscaling operator.
-schemaVersion: 1.6.1
+schemaVersion: 1.6.2
 version: "20250213"
 locale: "en"
 
