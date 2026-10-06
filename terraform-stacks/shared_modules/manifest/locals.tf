@@ -10,6 +10,37 @@ locals {
     "v1.32.0-UHP" = "ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA"
   }
 
+  # Images referenced by tag rather than digest. imageDigestSources in
+  # install-config.yaml only redirects digest pulls, so these need an
+  # ImageTagMirrorSet CR to resolve against a disconnected mirror.
+  oci_driver_repo = split(":", lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image))[0]
+
+  tag_mirrored_repos = concat([local.oci_driver_repo], [
+    "ghcr.io/oracle-samples/openshift-oracle-capi-autoscaling",
+    "quay.io/openshift/origin-cli",
+    "registry.k8s.io/sig-storage/csi-provisioner",
+    "registry.k8s.io/sig-storage/csi-attacher",
+    "registry.k8s.io/sig-storage/csi-resizer",
+    "registry.k8s.io/sig-storage/csi-node-driver-registrar",
+    "registry.k8s.io/sig-storage/csi-snapshotter",
+    "registry.k8s.io/sig-storage/snapshot-controller",
+  ])
+
+  image_tag_mirror_entries = [
+    for repo in local.tag_mirrored_repos :
+    "  - source: ${repo}\n    mirrors:\n    - ${var.private_registry}/${join("/", slice(split("/", repo), 1, length(split("/", repo))))}"
+  ]
+
+  image_tag_mirror_set = var.private_registry == "" ? "" : <<EOT
+apiVersion: config.openshift.io/v1
+kind: ImageTagMirrorSet
+metadata:
+  name: image-tag-mirror
+spec:
+  imageTagMirrors:
+${join("\n", local.image_tag_mirror_entries)}
+  EOT
+
   oci_pod_security_enforce_versions = {
     "v1.33.1"     = "v1.33"
     "v1.32.2"     = "v1.32"
@@ -366,34 +397,6 @@ imageDigestSources:
 - mirrors:
   - ${var.private_registry}/openshift/release-images
   source: quay.io/openshift-release-dev/ocp-release
-imageTagSources:
-- mirrors:
-  - ${var.private_registry}/oracle/cloud-provider-oci
-  source: ghcr.io/oracle/cloud-provider-oci
-- mirrors:
-  - ${var.private_registry}/oracle/cloud-provider-oci
-  source: ghcr.io/nikhisin3001/cloud-provider-oci
-- mirrors:
-  - ${var.private_registry}/sig-storage/csi-provisioner
-  source: registry.k8s.io/sig-storage/csi-provisioner
-- mirrors:
-  - ${var.private_registry}/sig-storage/csi-attacher
-  source: registry.k8s.io/sig-storage/csi-attacher
-- mirrors:
-  - ${var.private_registry}/sig-storage/csi-resizer
-  source: registry.k8s.io/sig-storage/csi-resizer
-- mirrors:
-  - ${var.private_registry}/sig-storage/csi-node-driver-registrar
-  source: registry.k8s.io/sig-storage/csi-node-driver-registrar
-- mirrors:
-  - ${var.private_registry}/sig-storage/csi-snapshotter
-  source: registry.k8s.io/sig-storage/csi-snapshotter
-- mirrors:
-  - ${var.private_registry}/sig-storage/snapshot-controller
-  source: registry.k8s.io/sig-storage/snapshot-controller
-- mirrors:
-  - ${var.private_registry}/openshift/origin-cli
-  source: quay.io/openshift/origin-cli
 MIRRORS
 ) : ""}
 sshKey: '${var.public_ssh_key}'

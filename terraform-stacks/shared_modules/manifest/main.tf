@@ -111,6 +111,11 @@ output "autoscaling_manifest" {
   }
 }
 
+output "manifest_image_tag_mirror_set" {
+  description = "ImageTagMirrorSet redirecting tag-based image pulls to the private registry. Write to openshift/99-image-tag-mirror-set.yml before generating the agent ISO. Null when private_registry is unset."
+  value       = var.private_registry == "" ? null : trimspace(local.image_tag_mirror_set)
+}
+
 output "agent_config" {
   value = local.agent_config
 }
