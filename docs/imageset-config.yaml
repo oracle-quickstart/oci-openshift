@@ -22,7 +22,7 @@ mirror:
     - name: registry.k8s.io/sig-storage/snapshot-controller:v6.3.0
 
     # OpenShift CLI used as init container in CCM DaemonSet
-    - name: quay.io/openshift/origin-cli:4.20
+    - name: quay.io/openshift/origin-cli:4.22
 
     # OCI OpenShift Autoscaler (optional — include if using autoscaler)
     - name: ghcr.io/oracle-samples/openshift-oracle-capi-autoscaling:latest
