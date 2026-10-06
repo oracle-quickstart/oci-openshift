@@ -1,7 +1,7 @@
 SHELL = bash
 
 PKG_VERSION ?= v1.6.2
-OCI_DRIVER_VERSION ?= v1.34.0
+OCI_DRIVER_VERSION ?= v1.36.0
 
 PRE_COMMIT := $(shell command -v pre-commit 2> /dev/null)
 PODMAN := $(shell command -v podman 2> /dev/null)
@@ -288,7 +288,7 @@ else
 endif
 
 # export KUBECONFIG=<path_to_kubeconfig>
-# make update-drivers OCI_DRIVER_VERSION=v1.34.0
+# make update-drivers OCI_DRIVER_VERSION=v1.36.0
 .PHONY: update-drivers
 update-drivers:
 ifdef OC

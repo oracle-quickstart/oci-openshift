@@ -763,8 +763,8 @@ variables:
     type: enum
     title: OCI CCM and CSI Driver Version
     enum:
-    - v1.34.0
-    default: v1.34.0
+    - v1.36.0
+    default: v1.36.0
     required: true
 
   use_existing_tags:
