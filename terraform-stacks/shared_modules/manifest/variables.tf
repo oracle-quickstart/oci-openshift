@@ -6,8 +6,8 @@ variable "oci_driver_version" {
   type = string
 
   validation {
-    condition     = var.oci_driver_version == "v1.34.0"
-    error_message = "The create-cluster stack only supports oci_driver_version = v1.34.0."
+    condition     = var.oci_driver_version == "v1.36.0"
+    error_message = "The create-cluster stack only supports oci_driver_version = v1.36.0."
   }
 }
 

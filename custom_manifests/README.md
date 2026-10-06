@@ -17,7 +17,6 @@ View usage during [installation](/README.md#documentation-and-installation-instr
 **04-cluster-network.yml** | Cluster resource that configures the default Network's internalMasqueradeSubnet to 169.254.64.0/18 to avoid collisions with iSCSI boot volumes. |Required when using Bare Metal instances with OpenShift versions >= 4.17
 **05-oci-eval-user-data.yml** | MachineConfig that evaluates and runs [userdata scripts](/terraform-stacks/shared_modules/compute/userdata/) stored in the metadata of instances. | Required when using Bare Metal instances
 **06-oci-oca.yml** | Cluster resources for Oracle Cloud Agent on OpenShift nodes. See [oracle-cloud-agent.md](/docs/oracle-cloud-agent.md). | Optional
-**07-configure-bm-vlan-mtu.yml** | MachineConfig that configures MTU 9000 on VLAN-backed bare metal interfaces. | Required when using Bare Metal instances with VLAN-backed networking
 **08-autoscaling-operator.yml** | Bootstrap manifest for the OCI OpenShift Autoscaler operator namespace, activation job, and initial operator install flow. | Required when enabling OCI OpenShift Autoscaler
 **09-autoscaling-operator-runtime.yml** | Runtime manifest applied by the autoscaler activation job to install the OCI CAPI operator controller, RBAC, CRD, and provider installer resources. | Required when enabling OCI OpenShift Autoscaler
 **10-autoscaling-operator-configs.yml** | Configuration template for autoscaler operator, CAPI, CAPOCI, Cluster Autoscaler, OCI networking, image, and node-pool settings. | Required when enabling OCI OpenShift Autoscaler
