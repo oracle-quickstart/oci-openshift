@@ -56,7 +56,7 @@ Also be aware of the following with respect to OpenShift Virtualization:
 ## Installation
 
 ### Using the UHP CSI Driver
-The UHP-enabled OCI CSI driver is available when installing a cluster using our create-cluster Terraform stack (>v1.4.0) --- set `oci_driver_version`=[v1.32.0-UHP](/custom_manifests/oci-ccm-csi-drivers/v1.32.0-UHP/) and the `dynamic_custom_manifest` output will reference the UHP-enabled CSI driver container images:
+The UHP-enabled OCI CSI driver is available when installing a cluster using our create-cluster Terraform stack (>v1.4.0) --- set `oci_driver_version`=[v1.32.0-UHP](/custom_manifests/oci-ccm-csi-drivers/v1.32.0-UHP/) and the individual manifest outputs (including `manifest_oci_csi`) will reference the UHP-enabled CSI driver container images:
 
 ```
 ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-beta (default)
@@ -101,7 +101,7 @@ reclaimPolicy: Delete
     oc patch storageclass oci-bv-uhp -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'
     ```
 
-4. The OCI CSI driver supports snapshotting, and if you want to be able to clone VMs or perform snapshot/restore operations, you must have a **default** `VolumeSnapshotClass`. The `oci-snapshot` `VolumeSnapshotClass` is annotated as the **default** and included in the `dynamic_custom_manifest` output from `create-cluster` (**>=v1.4.2**).
+4. The OCI CSI driver supports snapshotting, and if you want to be able to clone VMs or perform snapshot/restore operations, you must have a **default** `VolumeSnapshotClass`. The `oci-snapshot` `VolumeSnapshotClass` is annotated as the **default** and included in the `manifest_oci_csi` output from `create-cluster` (**>=v1.4.2**).
 
     If you are missing a `VolumeSnapshotClass` and need to add one to an existing cluster, review the following manifest and apply it to your cluster:
 

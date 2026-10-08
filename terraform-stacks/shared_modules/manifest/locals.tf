@@ -1,14 +1,45 @@
 locals {
-  default_oci_driver_image = "ghcr.io/nikhisin3001/cloud-provider-oci:v1.34.0"
+  default_oci_driver_image = "ghcr.io/oracle/cloud-provider-oci:v1.34.0"
   is_autoscaler_bm_shape   = can(regex("^BM\\..*$", var.autoscaler_node_shape))
   cert_manager_version     = "v1.16.3"
 
   oci_image_sources = {
     "v1.33.1"     = "ghcr.io/oracle/cloud-provider-oci:v1.33.1"
     "v1.32.2"     = "ghcr.io/oracle/cloud-provider-oci:v1.32.2"
-    "v1.34.0"     = "ghcr.io/nikhisin3001/cloud-provider-oci:v1.34.0"
+    "v1.34.0"     = "ghcr.io/oracle/cloud-provider-oci:v1.34.0"
     "v1.32.0-UHP" = "ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA"
   }
+
+  # Images referenced by tag rather than digest. imageDigestSources in
+  # install-config.yaml only redirects digest pulls, so these need an
+  # ImageTagMirrorSet CR to resolve against a disconnected mirror.
+  oci_driver_repo = split(":", lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image))[0]
+
+  tag_mirrored_repos = concat([local.oci_driver_repo], [
+    "ghcr.io/oracle-samples/openshift-oracle-capi-autoscaling",
+    "quay.io/openshift/origin-cli",
+    "registry.k8s.io/sig-storage/csi-provisioner",
+    "registry.k8s.io/sig-storage/csi-attacher",
+    "registry.k8s.io/sig-storage/csi-resizer",
+    "registry.k8s.io/sig-storage/csi-node-driver-registrar",
+    "registry.k8s.io/sig-storage/csi-snapshotter",
+    "registry.k8s.io/sig-storage/snapshot-controller",
+  ])
+
+  image_tag_mirror_entries = [
+    for repo in local.tag_mirrored_repos :
+    "  - source: ${repo}\n    mirrors:\n    - ${var.private_registry}/${join("/", slice(split("/", repo), 1, length(split("/", repo))))}"
+  ]
+
+  image_tag_mirror_set = var.private_registry == "" ? "" : <<EOT
+apiVersion: config.openshift.io/v1
+kind: ImageTagMirrorSet
+metadata:
+  name: image-tag-mirror
+spec:
+  imageTagMirrors:
+${join("\n", local.image_tag_mirror_entries)}
+  EOT
 
   oci_pod_security_enforce_versions = {
     "v1.33.1"     = "v1.33"
@@ -103,7 +134,7 @@ spec:
       serviceAccountName: oci-capi-operator-controller-manager
       containers:
       - name: provider-installer
-        image: quay.io/openshift/origin-cli:4.20
+        image: quay.io/openshift/origin-cli:4.22
         envFrom:
         - configMapRef:
             name: oci-capi-operator-config
@@ -213,10 +244,17 @@ data:
 EOT
 
   oci_csi = templatefile("${path.module}/manifest-templates/01-oci-csi.yml.tpl", {
-    region_metadata              = var.region_metadata
-    oci_driver_version           = var.oci_driver_version
-    oci_image_source             = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
-    pod_security_enforce_version = lookup(local.oci_pod_security_enforce_versions, var.oci_driver_version, "v1.34")
+    region_metadata                 = var.region_metadata
+    enable_realm_specific_endpoints = var.enable_realm_specific_endpoints
+    oci_driver_version              = var.oci_driver_version
+    oci_image_source                = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
+    pod_security_enforce_version    = lookup(local.oci_pod_security_enforce_versions, var.oci_driver_version, "v1.34")
+  })
+
+  oci_ccm = templatefile("${path.module}/manifest-templates/01-oci-ccm.yml.tpl", {
+    region_metadata                 = var.region_metadata
+    enable_realm_specific_endpoints = var.enable_realm_specific_endpoints
+    oci_image_source                = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
   })
 
   common_config = <<-COMMONCONFIG
@@ -310,7 +348,8 @@ metadata:
   name: ${var.cluster_name}
   namespace: ${var.cluster_name}
 rendezvousIP: ${var.rendezvous_ip}
-${var.is_disconnected_installation ? "bootArtifactsBaseURL: http://${var.webserver_private_ip}" : ""}
+${var.boot_artifacts_base_url != "" ? "bootArtifactsBaseURL: ${var.boot_artifacts_base_url}" : ""}
+${length(var.additional_ntp_sources) > 0 ? "additionalNTPSources:\n${join("\n", formatlist("- %s", var.additional_ntp_sources))}" : ""}
   EOT
 
   install_config = <<EOT
@@ -347,6 +386,19 @@ proxy:
   noProxy: ${var.no_proxy},${var.vcn_cidr}
 PROXY
 : "")}
+${var.enable_fips ? "fips: true" : ""}
+${var.additional_trust_bundle != "" ? "additionalTrustBundlePolicy: Always" : ""}
+${var.additional_trust_bundle != "" ? "additionalTrustBundle: |\n  ${indent(2, trimspace(var.additional_trust_bundle))}" : ""}
+${var.private_registry != "" ? trimspace(<<-MIRRORS
+imageDigestSources:
+- mirrors:
+  - ${var.private_registry}/openshift/release
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+- mirrors:
+  - ${var.private_registry}/openshift/release-images
+  source: quay.io/openshift-release-dev/ocp-release
+MIRRORS
+) : ""}
 sshKey: '${var.public_ssh_key}'
 pullSecret: '${var.redhat_pull_secret}'
   EOT

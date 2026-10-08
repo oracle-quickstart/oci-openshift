@@ -1,0 +1,75 @@
+terraform {
+  required_version = ">= 1.0"
+  required_providers {
+    oci = {
+      source  = "oracle/oci"
+      version = ">= 6.12.0"
+    }
+  }
+}
+
+data "oci_objectstorage_namespace" "ns" {
+  compartment_id = var.compartment_ocid
+}
+
+resource "oci_objectstorage_bucket" "boot_artifacts" {
+  compartment_id = var.compartment_ocid
+  namespace      = data.oci_objectstorage_namespace.ns.namespace
+  name           = "${var.cluster_name}-boot-artifacts"
+  access_type    = "NoPublicAccess"
+  defined_tags   = var.defined_tags
+}
+
+# --- rootfs ---
+
+resource "oci_objectstorage_object" "rootfs" {
+  count     = var.rootfs_file_path != "" ? 1 : 0
+  namespace = data.oci_objectstorage_namespace.ns.namespace
+  bucket    = oci_objectstorage_bucket.boot_artifacts.name
+  object    = "agent.x86_64-rootfs.img"
+  source    = var.rootfs_file_path
+}
+
+resource "oci_objectstorage_preauthrequest" "rootfs" {
+  namespace   = data.oci_objectstorage_namespace.ns.namespace
+  bucket      = oci_objectstorage_bucket.boot_artifacts.name
+  name        = "${var.cluster_name}-rootfs-par"
+  access_type = "ObjectRead"
+  object_name = "agent.x86_64-rootfs.img"
+  time_expires = timeadd(timestamp(), "${var.par_expiry_hours}h")
+
+  # The PAR carries no reference to the object it points at, so without this
+  # nothing orders the upload ahead of consumers of the PAR URL.
+  depends_on = [oci_objectstorage_object.rootfs]
+
+  lifecycle {
+    ignore_changes = [time_expires]
+  }
+}
+
+# --- agent ISO ---
+
+resource "oci_objectstorage_object" "iso" {
+  count     = var.iso_file_path != "" ? 1 : 0
+  namespace = data.oci_objectstorage_namespace.ns.namespace
+  bucket    = oci_objectstorage_bucket.boot_artifacts.name
+  object    = "agent.x86_64.iso"
+  source    = var.iso_file_path
+}
+
+resource "oci_objectstorage_preauthrequest" "iso" {
+  namespace   = data.oci_objectstorage_namespace.ns.namespace
+  bucket      = oci_objectstorage_bucket.boot_artifacts.name
+  name        = "${var.cluster_name}-iso-par"
+  access_type = "ObjectRead"
+  object_name = "agent.x86_64.iso"
+  time_expires = timeadd(timestamp(), "${var.par_expiry_hours}h")
+
+  # Without this the compute image import can consume iso_par_url before the
+  # ISO has finished uploading.
+  depends_on = [oci_objectstorage_object.iso]
+
+  lifecycle {
+    ignore_changes = [time_expires]
+  }
+}

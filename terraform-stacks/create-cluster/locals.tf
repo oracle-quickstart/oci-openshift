@@ -30,6 +30,13 @@ locals {
 
   openshift_installer_version = var.set_openshift_installer_version ? var.openshift_installer_version : "latest"
 
+  # Derive the OCI realm domain from the instance metadata service (IMDS).
+  # IMDS is authoritative and works for every realm including restricted ones
+  # like OC6 that aren't in any hardcoded map. If IMDS is unavailable (running
+  # terraform from outside OCI), set var.realm_domain_component explicitly.
+  imds_realm_domain = try(jsondecode(module.meta.region_metadata)["realmDomainComponent"], "")
+  realm_domain      = var.realm_domain_component != "" ? var.realm_domain_component : local.imds_realm_domain
+
   # how long resource creation will be paused to allow for newly created tagging resources to reach consistency
   wait_for_new_tag_consistency_wait_time = "30s"
 }

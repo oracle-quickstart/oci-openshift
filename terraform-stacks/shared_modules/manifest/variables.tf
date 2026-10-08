@@ -35,10 +35,6 @@ variable "rendezvous_ip" {
   type = string
 }
 
-variable "webserver_private_ip" {
-  type = string
-}
-
 variable "vcn_cidr" {
   type = string
 }
@@ -74,9 +70,29 @@ variable "no_proxy" {
   default = "fake no_proxy"
 }
 
-variable "is_disconnected_installation" {
+variable "enable_fips" {
   type    = bool
   default = false
+}
+
+variable "private_registry" {
+  type    = string
+  default = ""
+}
+
+variable "additional_trust_bundle" {
+  type    = string
+  default = ""
+}
+
+variable "boot_artifacts_base_url" {
+  type    = string
+  default = ""
+}
+
+variable "additional_ntp_sources" {
+  type    = list(string)
+  default = []
 }
 
 variable "set_proxy" {
@@ -96,6 +112,11 @@ variable "oca_image_pull_link" {
 
 variable "region_metadata" {
   type = string
+}
+
+variable "enable_realm_specific_endpoints" {
+  type    = bool
+  default = false
 }
 
 variable "region" {

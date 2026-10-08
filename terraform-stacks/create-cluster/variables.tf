@@ -48,6 +48,48 @@ variable "is_disconnected_installation" {
   default     = false
 }
 
+variable "rootfs_file_path" {
+  type        = string
+  description = "Local path to the agent.x86_64-rootfs.img file produced by 'openshift-install agent create image' in the boot-artifacts/ directory. Required for disconnected installs. Leave empty during pass 1 (infrastructure only); set during pass 2 after generating the ISO."
+  default     = ""
+}
+
+variable "iso_file_path" {
+  type        = string
+  description = "Local path to the agent.x86_64.iso file produced by 'openshift-install agent create image'. Required for disconnected installs. Leave empty during pass 1 (infrastructure only); set during pass 2 after generating the ISO."
+  default     = ""
+}
+
+variable "rootfs_par_expiry_hours" {
+  type        = number
+  description = "Hours until the rootfs PAR expires. Must remain valid through the entire cluster installation."
+  default     = 168
+}
+
+variable "additional_ntp_sources" {
+  type        = list(string)
+  description = "Additional NTP sources (hostname or IP) added to all cluster nodes via agent-config.yaml. On OCI, set to [\"169.254.169.254\"] to use the instance metadata endpoint as the NTP server."
+  default     = ["169.254.169.254"]
+}
+
+variable "enable_fips" {
+  type        = bool
+  description = "Enable FIPS mode on the OpenShift cluster. When true, 'fips: true' is added to install-config.yaml. Requires that the openshift-install-fips binary is run from a FIPS-enabled RHEL 9 host."
+  default     = false
+}
+
+variable "private_registry" {
+  type        = string
+  description = "Hostname and optional port of the private registry mirror for disconnected installations (e.g. 'registry.example.com:8443'). When non-empty, imageDigestSources entries are added to install-config.yaml mapping quay.io release sources to this registry."
+  default     = ""
+}
+
+variable "additional_trust_bundle" {
+  type        = string
+  description = "PEM-encoded CA certificate bundle for the private registry. When non-empty, additionalTrustBundle is added to install-config.yaml. Cannot use file() in .tfvars — pass via -var flag or heredoc."
+  default     = ""
+}
+
 variable "set_openshift_installer_version" {
   type        = bool
   description = "If you don't want to use the latest version of openshift-installer, specify a specific supported version. For example, 4.19.1."
@@ -62,7 +104,7 @@ variable "openshift_installer_version" {
 
 variable "public_ssh_key" {
   type        = string
-  description = "Public SSH key for access to your OpenShift instances and webserver."
+  description = "Public SSH key for access to your OpenShift instances."
   default     = ""
 }
 
@@ -70,36 +112,6 @@ variable "redhat_pull_secret" {
   type        = string
   default     = "PULL SECRET"
   description = "The pull secret that you need for authenticate purposes when downloading container images for OpenShift Container Platform components and services, such as Quay.io. See Install OpenShift Container Platform 4 from the Red Hat Hybrid Cloud Console."
-}
-
-variable "webserver_private_ip" {
-  default     = "10.0.0.200"
-  type        = string
-  description = "The Private IP of the server where you want to upload the rootfs image. This parameter is required only for disconnected environments. This IP should be included in the bootArtifactsBaseURL value in your agent-config file."
-}
-
-variable "webserver_shape" {
-  default     = "VM.Standard.E5.Flex"
-  type        = string
-  description = "Compute shape of webserver instance. The default shape is VM.Standard.E5.Flex. For more details, review OpenShift on OCI <a href='https://docs.oracle.com/en-us/iaas/Content/openshift-on-oci/overview.htm#supported-shapes'>supported shapes</a>."
-}
-
-variable "webserver_image_source_id" {
-  default     = "ocid1.image.oc1.us-sanjose-1.aaaaaaaawgtwtqmz5j2kbvwgk6lm5yx2bnom456skma7q62jb5ltw7zoac4a"
-  type        = string
-  description = "The source_id of image to use for webserver instance. The default is an OEL 9 instance."
-}
-
-variable "webserver_ocpus" {
-  type        = number
-  description = "The number of OCPUs for the webserver instance."
-  default     = 2
-}
-
-variable "webserver_memory_in_gbs" {
-  type        = number
-  description = "The amount of memory for the webserver instance, in GBs."
-  default     = 8
 }
 
 variable "set_proxy" {
@@ -138,8 +150,26 @@ variable "oracle_cloud_agent_repo_name" {
   default     = "openshift-oca"
 }
 
+variable "oca_marketplace_listing_id" {
+  description = "OCI Marketplace listing OCID for the Oracle Cloud Agent. The default is for the commercial cloud (oc1) realm. Gov Cloud (oc3) and other realms require the listing OCID from their own marketplace."
+  type        = string
+  default     = "ocid1.mktpublisting.oc1.phx.amaaaaaabg7vt6ia6vyockkduxg2jvwmxzef7nliwilshjavyjrybs66g57q"
+}
+
 variable "region" {
   type = string
+}
+
+variable "realm_domain_component" {
+  description = "OCI realm domain override. Normally auto-detected from IMDS when running on a bastion inside OCI. Only set this if running terraform from outside OCI (e.g. 'oraclegovcloud.com' for OC3, 'oraclecloud.eu' for OC19)."
+  type        = string
+  default     = ""
+}
+
+variable "enable_realm_specific_endpoints" {
+  description = "Enable realm-specific service endpoint templates in the OCI Terraform provider and OCI SDK. Required for isolated realms (OC6, OC7, OC11, OC12) where API endpoint URL patterns differ from commercial OC1. Can also be enabled via the OCI_REALM_SPECIFIC_SERVICE_ENDPOINT_TEMPLATE_ENABLED environment variable."
+  type        = bool
+  default     = false
 }
 
 variable "control_plane_shape" {
@@ -364,23 +394,6 @@ variable "existing_public_subnet_id" {
   default     = ""
 }
 
-variable "object_storage_namespace" {
-  type        = string
-  description = "The OCI Object Storage namespace for the tenancy. See https://docs.oracle.com/en-us/iaas/Content/Object/Tasks/understandingnamespaces.htm"
-  default     = ""
-}
-
-variable "object_storage_bucket" {
-  type        = string
-  description = "Name of the OCI Object Storage bucket where the OpenShift installation files will be stored."
-  default     = ""
-}
-
-# variable "openshift_iso_object_name" {
-#   type        = string
-#   description = "Name for the ISO object to be uploaded to OCI Object Storage (e.g., my-cluster-agent.iso)."
-#   default     = ""
-# }
 variable "vcn_dns_label" {
   default     = "openshiftvcn"
   type        = string

@@ -20,7 +20,7 @@ data "oci_artifacts_container_images" "oca_container_images" {
 
 # Fetch the only version of the oca listing
 data "oci_marketplace_listing_packages" "marketplace_listing_packages" {
-  listing_id = "ocid1.mktpublisting.oc1.phx.amaaaaaabg7vt6ia6vyockkduxg2jvwmxzef7nliwilshjavyjrybs66g57q"
+  listing_id = var.oca_marketplace_listing_id
 }
 
 locals {
@@ -37,5 +37,7 @@ locals {
 
   namespace = data.oci_objectstorage_namespace.namespace_details.namespace
 
-  image_pull_command = "${lower(var.region)}.ocir.io/${local.namespace}/${try(local.filtered_images[0].display_name, "no-image-found")}"
+  ocir_domain = var.realm_domain_component != "" ? "ocir.${var.realm_domain_component}" : "ocir.io"
+
+  image_pull_command = "${lower(var.region)}.${local.ocir_domain}/${local.namespace}/${try(local.filtered_images[0].display_name, "no-image-found")}"
 }

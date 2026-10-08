@@ -238,10 +238,18 @@ spec:
             path: /etc/kubernetes
       containers:
         - name: oci-cloud-controller-manager
-          image: ghcr.io/oracle/cloud-provider-oci:v1.34.0
+          image: ${oci_image_source}
           env:
             - name: OPENSHIFT_NODE_LABEL_ID
               value: node.openshift.io/os_id=rhel
+            %{~ if region_metadata != "" ~}
+            - name: OCI_REGION_METADATA
+              value: '${region_metadata}'
+            %{~ if enable_realm_specific_endpoints ~}
+            - name: OCI_REALM_SPECIFIC_SERVICE_ENDPOINT_TEMPLATE_ENABLED
+              value: "true"
+            %{~ endif ~}
+            %{~ endif ~}
           command:
             - /bin/bash
             - -c

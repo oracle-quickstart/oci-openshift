@@ -79,10 +79,10 @@ Review the Block Volume documentation below for more information:
 
 ### Prerequisites
 
-If you are using our Terraform to provision cluster resources and generate the `dynamic_custom_manifest` output, there are no extra steps required. Move on to [Deployment](#Deployment) or view [Examples](#examples).
+If you are using our Terraform to provision cluster resources and generate the individual manifest outputs (or the legacy `dynamic_custom_manifest` output), there are no extra steps required. Move on to [Deployment](#Deployment) or view [Examples](#examples).
 
 Consider the following if you are not using Terraform or for general debugging:
-1. The Secrets in [01-oci-driver-configs.yml](/custom_manifests/manifests/01-oci-driver-configs.yml), `oci-volume-provisioner` and `oci-cloud-controller-manager` allow the CSI and CCM drivers to interact with and create resources for your cluster. They initially contain placeholder values and must be configured before use. If using our Terraform to provision cluster resources, the `dynamic_custom_manifest` output includes these Secrets already configured. If you are manually provisioning OCI resources, you must update the Secret with the necessary values yourself. View provider config examples [here](https://github.com/oracle/oci-cloud-controller-manager/blob/master/manifests/provider-config-instance-principals-example.yaml).
+1. The Secrets in [01-oci-driver-configs.yml](/custom_manifests/manifests/01-oci-driver-configs.yml), `oci-volume-provisioner` and `oci-cloud-controller-manager` allow the CSI and CCM drivers to interact with and create resources for your cluster. They initially contain placeholder values and must be configured before use. If using our Terraform to provision cluster resources, the `manifest_oci_ccm_config` and `manifest_oci_csi_config` outputs (or the legacy `dynamic_custom_manifest` output) include these Secrets already configured. If you are manually provisioning OCI resources, you must update the Secret with the necessary values yourself. View provider config examples [here](https://github.com/oracle/oci-cloud-controller-manager/blob/master/manifests/provider-config-instance-principals-example.yaml).
 
 2. To allow the CSI driver to operate on the OCI resources for your cluster, IAM Policies must be created in your tenancy which give access to a Dynamic Group comprised of the instances on which the CSI components are deployed. If you are using our Terraform to provision resources, the necessary [Dynamic Groups](/terraform-stacks/shared_modules/iam/dynamic_group.tf) and [Policies](/terraform-stacks/shared_modules/iam/policy.tf) are created for you.
 
@@ -97,7 +97,17 @@ Read more about these OCI IAM resources below:
 
 The manifests containing the OCI CSI driver are typically applied to an OpenShift cluster during installation via [custom_manifests](/custom_manifests/manifests/01-oci-csi.yml) supplied by you during setup.
 
-If you are using our Terraform to provision cluster resources, use the `dynamic_custom_manifest` output as the only custom_manifest during cluster installation. You can set the `oci_driver_version` variable when using the Terraform to generate the `dynamic_custom_manifest` output with the specified driver version. By default, the latest GA [version](https://github.com/oracle/oci-cloud-controller-manager/releases/latest) is used.
+If you are using our Terraform to provision cluster resources, use the individual manifest outputs to write each manifest as a separate file into the `openshift/` directory before creating the agent ISO. For the Assisted Installer, the legacy `dynamic_custom_manifest` output (a single concatenated file) can also be used. You can set the `oci_driver_version` variable to generate the outputs with the specified driver version. By default, the latest GA [version](https://github.com/oracle/oci-cloud-controller-manager/releases/latest) is used.
+
+For agent-based installations, write the manifests with:
+```bash
+mkdir -p openshift
+for m in manifest_oci_ccm manifest_oci_csi manifest_oci_ccm_config manifest_oci_csi_config \
+         manifest_machineconfig_ccm manifest_machineconfig_csi manifest_machineconfig_device_path \
+         manifest_cluster_network manifest_machineconfig_eval_user_data manifest_machineconfig_bm_vlan_mtu; do
+  terraform output -raw "$m" > "openshift/${m}.yaml"
+done
+```
 
 View the supported driver versions in [custom_manifests/oci-ccm-csi-drivers](/custom_manifests/oci-ccm-csi-drivers).
 

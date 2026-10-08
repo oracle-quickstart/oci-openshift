@@ -22,17 +22,13 @@ variableGroups:
     variables:
       - rendezvous_ip
       - is_disconnected_installation
+      - enable_fips
+      - private_registry
+      - additional_trust_bundle
       - set_openshift_installer_version
       - openshift_installer_version
       - public_ssh_key
       - redhat_pull_secret
-      - object_storage_namespace
-      - object_storage_bucket
-      - webserver_private_ip
-      - webserver_shape
-      - webserver_image_source_id
-      - webserver_ocpus
-      - webserver_memory_in_gbs
       - set_proxy
       - http_proxy
       - https_proxy
@@ -197,6 +193,32 @@ variables:
         - installation_method
         - Agent-based
 
+  enable_fips:
+    type: boolean
+    title: Enable FIPS Mode
+    description: "Enable FIPS 140-2 mode on the OpenShift cluster. Requires openshift-install-fips run from a FIPS-enabled RHEL 9 host."
+    default: false
+    required: true
+    visible: true
+
+  private_registry:
+    type: string
+    title: Private Registry Mirror
+    description: "Hostname:port of the private registry for disconnected installs (e.g. registry.example.com:8443). Adds imageDigestSources to install-config.yaml."
+    default: ""
+    required: false
+    visible:
+      is_disconnected_installation
+
+  additional_trust_bundle:
+    type: string
+    title: Additional Trust Bundle (PEM)
+    description: "PEM-encoded CA certificate for the private registry. Adds additionalTrustBundle to install-config.yaml. Pass via -var flag or heredoc in tfvars."
+    default: ""
+    required: false
+    visible:
+      is_disconnected_installation
+
   set_openshift_installer_version:
     type: boolean
     title: Set Openshift Installer Version
@@ -223,66 +245,6 @@ variables:
     type: string
     title: RedHat Pull Secret
     default: Specify your redhat pull secret. The default value is "PULL SECRET".
-    visible:
-      is_disconnected_installation
-
-  object_storage_namespace:
-    type: string
-    title: Object Storage Namespace
-    required: true
-    visible:
-      is_disconnected_installation
-
-  object_storage_bucket:
-    type: string
-    title: Object Storage Bucket
-    required: true
-    visible:
-      is_disconnected_installation
-
-  webserver_private_ip:
-    type: string
-    title: Webserver Private IP
-    required: true
-    visible:
-      is_disconnected_installation
-
-  webserver_shape:
-    type: string
-    title: Webserver Shape
-    default: "VM.Standard.E5.Flex"
-    required: true
-    visible:
-      is_disconnected_installation
-
-  webserver_image_source_id:
-    title: Webserver Image
-    type: oci:core:image:id
-    required: true
-    visible:
-      is_disconnected_installation
-    dependsOn:
-      compartmentId: ${compartment_ocid}
-      operatingSystem: "Oracle Linux"
-      shape: ${webserver_shape}
-
-  webserver_ocpus:
-    type: integer
-    title: Webserver OCPU
-    default: 2
-    minimum: 1
-    maximum: 144
-    required: true
-    visible:
-      is_disconnected_installation
-
-  webserver_memory_in_gbs:
-    type: integer
-    title: Webserver Memory
-    default: 8
-    minimum: 1
-    maximum: 1760
-    required: true
     visible:
       is_disconnected_installation
 
