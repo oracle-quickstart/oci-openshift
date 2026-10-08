@@ -38,6 +38,10 @@ resource "oci_objectstorage_preauthrequest" "rootfs" {
   object_name = "agent.x86_64-rootfs.img"
   time_expires = timeadd(timestamp(), "${var.par_expiry_hours}h")
 
+  # The PAR carries no reference to the object it points at, so without this
+  # nothing orders the upload ahead of consumers of the PAR URL.
+  depends_on = [oci_objectstorage_object.rootfs]
+
   lifecycle {
     ignore_changes = [time_expires]
   }
@@ -60,6 +64,10 @@ resource "oci_objectstorage_preauthrequest" "iso" {
   access_type = "ObjectRead"
   object_name = "agent.x86_64.iso"
   time_expires = timeadd(timestamp(), "${var.par_expiry_hours}h")
+
+  # Without this the compute image import can consume iso_par_url before the
+  # ISO has finished uploading.
+  depends_on = [oci_objectstorage_object.iso]
 
   lifecycle {
     ignore_changes = [time_expires]
