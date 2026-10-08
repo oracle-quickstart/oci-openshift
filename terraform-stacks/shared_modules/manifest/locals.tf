@@ -388,7 +388,7 @@ PROXY
 : "")}
 ${var.enable_fips ? "fips: true" : ""}
 ${var.additional_trust_bundle != "" ? "additionalTrustBundlePolicy: Always" : ""}
-${var.additional_trust_bundle != "" ? "additionalTrustBundle: |\n${indent(2, var.additional_trust_bundle)}" : ""}
+${var.additional_trust_bundle != "" ? "additionalTrustBundle: |\n  ${indent(2, trimspace(var.additional_trust_bundle))}" : ""}
 ${var.private_registry != "" ? trimspace(<<-MIRRORS
 imageDigestSources:
 - mirrors:
