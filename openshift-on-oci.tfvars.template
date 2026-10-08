@@ -5,12 +5,53 @@
 # Docs:   https://access.redhat.com/documentation/en-us/openshift_container_platform/4.19/html-single/installing_on_oci/index
 #
 # Usage:
-#   1. Copy this file to openshift-on-oci.tfvars
-#   2. Fill in all values marked with empty quotes ""
-#   3. cd oci-openshift-mine/terraform-stacks/create-cluster
-#   4. terraform init
-#   5. terraform plan  -var-file=../../openshift-on-oci.tfvars
-#   6. terraform apply -var-file=../../openshift-on-oci.tfvars
+#   Copy this file to openshift-on-oci.tfvars and fill in every value marked
+#   with empty quotes "".
+#
+#   A disconnected install is a TWO-PASS terraform workflow, because the agent
+#   ISO cannot be built until pass 1 has created the infrastructure the
+#   manifests describe. The values in this file are the PASS 2 (final) values.
+#   Pass 1 overrides two of them on the command line, so you do not edit this
+#   file between passes.
+#
+#   Step 0 — Mirror content to your private registry with oc-mirror, then set
+#            private_registry and additional_trust_bundle in section 9 below.
+#
+#   Step 1 — Pass 1. Creates the VCN, load balancers, DNS, the Object Storage
+#            bucket and the boot artifact PARs. No compute instances yet.
+#
+#              cd oci-openshift-mine/terraform-stacks/create-cluster
+#              terraform init
+#              terraform apply -var-file=../../openshift-on-oci.tfvars \
+#                -var='create_openshift_instances=false'
+#
+#   Step 2 — Extract the manifests from the terraform outputs into the install
+#            directory. CRITICAL: if the OCI CCM/CSI/network manifests are not
+#            in openshift/ when the ISO is built, the cluster cannot bootstrap
+#            — nodes stay tainted uninitialized and nothing schedules.
+#
+#              ../../scripts/generate-ocp-artifacts.sh
+#
+#   Step 3 — Build the agent ISO, which bakes those manifests in.
+#
+#              cd ~/<cluster_name>-agentBasedInstallation
+#              openshift-install agent create image --dir=.
+#
+#   Step 4 — Pass 2. Uploads the ISO and rootfs to Object Storage, imports the
+#            ISO as a custom compute image, and launches the instances.
+#
+#              terraform apply -var-file=../../openshift-on-oci.tfvars \
+#                -var='iso_file_path=~/<cluster_name>-agentBasedInstallation/agent.x86_64.iso' \
+#                -var='rootfs_file_path=~/<cluster_name>-agentBasedInstallation/boot-artifacts/agent.x86_64-rootfs.img'
+#
+#   Step 5 — Verify both artifacts landed before waiting on the install:
+#
+#              oci os object list --bucket-name <cluster_name>-boot-artifacts \
+#                --namespace <your_object_storage_namespace>
+#
+#   A connected install skips the split: leave create_openshift_instances at
+#   true, set openshift_image_source_uri to a PAR you created yourself, and
+#   apply once.
 #
 # DO NOT commit the filled-in .tfvars file — it contains OCIDs, SSH keys,
 # PAR URLs, and pull secrets. Add *.tfvars to .gitignore.
@@ -53,7 +94,12 @@ zone_dns = ""
 installation_method = "Agent-based"
 
 # Set to true to create compute instances as part of the stack.
-# Set to false if you are provisioning instances separately.
+#
+# Leave this at true. For a disconnected install, pass 1 overrides it on the
+# command line with -var='create_openshift_instances=false' so the stack builds
+# infrastructure only; pass 2 uses the value below. See the two-pass sequence
+# in the header. Set it to false permanently only if you provision instances
+# by some other means.
 create_openshift_instances = true
 
 # Rendezvous IP — the IP assigned to the bootstrap node that orchestrates
@@ -227,8 +273,13 @@ is_disconnected_installation = true
 # Terraform uploads both to OCI Object Storage and creates PARs automatically.
 # The ISO PAR replaces the manual openshift_image_source_uri for disconnected installs.
 #
-# Leave empty during pass 1 (infrastructure only). Set during pass 2 after
-# running 'agent create image'.
+# These stay commented out. They do not exist until step 3 of the header
+# sequence, and pass 2 supplies them with -var= rather than from this file.
+# Uncomment them only if you prefer to keep the paths here and run pass 2
+# without the -var overrides.
+#
+# Note: these are paths on the machine running terraform, which is why the
+# disconnected flow is CLI-only and cannot run as an OCI Resource Manager job.
 # iso_file_path    = "/path/to/agent.x86_64.iso"
 # rootfs_file_path = "/path/to/boot-artifacts/agent.x86_64-rootfs.img"
 
