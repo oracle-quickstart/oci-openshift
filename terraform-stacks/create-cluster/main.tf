@@ -80,7 +80,7 @@ module "image" {
   image_name                  = var.cluster_name
   is_control_plane_iscsi_type = local.is_control_plane_iscsi_type
   is_compute_iscsi_type       = local.is_compute_iscsi_type
-  openshift_image_source_uri  = var.is_disconnected_installation ? module.boot_artifacts[0].iso_par_url : var.openshift_image_source_uri
+  openshift_image_source_uri  = var.is_disconnected_installation && var.iso_file_path != "" ? module.boot_artifacts[0].iso_par_url : var.openshift_image_source_uri
   control_plane_shape         = var.control_plane_shape
   compute_shape               = var.compute_shape
 
@@ -282,8 +282,12 @@ module "manifests" {
   public_ssh_key        = var.public_ssh_key
   cluster_name          = var.cluster_name
 
-  // Dependency on boot_artifacts
-  boot_artifacts_base_url = var.is_disconnected_installation ? module.boot_artifacts[0].boot_artifacts_base_url : ""
+  // Dependency on boot_artifacts. An explicit URL wins, so a Resource Manager
+  // job can point at a rootfs it did not upload itself.
+  boot_artifacts_base_url = (
+    var.boot_artifacts_base_url != "" ? var.boot_artifacts_base_url :
+    var.is_disconnected_installation ? module.boot_artifacts[0].boot_artifacts_base_url : ""
+  )
 
   // NTP
   additional_ntp_sources = var.additional_ntp_sources

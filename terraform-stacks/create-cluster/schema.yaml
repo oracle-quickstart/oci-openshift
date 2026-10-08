@@ -22,6 +22,7 @@ variableGroups:
     variables:
       - rendezvous_ip
       - is_disconnected_installation
+      - boot_artifacts_base_url
       - enable_fips
       - private_registry
       - additional_trust_bundle
@@ -192,6 +193,14 @@ variables:
       eq:
         - installation_method
         - Agent-based
+
+  boot_artifacts_base_url:
+    type: string
+    title: Boot Artifacts Base URL
+    description: "PAR base URL for the agent rootfs, used as bootArtifactsBaseURL in agent-config.yaml. Required in Resource Manager, which cannot read boot artifacts from a local filesystem: upload agent.x86_64-rootfs.img to Object Storage, create an ObjectRead PAR, and paste the URL without the object name. Leave empty when running Terraform from a bastion with rootfs_file_path set."
+    default: ""
+    required: false
+    visible: is_disconnected_installation
 
   enable_fips:
     type: boolean

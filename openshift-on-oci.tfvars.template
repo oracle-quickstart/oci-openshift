@@ -278,10 +278,24 @@ is_disconnected_installation = true
 # Uncomment them only if you prefer to keep the paths here and run pass 2
 # without the -var overrides.
 #
-# Note: these are paths on the machine running terraform, which is why the
-# disconnected flow is CLI-only and cannot run as an OCI Resource Manager job.
+# Note: these are paths on the machine running terraform. An OCI Resource
+# Manager job has no access to your bastion's filesystem, so leave them unset
+# there and supply the two URLs below instead.
 # iso_file_path    = "/path/to/agent.x86_64.iso"
 # rootfs_file_path = "/path/to/boot-artifacts/agent.x86_64-rootfs.img"
+
+# Resource Manager (or any run where terraform cannot see the artifacts):
+# upload the ISO and rootfs to Object Storage yourself, create an ObjectRead
+# PAR for each, and supply both URLs here. scripts/upload-agent-iso.sh and
+# scripts/upload-rootfs.sh print exactly these values.
+#
+# Leave both unset when iso_file_path/rootfs_file_path are set — terraform
+# does the upload and PAR creation itself and these would be ignored.
+#
+# openshift_image_source_uri is the full PAR URL to the ISO.
+# boot_artifacts_base_url omits the object name; the agent installer appends
+# /agent.x86_64-rootfs.img to it.
+# boot_artifacts_base_url = ""
 
 # Hours until the boot artifact PARs expire (default: 168 = 7 days).
 # Must remain valid through the entire cluster installation.

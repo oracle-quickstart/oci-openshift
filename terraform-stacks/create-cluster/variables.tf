@@ -60,6 +60,12 @@ variable "iso_file_path" {
   default     = ""
 }
 
+variable "boot_artifacts_base_url" {
+  type        = string
+  description = "PAR base URL for the rootfs, used as bootArtifactsBaseURL in agent-config.yaml. Leave empty to have terraform upload the rootfs and mint the PAR itself, which requires rootfs_file_path and therefore a local filesystem. Set this when terraform cannot see the artifacts — notably an OCI Resource Manager job — after uploading the rootfs yourself and creating an ObjectRead PAR. The agent installer appends /agent.x86_64-rootfs.img, so omit the object name."
+  default     = ""
+}
+
 variable "rootfs_par_expiry_hours" {
   type        = number
   description = "Hours until the rootfs PAR expires. Must remain valid through the entire cluster installation."
