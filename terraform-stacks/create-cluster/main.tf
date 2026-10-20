@@ -285,17 +285,18 @@ module "manifests" {
   no_proxy                     = var.no_proxy
 
   // Depedency on networks
-  op_vcn_openshift_vcn  = module.network.op_vcn_openshift_vcn
-  op_apps_subnet        = local.apps_subnet_id
-  op_apps_security_list = "${local.apps_subnet_id}: ${local.apps_security_list_id}"
-  vcn_cidr              = var.vcn_cidr
-  zone_dns              = var.zone_dns
-  rendezvous_ip         = var.rendezvous_ip
-  control_plane_count   = var.control_plane_count
-  compute_count         = local.effective_compute_count
-  public_ssh_key        = var.public_ssh_key
-  cluster_name          = var.cluster_name
-  webserver_private_ip  = var.webserver_private_ip
+  op_vcn_openshift_vcn   = module.network.op_vcn_openshift_vcn
+  op_apps_subnet         = local.apps_subnet_id
+  op_apps_security_list  = "${local.apps_subnet_id}: ${local.apps_security_list_id}"
+  vcn_cidr               = var.vcn_cidr
+  zone_dns               = var.zone_dns
+  rendezvous_ip          = var.rendezvous_ip
+  additional_ntp_sources = var.additional_ntp_sources
+  control_plane_count    = var.control_plane_count
+  compute_count          = local.effective_compute_count
+  public_ssh_key         = var.public_ssh_key
+  cluster_name           = var.cluster_name
+  webserver_private_ip   = var.webserver_private_ip
 
   // Dependency on ocir
   use_oracle_cloud_agent = var.use_oracle_cloud_agent
