@@ -194,3 +194,8 @@ variable "capoci_version" {
 variable "autoscaler_node_image_id" {
   type = string
 }
+
+variable "enable_realm_specific_endpoints" {
+  type    = bool
+  default = false
+}
