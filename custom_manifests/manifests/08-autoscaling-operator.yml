@@ -57,7 +57,7 @@ spec:
       serviceAccountName: oci-capi-operator-activator
       containers:
       - name: wait-and-activate
-        image: quay.io/openshift/origin-cli:4.20
+        image: quay.io/openshift/origin-cli:4.22
         volumeMounts:
         - mountPath: /runtime
           name: runtime-manifest
