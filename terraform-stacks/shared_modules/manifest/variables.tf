@@ -199,3 +199,13 @@ variable "enable_realm_specific_endpoints" {
   type    = bool
   default = false
 }
+
+variable "private_registry" {
+  type    = string
+  default = ""
+}
+
+variable "additional_trust_bundle" {
+  type    = string
+  default = ""
+}
