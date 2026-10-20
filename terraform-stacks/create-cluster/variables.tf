@@ -558,3 +558,9 @@ variable "autoscaler_node_image_source_uri" {
   description = "<strong><em>(Required)</em></strong> - The OCI Object Storage URL for the Autoscaler node image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block."
   default     = ""
 }
+
+variable "additional_ntp_sources" {
+  type        = list(string)
+  description = "NTP sources (hostname or IP) added to every cluster node via agent-config.yaml. Defaults to the OCI instance metadata endpoint, which Oracle provides as an NTP service and which is reachable without egress. Set to [] to leave node time configuration alone."
+  default     = ["169.254.169.254"]
+}
