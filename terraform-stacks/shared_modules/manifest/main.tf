@@ -11,10 +11,13 @@ output "oci_ccm_config" {
 output "dynamic_custom_manifest" {
   description = "The custom manifests to be applied during OpenShift cluster installation process."
   value       = <<-EOT
-    ${file("${path.module}/oci-ccm-csi-drivers/${var.oci_driver_version}/01-oci-ccm.yml")}
+    ${local.oci_ccm}
     ${local.oci_csi}
     ${local.oci_ccm_config_secret}
     ${local.oci_csi_config_secret}
+    %{if local.custom_ca_enabled}
+    ${local.oci_custom_ca_configmaps}
+    %{endif}
     %{if var.use_oracle_cloud_agent && var.oca_image_pull_link != "" && var.oca_image_pull_link != "no-image-found"}
     ${local.oca_yaml}
     %{endif}
@@ -44,6 +47,11 @@ output "autoscaling_manifest" {
     condition     = !var.use_autoscaling_operator || length(var.cluster_name) + 6 + (var.autoscaler_pool_identifier == "" ? 0 : 1 + length(var.autoscaler_pool_identifier)) <= 51
     error_message = "The generated autoscaler node pool name must be no longer than 51 characters. Shorten cluster_name or autoscaler_pool_identifier."
   }
+}
+
+output "manifest_image_tag_mirror_set" {
+  description = "ImageTagMirrorSet redirecting tag-based image pulls to the private registry. Write to openshift/99-image-tag-mirror-set.yml before generating the agent ISO. Null when private_registry is unset."
+  value       = var.private_registry == "" ? null : trimspace(local.image_tag_mirror_set)
 }
 
 output "agent_config" {

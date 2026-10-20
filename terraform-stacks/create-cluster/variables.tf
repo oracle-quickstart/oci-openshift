@@ -558,3 +558,21 @@ variable "autoscaler_node_image_source_uri" {
   description = "<strong><em>(Required)</em></strong> - The OCI Object Storage URL for the Autoscaler node image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block."
   default     = ""
 }
+
+variable "enable_realm_specific_endpoints" {
+  type        = bool
+  description = "Set the OCI SDK realm-specific endpoint template flag on the CCM and CSI drivers. Required in isolated realms such as OC6, OC7, OC11 and OC12, where service endpoint URL patterns differ from commercial OCI."
+  default     = false
+}
+
+variable "private_registry" {
+  type        = string
+  description = "Hostname and optional port of the mirror registry for a disconnected install, e.g. registry.example.com:8443. When set, imageDigestSources entries are added to install-config.yaml and an ImageTagMirrorSet is emitted for the images these manifests reference by tag."
+  default     = ""
+}
+
+variable "additional_trust_bundle" {
+  type        = string
+  description = "PEM-encoded CA bundle for the mirror registry. When set, additionalTrustBundle and additionalTrustBundlePolicy: Always are added to install-config.yaml. Cannot use file() in a .tfvars file; pass with -var or a heredoc."
+  default     = ""
+}
