@@ -79,6 +79,11 @@ variable "is_disconnected_installation" {
   default = false
 }
 
+variable "enable_fips" {
+  type    = bool
+  default = false
+}
+
 variable "set_proxy" {
   type    = bool
   default = false

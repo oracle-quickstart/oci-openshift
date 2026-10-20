@@ -346,7 +346,7 @@ proxy:
   httpsProxy: ${var.https_proxy}
   noProxy: ${var.no_proxy},${var.vcn_cidr}
 PROXY
-: "")}
+: "")}${var.enable_fips ? "\nfips: true" : ""}
 sshKey: '${var.public_ssh_key}'
 pullSecret: '${var.redhat_pull_secret}'
   EOT
