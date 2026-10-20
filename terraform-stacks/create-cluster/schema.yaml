@@ -22,6 +22,7 @@ variableGroups:
     variables:
       - rendezvous_ip
       - is_disconnected_installation
+      - enable_fips
       - set_openshift_installer_version
       - openshift_installer_version
       - public_ssh_key
@@ -190,6 +191,17 @@ variables:
   is_disconnected_installation:
     type: boolean
     title: Is Disconnected Agent-based Installation
+    default: false
+    required: true
+    visible:
+      eq:
+        - installation_method
+        - Agent-based
+
+  enable_fips:
+    type: boolean
+    title: Enable FIPS Mode
+    description: "Add 'fips: true' to install-config.yaml. The cluster must be installed with the FIPS-capable openshift-install binary, run from a host that is itself in FIPS mode."
     default: false
     required: true
     visible:
