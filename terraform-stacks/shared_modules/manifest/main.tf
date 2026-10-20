@@ -15,6 +15,9 @@ output "dynamic_custom_manifest" {
     ${local.oci_csi}
     ${local.oci_ccm_config_secret}
     ${local.oci_csi_config_secret}
+    %{if local.custom_ca_enabled}
+    ${local.oci_custom_ca_configmaps}
+    %{endif}
     %{if var.use_oracle_cloud_agent && var.oca_image_pull_link != "" && var.oca_image_pull_link != "no-image-found"}
     ${local.oca_yaml}
     %{endif}

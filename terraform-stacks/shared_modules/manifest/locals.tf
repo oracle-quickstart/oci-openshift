@@ -256,11 +256,43 @@ data:
     ${replace(local.autoscaling_operator_runtime_bundle, "\n", "\n    ")}
 EOT
 
+  # The Oracle-image containers verify TLS to the OCI API using their own
+  # image trust store. additionalTrustBundlePolicy: Always puts the CA on the
+  # node, but CRI-O does not mount the host trust store into pods, so in a
+  # realm fronted by a non-commercial CA the CCM fails x509, nodes keep the
+  # uninitialized taint, CNI never starts and the cluster cannot converge.
+  custom_ca_enabled = var.additional_trust_bundle != ""
+
+  # Rendered from var.additional_trust_bundle rather than relying on the
+  # Cluster Network Operator to populate a labelled ConfigMap: the CCM runs
+  # hostNetwork precisely because it must come up before CNI, so it cannot
+  # wait on an operator. Mounted additively, so the image's own public roots
+  # are kept and only this CA is added.
+  # Built by joining lines rather than with a heredoc: <<- strips the common
+  # leading whitespace from every line, including the ones indent() just
+  # added, which silently breaks the block scalar.
+  # Each entry ends with its own --- so the block terminates like the other
+  # manifest locals; the next document in the bundle does not open with one.
+  oci_custom_ca_configmaps = var.additional_trust_bundle == "" ? "" : join("\n", [
+    for ns in ["oci-cloud-controller-manager", "oci-csi"] : join("\n", [
+      "apiVersion: v1",
+      "kind: ConfigMap",
+      "metadata:",
+      "  name: oci-custom-ca",
+      "  namespace: ${ns}",
+      "data:",
+      "  oci-custom-ca.crt: |",
+      "    ${indent(4, trimspace(var.additional_trust_bundle))}",
+      "---",
+    ])
+  ])
+
   oci_ccm = templatefile("${path.module}/manifest-templates/01-oci-ccm.yml.tpl", {
     region_metadata                 = var.region_metadata
     enable_realm_specific_endpoints = var.enable_realm_specific_endpoints
     oci_image_source                = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
     pod_security_enforce_version    = lookup(local.oci_pod_security_enforce_versions, var.oci_driver_version, "v1.34")
+    custom_ca_enabled               = local.custom_ca_enabled
   })
 
   oci_csi = templatefile("${path.module}/manifest-templates/01-oci-csi.yml.tpl", {
@@ -269,6 +301,7 @@ EOT
     oci_image_source                = lookup(local.oci_image_sources, var.oci_driver_version, local.default_oci_driver_image)
     pod_security_enforce_version    = lookup(local.oci_pod_security_enforce_versions, var.oci_driver_version, "v1.34")
     enable_realm_specific_endpoints = var.enable_realm_specific_endpoints
+    custom_ca_enabled               = local.custom_ca_enabled
   })
 
   common_config = <<-COMMONCONFIG
