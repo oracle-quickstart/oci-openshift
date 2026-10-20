@@ -558,3 +558,35 @@ variable "autoscaler_node_image_source_uri" {
   description = "<strong><em>(Required)</em></strong> - The OCI Object Storage URL for the Autoscaler node image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block."
   default     = ""
 }
+
+# -----------------------------------------------------------------------------
+# Boot artifacts in Object Storage (alternative to the webserver)
+# -----------------------------------------------------------------------------
+# Setting either file path makes terraform upload that artifact to an Object
+# Storage bucket and mint a pre-authenticated request for it, instead of
+# requiring a webserver instance to host the rootfs. Leave both empty to keep
+# the existing webserver behaviour.
+
+variable "rootfs_file_path" {
+  type        = string
+  description = "Local path to boot-artifacts/agent.x86_64-rootfs.img from 'openshift-install agent create image'. When set, terraform uploads it and derives bootArtifactsBaseURL from the resulting PAR."
+  default     = ""
+}
+
+variable "iso_file_path" {
+  type        = string
+  description = "Local path to agent.x86_64.iso. When set, terraform uploads it and uses the resulting PAR as the compute image source, replacing a hand-created openshift_image_source_uri."
+  default     = ""
+}
+
+variable "boot_artifacts_par_expiry_hours" {
+  type        = number
+  description = "Hours until the boot artifact PARs expire. Must outlast the whole installation."
+  default     = 168
+}
+
+variable "boot_artifacts_base_url" {
+  type        = string
+  description = "Pre-existing base URL serving agent.x86_64-rootfs.img, used as bootArtifactsBaseURL. Set this when terraform cannot read the artifacts from a local filesystem, such as an OCI Resource Manager job, after uploading them yourself. Takes precedence over rootfs_file_path."
+  default     = ""
+}
