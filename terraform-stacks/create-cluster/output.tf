@@ -43,3 +43,7 @@ output "install_config" {
 output "stack_version" {
   value = local.stack_version
 }
+
+output "manifest_image_tag_mirror_set" {
+  value = module.manifests.manifest_image_tag_mirror_set
+}
