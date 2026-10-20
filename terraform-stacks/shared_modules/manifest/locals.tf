@@ -340,7 +340,7 @@ controlPlane:
 platform:
   external:
     platformName: oci
-    cloudControllerManager: External${trimspace(var.set_proxy ? <<-PROXY
+    cloudControllerManager: External${var.set_proxy ? "\n" : ""}${trimspace(var.set_proxy ? <<-PROXY
 proxy:
   httpProxy: ${var.http_proxy}
   httpsProxy: ${var.https_proxy}
