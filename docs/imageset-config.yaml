@@ -1,0 +1,111 @@
+# Example ImageSetConfiguration for mirroring OpenShift on OCI into a
+# disconnected registry.
+#
+# This covers the images that THIS repository's manifests reference. The
+# OpenShift release payload is handled by the platform: section below; every
+# other entry is an image the OCI integration pulls that the payload does not
+# contain.
+#
+# Usage, roughly:
+#
+#   oc-mirror --v2 --config docs/imageset-config.yaml \
+#     --workspace file:///path/to/workspace \
+#     docker://registry.example.com/openshift
+#
+# For the fully-disconnected two-stage flow (mirror to disk on a connected
+# host, carry the disk across, then mirror to the registry) and for the
+# resource requirements, see the Red Hat documentation on the oc-mirror
+# plugin v2. oc-mirror writes out an ImageDigestMirrorSet and an
+# ImageTagMirrorSet; both are needed, since some of the images below are
+# referenced by tag rather than by digest.
+#
+# Keeping this file honest
+# ------------------------
+# This is a hand-maintained list and will drift as manifests change. To see
+# every image the repository currently references:
+#
+#   git grep -hoE '^\s*-?\s*image: .*' -- custom_manifests/ terraform-stacks/ \
+#     | sed -E 's/^\s*-?\s*image: //' | tr -d '"' | sort -u
+#
+# Anything that command prints and this file does not list is a gap.
+
+kind: ImageSetConfiguration
+apiVersion: mirror.openshift.io/v2alpha1
+mirror:
+  platform:
+    channels:
+      # Set these to the OpenShift version you are installing.
+      - name: stable-4.22
+        type: ocp
+        minVersion: 4.22.0
+        maxVersion: 4.22.99
+    graph: true
+
+  additionalImages:
+    # ---------------------------------------------------------------------
+    # OCI Cloud Controller Manager
+    #
+    # Mirror the image matching the oci_driver_version you set in terraform.
+    # The default is v1.34.0, listed below. If you set something else,
+    # replace it with the matching entry:
+    #
+    #   v1.33.1      ghcr.io/oracle/cloud-provider-oci:v1.33.1
+    #   v1.32.2      ghcr.io/oracle/cloud-provider-oci:v1.32.2
+    #   v1.32.0-UHP  ghcr.io/dfoster-oracle/cloud-provider-oci-amd64:v1.32.0-UHP-LA
+    #
+    # Those four are the only values the terraform stack honours. The
+    # oci_image_sources map in terraform-stacks/shared_modules/manifest/
+    # locals.tf has no entry for v1.30.0 or v1.32.0, so despite both having
+    # a directory under custom_manifests/oci-ccm-csi-drivers/, setting
+    # oci_driver_version to either one falls through lookup() to the
+    # default and silently deploys the v1.34.0 image. If you are applying
+    # those two by hand rather than through terraform, mirror
+    # ghcr.io/oracle/cloud-provider-oci:v1.30.0 or
+    # ghcr.io/oracle/cloud-provider-oci:v1.32.0 instead.
+    #
+    # Note also that for v1.34.0 the terraform path and the static
+    # manifests disagree. locals.tf maps v1.34.0 to
+    # ghcr.io/nikhisin3001/cloud-provider-oci, while
+    # custom_manifests/manifests/01-oci-ccm.yml uses
+    # ghcr.io/oracle/cloud-provider-oci:v1.34.0. The entry below matches
+    # what the terraform stack actually deploys, since mirroring anything
+    # else leaves the CCM in ImagePullBackOff. Mirror the oracle/ image
+    # instead if you are applying the static manifests by hand.
+    - name: ghcr.io/nikhisin3001/cloud-provider-oci:v1.34.0
+
+    # ---------------------------------------------------------------------
+    # OCI CSI driver sidecars
+    - name: registry.k8s.io/sig-storage/csi-provisioner:v5.0.1
+    - name: registry.k8s.io/sig-storage/csi-attacher:v4.6.1
+    - name: registry.k8s.io/sig-storage/csi-resizer:v1.11.1
+    - name: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.12.0
+    - name: registry.k8s.io/sig-storage/csi-snapshotter:v6.3.0
+    - name: registry.k8s.io/sig-storage/snapshot-controller:v6.3.0
+
+    # ---------------------------------------------------------------------
+    # OpenShift CLI, used as an init container in the CCM DaemonSet and by
+    # the autoscaling operator.
+    - name: quay.io/openshift/origin-cli:4.20
+
+    # ---------------------------------------------------------------------
+    # Autoscaler. Only needed with use_autoscaling_operator = true.
+    #
+    # Mirroring this image is necessary but NOT sufficient. The autoscaling
+    # operator also fetches three manifests over HTTPS from github.com at
+    # runtime, which no registry mirror can satisfy:
+    #
+    #   cert-manager.yaml                from cert-manager/cert-manager
+    #   core-components.yaml             from kubernetes-sigs/cluster-api
+    #   infrastructure-components.yaml   from oracle/cluster-api-provider-oci
+    #
+    # See terraform-stacks/shared_modules/manifest/autoscaling/main.tf. Those
+    # manifests in turn reference further images that are not listed here.
+    # The autoscaler is therefore not usable in a disconnected cluster today.
+    - name: ghcr.io/oracle-samples/openshift-oracle-capi-autoscaling:latest
+
+    # ---------------------------------------------------------------------
+    # Oracle Cloud Agent. Optional, and the pull URL is tenancy-specific, so
+    # it cannot be given concretely here. Uncomment and fill in to match the
+    # oca_image_pull_link you pass to terraform. Not available in every
+    # realm.
+    # - name: <region>.ocir.io/<namespace>/<repo>:<version>
