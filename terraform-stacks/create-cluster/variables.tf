@@ -558,3 +558,9 @@ variable "autoscaler_node_image_source_uri" {
   description = "<strong><em>(Required)</em></strong> - The OCI Object Storage URL for the Autoscaler node image. Before provisioning resources through this Resource Manager stack, users should upload the OpenShift image to OCI Object Storage, create a Pre-Authenticated Request (PAR) URL, and paste the URL to this block."
   default     = ""
 }
+
+variable "enable_realm_specific_endpoints" {
+  type        = bool
+  description = "Set the OCI SDK realm-specific endpoint template flag on the CCM and CSI drivers. Required in isolated realms such as OC6, OC7, OC11 and OC12, where service endpoint URL patterns differ from commercial OCI."
+  default     = false
+}
