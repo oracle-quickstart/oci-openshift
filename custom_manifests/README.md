@@ -2,6 +2,8 @@
 
 These OpenShift and Kubernetes manifest files support the installation of Red Hat OpenShift clusters on Oracle Cloud Infrastructure. The Butane files used to generate the OpenShift MachineConfigs are also included.
 
+Choose CCM and CSI manifests using the [OpenShift / Kubernetes / OCI driver compatibility matrix](../README.md#version-compatibility). Versioned manifests for `v1.36.0`, `v1.35.0`, and `v1.34.0` are available under [oci-ccm-csi-drivers](./oci-ccm-csi-drivers/). Use both driver manifests from the same version directory when installing manually. For Terraform installations, the `oci_driver_version` selection controls both drivers in `dynamic_custom_manifest`.
+
 View usage during [installation](/README.md#documentation-and-installation-instructions)
 
 

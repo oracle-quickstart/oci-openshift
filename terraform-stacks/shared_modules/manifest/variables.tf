@@ -6,8 +6,8 @@ variable "oci_driver_version" {
   type = string
 
   validation {
-    condition     = var.oci_driver_version == "v1.36.0"
-    error_message = "The create-cluster stack only supports oci_driver_version = v1.36.0."
+    condition     = contains(["v1.36.0", "v1.35.0", "v1.34.0"], var.oci_driver_version)
+    error_message = "The oci_driver_version value must be v1.36.0, v1.35.0, or v1.34.0. Select the version matching your cluster's Kubernetes minor version."
   }
 }
 
