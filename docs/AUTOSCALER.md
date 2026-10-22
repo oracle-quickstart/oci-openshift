@@ -41,7 +41,8 @@ Upload the `*-iscsi.qcow2` file to Object Storage, create a read PAR URL, and us
 
 Use the `terraform-stacks/create-cluster` stack and set:
 
-```hcl
+```
+compute_count            = 3
 use_autoscaling_operator = true
 
 autoscaler_node_shape            = "<autoscaling-worker-shape>"
@@ -51,6 +52,8 @@ autoscaler_node_maximum_count    = 10
 autoscaler_node_ocpus            = 4
 autoscaler_node_memory           = 32
 ```
+
+`compute_count` sets the number of static workers created by the stack. These workers can coexist with the autoscaler-managed worker pool; the autoscaler does not automatically adopt or scale the static workers. `autoscaler_node_minimum_count` and `autoscaler_node_maximum_count` apply only to the managed pool and exclude static workers. The example above configures 3 static workers plus 1-10 managed workers, for a total of 4-13 workers after the autoscaler pool is ready. To omit static workers, explicitly set `compute_count = 0`.
 
 Optionally set `autoscaler_pool_identifier = "vm01"` to emit `spec.autoscaling.poolIdentifier` in the `OCIClusterAutoscaler` custom resource. The operator appends it to the CAPI cluster name when naming autoscaler node pool resources, for example `fwvtfa-rgqqh-vm01`. Use up to 5 lowercase letters, numbers, or hyphens; the value must start and end with a lowercase letter or number.
 

@@ -23,7 +23,6 @@ output "dynamic_custom_manifest" {
     ${file("${path.module}/manifests/03-machineconfig-consistent-device-path.yml")}
     ${file("${path.module}/manifests/04-cluster-network.yml")}
     ${file("${path.module}/manifests/05-oci-eval-user-data.yml")}
-    ${file("${path.module}/manifests/07-configure-bm-vlan-mtu.yml")}
     %{if var.use_autoscaling_operator}
     ${file("${path.module}/manifests/08-autoscaling-operator.yml")}
     ${local.autoscaling_operator_runtime_manifest_configmap}

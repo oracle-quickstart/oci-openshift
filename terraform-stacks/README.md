@@ -80,6 +80,8 @@ Please allow for ~10 minutes after creation before tagging resources with them. 
 
 Create the OCI resources for an OpenShift cluster on OCI and facilitate the installation of OpenShift.
 
+Select **OCI CCM and CSI Driver Version** (`oci_driver_version`) using the [OpenShift / Kubernetes / OCI driver compatibility matrix](../README.md#version-compatibility). The stack offers `v1.36.0` (default), `v1.35.0`, and `v1.34.0`, and uses the selected version for both CCM and CSI in `dynamic_custom_manifest`.
+
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/oci-openshift/releases/latest/download/create-cluster.zip)
 
 #### Default Node Configuration

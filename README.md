@@ -5,6 +5,20 @@ This repository provides the tools and configuration needed to deploy and manage
 * [Terraform stacks](/terraform-stacks/README.md) for provisioning the required OCI infrastructure.
 * OpenShift and Kubernetes [manifest files](/custom_manifests/README.md) for installing and configuring clusters.
 
+## Version Compatibility
+
+Select the OCI Cloud Controller Manager (CCM) and Container Storage Interface (CSI) driver version that matches the Kubernetes minor version used by your OpenShift release.
+
+| OpenShift version | Kubernetes version | OCI CCM / CSI selection (`oci_driver_version`) | Stack information |
+| --- | --- | --- | --- |
+| 5.0 | 1.36 | `v1.36.0` | Planned stack target; OpenShift mapping requires confirmation against the final Red Hat release notes. |
+| 4.22 | 1.35 | `v1.35.0` | Kubernetes version confirmed in the [Red Hat 4.22 release notes](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html-single/release_notes/index). |
+| 4.21 | 1.34 | `v1.34.0` | Kubernetes version confirmed in the [Red Hat 4.21 release notes](https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html/release_notes/ocp-4-21-release-notes). |
+
+OpenShift 4.x releases use different Kubernetes versions; the Kubernetes 1.35 mapping applies specifically to OpenShift 4.22. The OpenShift 5.0 row records the planned stack mapping, not a verified release or tested deployment. Driver selection follows the minor-version alignment in the [upstream OCI CCM compatibility matrix](https://github.com/oracle/oci-cloud-controller-manager#compatibility-matrix).
+
+In the `create-cluster` stack, set **OCI CCM and CSI Driver Version** in OCI Resource Manager, or set `oci_driver_version` in Terraform. The available selections are `v1.36.0` (default), `v1.35.0`, and `v1.34.0`. Select the matching version explicitly for Kubernetes 1.35 or 1.34 clusters; the stack does not detect the OpenShift version from the installation image. This setting controls both CCM and CSI in the `dynamic_custom_manifest` output.
+
 ## Overview
 
 Installing OpenShift clusters on OCI involves two main stages:

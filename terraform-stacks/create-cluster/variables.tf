@@ -437,8 +437,13 @@ variable "load_balancer_shape_details_minimum_bandwidth_in_mbps" {
 
 variable "oci_driver_version" {
   type        = string
-  description = "The OCI CCM and CSI driver version. Select what version of the OCI CCM and CSI driver manifests to include in the `dynamic_custom_manifest` output. See available versions in <a href='https://github.com/oracle-quickstart/oci-openshift/tree/main/custom_manifests/oci-ccm-csi-drivers'>oci-openshift/custom_manifests/oci-ccm-csi-drivers</a>"
-  default     = "v1.34.0"
+  description = "The OCI CCM and CSI driver version to include in the `dynamic_custom_manifest` output. Select v1.36.0, v1.35.0, or v1.34.0 to match your cluster's Kubernetes minor version. See the <a href='https://github.com/oracle-quickstart/oci-openshift#version-compatibility'>OpenShift / Kubernetes / OCI driver compatibility matrix</a>."
+  default     = "v1.36.0"
+
+  validation {
+    condition     = contains(["v1.36.0", "v1.35.0", "v1.34.0"], var.oci_driver_version)
+    error_message = "The oci_driver_version value must be v1.36.0, v1.35.0, or v1.34.0. Select the version matching your cluster's Kubernetes minor version."
+  }
 }
 
 variable "use_existing_tags" {

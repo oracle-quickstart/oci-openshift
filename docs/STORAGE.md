@@ -97,19 +97,19 @@ Read more about these OCI IAM resources below:
 
 The manifests containing the OCI CSI driver are typically applied to an OpenShift cluster during installation via [custom_manifests](/custom_manifests/manifests/01-oci-csi.yml) supplied by you during setup.
 
-If you are using our Terraform to provision cluster resources, use the `dynamic_custom_manifest` output as the only custom_manifest during cluster installation. You can set the `oci_driver_version` variable when using the Terraform to generate the `dynamic_custom_manifest` output with the specified driver version. By default, the latest GA [version](https://github.com/oracle/oci-cloud-controller-manager/releases/latest) is used.
+If you are using our Terraform to provision cluster resources, use the `dynamic_custom_manifest` output as the only custom_manifest during cluster installation. You can set the `oci_driver_version` variable when using the Terraform to generate the `dynamic_custom_manifest` output with the specified driver version. The default driver version is `v1.36.0`, using the image `ghcr.io/oracle/cloud-provider-oci:v1.36.0`.
 
 View the supported driver versions in [custom_manifests/oci-ccm-csi-drivers](/custom_manifests/oci-ccm-csi-drivers).
 
 #### To upgrade/change OCI CSI driver version on an existing OpenShift cluster
 
 
-1. Find the version of the oci-ccm-csi-driver manifests you need e.g. [**v1.34.0**](/custom_manifests/oci-ccm-csi-drivers/v1.34.0)
+1. Find the version of the oci-ccm-csi-driver manifests you need e.g. [**v1.36.0**](/custom_manifests/oci-ccm-csi-drivers/v1.36.0)
 
 2. Apply the changes manually or reapply the entire manifest with the following command:
 
     ```bash
-    oc apply -f custom_manifests/oci-ccm-csi-drivers/v1.34.0/01-oci-csi.yml
+    oc apply -f custom_manifests/oci-ccm-csi-drivers/v1.36.0/01-oci-csi.yml
     ```
 
 #### Enabling VolumeSnapshotClass

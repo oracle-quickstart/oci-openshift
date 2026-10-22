@@ -1,6 +1,6 @@
-title: OpenShift Cluster on OCI - v1.6.1
+title: OpenShift Cluster on OCI - v1.6.2
 description: A Terraform Stack for creating resources required for installing OpenShift on OCI
-schemaVersion: 1.6.1
+schemaVersion: 1.6.2
 version: "20250916"
 locale: "en"
 
@@ -79,12 +79,7 @@ variableGroups:
       - starting_ad_name_compute
       - distribute_compute_instances_across_fds
       - starting_fd_name_compute
-    visible:
-      and:
-        - create_openshift_instances
-        - eq:
-            - use_autoscaling_operator
-            - false
+    visible: create_openshift_instances
 
   - title: "Networking Configuration"
     variables:
@@ -767,9 +762,12 @@ variables:
   oci_driver_version:
     type: enum
     title: OCI CCM and CSI Driver Version
+    description: Select the driver version matching your cluster's Kubernetes minor version. Use v1.36.0 for Kubernetes 1.36, v1.35.0 for Kubernetes 1.35 (OpenShift 4.22), or v1.34.0 for Kubernetes 1.34 (OpenShift 4.21). See the repository README for the compatibility matrix and planned OpenShift 5.0 mapping.
     enum:
+    - v1.36.0
+    - v1.35.0
     - v1.34.0
-    default: v1.34.0
+    default: v1.36.0
     required: true
 
   use_existing_tags:
