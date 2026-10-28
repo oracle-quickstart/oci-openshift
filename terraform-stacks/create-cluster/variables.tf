@@ -48,6 +48,12 @@ variable "is_disconnected_installation" {
   default     = false
 }
 
+variable "enable_fips" {
+  type        = bool
+  description = "Enable FIPS mode on the OpenShift cluster. When true, 'fips: true' is added to install-config.yaml. The cluster must be installed with the FIPS-capable openshift-install binary, run from a host that is itself in FIPS mode."
+  default     = false
+}
+
 variable "set_openshift_installer_version" {
   type        = bool
   description = "If you don't want to use the latest version of openshift-installer, specify a specific supported version. For example, 4.19.1."
