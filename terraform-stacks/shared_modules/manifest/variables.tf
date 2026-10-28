@@ -194,3 +194,13 @@ variable "capoci_version" {
 variable "autoscaler_node_image_id" {
   type = string
 }
+
+variable "private_registry" {
+  type    = string
+  default = ""
+}
+
+variable "additional_trust_bundle" {
+  type    = string
+  default = ""
+}

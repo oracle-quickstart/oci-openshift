@@ -278,6 +278,8 @@ module "manifests" {
   region_metadata    = module.meta.region_metadata
 
   redhat_pull_secret           = var.redhat_pull_secret
+  private_registry             = var.private_registry
+  additional_trust_bundle      = var.additional_trust_bundle
   is_disconnected_installation = var.is_disconnected_installation
   set_proxy                    = var.set_proxy
   http_proxy                   = var.http_proxy
