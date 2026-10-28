@@ -121,6 +121,10 @@ spec:
           env:
             - name: OCI_REGION_METADATA
               value: '${region_metadata}'
+            %{~ if enable_realm_specific_endpoints ~}
+            - name: OCI_REALM_SPECIFIC_SERVICE_ENDPOINT_TEMPLATE_ENABLED
+              value: "true"
+            %{~ endif ~}
           %{~ endif ~}
           imagePullPolicy: IfNotPresent
           volumeMounts:
@@ -132,6 +136,15 @@ spec:
               readOnly: true
             - mountPath: /var/run/shared-tmpfs
               name: shared-tmpfs
+            %{~ if custom_ca_enabled ~}
+            # subPath so only this one file is added to the image's trust
+            # store. Mounting the directory, or the extracted bundle itself,
+            # shadows the image's own CA set and drops every public root.
+            - name: custom-ca
+              mountPath: /etc/pki/tls/certs/oci-custom-ca.crt
+              subPath: oci-custom-ca.crt
+              readOnly: true
+            %{~ endif ~}
       volumes:
         - name: config
           secret:
@@ -141,6 +154,11 @@ spec:
             path: /etc/kubernetes
         - name: shared-tmpfs
           emptyDir: {}
+        %{~ if custom_ca_enabled ~}
+        - name: custom-ca
+          configMap:
+            name: oci-custom-ca
+        %{~ endif ~}
       dnsPolicy: ClusterFirst
       hostNetwork: true
       imagePullSecrets:
@@ -292,6 +310,10 @@ spec:
             %{~ if region_metadata != "" ~}
             - name: OCI_REGION_METADATA
               value: '${region_metadata}'
+            %{~ if enable_realm_specific_endpoints ~}
+            - name: OCI_REALM_SPECIFIC_SERVICE_ENDPOINT_TEMPLATE_ENABLED
+              value: "true"
+            %{~ endif ~}
             %{~ endif ~}
           image: ${oci_image_source}
           securityContext:
@@ -324,6 +346,15 @@ spec:
             - mountPath: /sbin/mount
               name: fss-driver-mounts
               subPath: mount
+            %{~ if custom_ca_enabled ~}
+            # subPath so only this one file is added to the image's trust
+            # store. Mounting the directory, or the extracted bundle itself,
+            # shadows the image's own CA set and drops every public root.
+            - name: custom-ca
+              mountPath: /etc/pki/tls/certs/oci-custom-ca.crt
+              subPath: oci-custom-ca.crt
+              readOnly: true
+            %{~ endif ~}
         - name: csi-node-registrar
           args:
             - --csi-address=/csi/csi.sock
@@ -372,6 +403,11 @@ spec:
       tolerations:
         - operator: Exists
       volumes:
+        %{~ if custom_ca_enabled ~}
+        - name: custom-ca
+          configMap:
+            name: oci-custom-ca
+        %{~ endif ~}
         - hostPath:
             path: /var/lib/kubelet/plugins_registry/
             type: DirectoryOrCreate
