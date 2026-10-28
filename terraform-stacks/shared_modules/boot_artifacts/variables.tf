@@ -1,0 +1,26 @@
+variable "compartment_ocid" {
+  type = string
+}
+
+variable "cluster_name" {
+  type = string
+}
+
+variable "rootfs_file_path" {
+  type    = string
+  default = ""
+}
+
+variable "iso_file_path" {
+  type    = string
+  default = ""
+}
+
+variable "par_expiry_hours" {
+  type    = number
+  default = 168
+}
+
+variable "defined_tags" {
+  type = map(string)
+}

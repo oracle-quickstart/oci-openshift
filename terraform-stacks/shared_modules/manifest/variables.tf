@@ -194,3 +194,8 @@ variable "capoci_version" {
 variable "autoscaler_node_image_id" {
   type = string
 }
+
+variable "boot_artifacts_base_url" {
+  type    = string
+  default = ""
+}

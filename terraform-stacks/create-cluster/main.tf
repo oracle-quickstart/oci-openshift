@@ -79,7 +79,7 @@ module "image" {
   image_name                  = var.cluster_name
   is_control_plane_iscsi_type = local.is_control_plane_iscsi_type
   is_compute_iscsi_type       = local.is_compute_iscsi_type
-  openshift_image_source_uri  = var.openshift_image_source_uri
+  openshift_image_source_uri  = var.iso_file_path != "" ? module.boot_artifacts[0].iso_par_url : var.openshift_image_source_uri
   control_plane_shape         = var.control_plane_shape
   compute_shape               = var.compute_shape
 
@@ -142,6 +142,22 @@ module "load_balancer" {
 }
 
 ## Web Server for creating OCP install images and hosting rootfs and ignition files
+# Hosts the boot artifacts in Object Storage rather than on a webserver
+# instance. Keyed off the file paths so it only appears when actually used.
+module "boot_artifacts" {
+  source = "./shared_modules/boot_artifacts"
+  count  = var.rootfs_file_path != "" || var.iso_file_path != "" ? 1 : 0
+
+  depends_on = [module.tags.wait_for_tag_consistency]
+
+  compartment_ocid = var.compartment_ocid
+  cluster_name     = var.cluster_name
+  rootfs_file_path = var.rootfs_file_path
+  iso_file_path    = var.iso_file_path
+  par_expiry_hours = var.boot_artifacts_par_expiry_hours
+  defined_tags     = module.resource_attribution_tags.openshift_resource_attribution_tag
+}
+
 module "webserver" {
   count  = var.is_disconnected_installation ? 1 : 0
   source = "./shared_modules/webserver"
@@ -285,17 +301,18 @@ module "manifests" {
   no_proxy                     = var.no_proxy
 
   // Depedency on networks
-  op_vcn_openshift_vcn  = module.network.op_vcn_openshift_vcn
-  op_apps_subnet        = local.apps_subnet_id
-  op_apps_security_list = "${local.apps_subnet_id}: ${local.apps_security_list_id}"
-  vcn_cidr              = var.vcn_cidr
-  zone_dns              = var.zone_dns
-  rendezvous_ip         = var.rendezvous_ip
-  control_plane_count   = var.control_plane_count
-  compute_count         = local.effective_compute_count
-  public_ssh_key        = var.public_ssh_key
-  cluster_name          = var.cluster_name
-  webserver_private_ip  = var.webserver_private_ip
+  op_vcn_openshift_vcn    = module.network.op_vcn_openshift_vcn
+  op_apps_subnet          = local.apps_subnet_id
+  op_apps_security_list   = "${local.apps_subnet_id}: ${local.apps_security_list_id}"
+  vcn_cidr                = var.vcn_cidr
+  zone_dns                = var.zone_dns
+  rendezvous_ip           = var.rendezvous_ip
+  control_plane_count     = var.control_plane_count
+  compute_count           = local.effective_compute_count
+  public_ssh_key          = var.public_ssh_key
+  cluster_name            = var.cluster_name
+  webserver_private_ip    = var.webserver_private_ip
+  boot_artifacts_base_url = var.boot_artifacts_base_url != "" ? var.boot_artifacts_base_url : (var.rootfs_file_path != "" ? module.boot_artifacts[0].boot_artifacts_base_url : "")
 
   // Dependency on ocir
   use_oracle_cloud_agent = var.use_oracle_cloud_agent
