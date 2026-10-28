@@ -92,7 +92,7 @@ spec:
       serviceAccountName: oci-capi-operator-controller-manager
       containers:
       - name: provider-installer
-        image: quay.io/openshift/origin-cli:4.20
+        image: quay.io/openshift/origin-cli:4.22
         envFrom:
         - configMapRef:
             name: oci-capi-operator-config
