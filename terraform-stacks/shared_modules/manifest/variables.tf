@@ -194,3 +194,8 @@ variable "capoci_version" {
 variable "autoscaler_node_image_id" {
   type = string
 }
+
+variable "additional_ntp_sources" {
+  type    = list(string)
+  default = []
+}
