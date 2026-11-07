@@ -9,3 +9,7 @@ variable "oca_repo_name" {
 variable "region" {
   type = string
 }
+
+variable "oca_marketplace_listing_id" {
+  type = string
+}

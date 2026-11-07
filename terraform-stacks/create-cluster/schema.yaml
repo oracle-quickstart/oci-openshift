@@ -111,6 +111,7 @@ variableGroups:
       - tag_namespace_compartment_ocid
       - use_oracle_cloud_agent
       - oracle_cloud_agent_repo_name
+      - oca_marketplace_listing_id
       - region
 
 ###########
@@ -806,6 +807,14 @@ variables:
     description: <strong>Specify the name of the repository</strong> that contains the Oracle Cloud Agent container image in your Oracle Cloud Infrastructure Registry (OCIR).
     required: true
     default: "openshift-oca"
+    visible: use_oracle_cloud_agent
+
+  oca_marketplace_listing_id:
+    type: string
+    title: Cloud Agent Marketplace Listing OCID
+    description: Marketplace listing used to find the Oracle Cloud Agent image version. The default is the commercial (oc1) listing. Listing OCIDs are realm-specific, so other realms need the listing from their own Marketplace.
+    required: true
+    default: "ocid1.mktpublisting.oc1.phx.amaaaaaabg7vt6ia6vyockkduxg2jvwmxzef7nliwilshjavyjrybs66g57q"
     visible: use_oracle_cloud_agent
 
   region:

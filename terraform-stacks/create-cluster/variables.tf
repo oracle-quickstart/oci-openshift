@@ -138,6 +138,12 @@ variable "oracle_cloud_agent_repo_name" {
   default     = "openshift-oca"
 }
 
+variable "oca_marketplace_listing_id" {
+  description = "OCI Marketplace listing OCID for the Oracle Cloud Agent, used to find the image version. The default is the commercial (oc1) listing. Listing OCIDs are realm-specific, so other realms need the listing from their own Marketplace."
+  type        = string
+  default     = "ocid1.mktpublisting.oc1.phx.amaaaaaabg7vt6ia6vyockkduxg2jvwmxzef7nliwilshjavyjrybs66g57q"
+}
+
 variable "region" {
   type = string
 }

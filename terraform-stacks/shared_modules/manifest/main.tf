@@ -15,7 +15,7 @@ output "dynamic_custom_manifest" {
     ${local.oci_csi}
     ${local.oci_ccm_config_secret}
     ${local.oci_csi_config_secret}
-    %{if var.use_oracle_cloud_agent && var.oca_image_pull_link != "" && var.oca_image_pull_link != "no-image-found"}
+    %{if var.use_oracle_cloud_agent && var.oca_image_pull_link != ""}
     ${local.oca_yaml}
     %{endif}
     ${file("${path.module}/manifests/02-machineconfig-ccm.yml")}
