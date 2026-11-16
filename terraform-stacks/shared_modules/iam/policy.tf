@@ -9,6 +9,7 @@ resource "oci_identity_policy" "policy_openshift_control_plane_nodes" {
     "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage virtual-network-family in compartment id ${var.compartment_ocid}",
     "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage load-balancers in compartment id ${var.compartment_ocid}",
     "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage objects in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.openshift_control_plane_nodes.name} to manage file-family in compartment id ${var.compartment_ocid}",
   ]
   defined_tags = var.defined_tags
 }

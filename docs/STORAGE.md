@@ -141,6 +141,42 @@ If you are using OpenShift Virtualization, please also see the relevant step in 
 
 ## Examples
 
+### File Storage (FSS) - Dynamic Provisioning
+
+The CSI driver can create an OCI File Storage file system and export for each PersistentVolumeClaim (ReadWriteMany). The control plane nodes' dynamic group needs `manage file-family` in the cluster compartment, which the `create-cluster` stack grants. It also needs access to the mount target's network, which the stack's `manage virtual-network-family` statement covers. If the mount target or file systems live in another compartment, grant the same permissions there.
+
+Create a mount target in the cluster VCN first, then reference it in a StorageClass:
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: oci-fss-dynamic
+provisioner: fss.csi.oraclecloud.com
+parameters:
+  availabilityDomain: <availability-domain-name>   # for example XXXX:US-ASHBURN-AD-1
+  mountTargetOcid: <mount-target-ocid>
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fss-dynamic-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: oci-fss-dynamic
+  resources:
+    requests:
+      storage: 50Gi
+```
+
+Without `manage file-family`, provisioning fails with `404 NotAuthorizedOrNotFound` from the File Storage API.
+
+For statically provisioned file systems, see [statically provisioned FSS](https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/statically-provisioned-fss-using-csi.md). The export root is owned by root with mode `0755` by default. OpenShift runs pods with random UIDs, so make the root writable by the pod (for example, change its group or mode from a one-time privileged job), or the pod gets `Permission denied`.
+
+
 ### Block Volume - Filesystem Mode
 **PersistentVolumeClaim**
 ```yaml
