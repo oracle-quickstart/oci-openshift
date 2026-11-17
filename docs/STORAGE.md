@@ -141,6 +141,44 @@ If you are using OpenShift Virtualization, please also see the relevant step in 
 
 ## Examples
 
+### File Storage (FSS) - Dynamic Provisioning
+
+The CSI driver can create an OCI File Storage file system and export for each PersistentVolumeClaim (ReadWriteMany). The control plane nodes' dynamic group needs `manage file-family` in the cluster compartment, which the `create-cluster` stack grants. It also needs access to the mount target's network, which the stack's `manage virtual-network-family` statement covers. If the mount target or file systems live in another compartment, grant the same permissions there.
+
+Create a mount target in the cluster VCN first, then reference it in a StorageClass:
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: oci-fss-dynamic
+provisioner: fss.csi.oraclecloud.com
+parameters:
+  availabilityDomain: <availability-domain-name>   # for example XXXX:US-ASHBURN-AD-1
+  mountTargetOcid: <mount-target-ocid>
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fss-dynamic-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: oci-fss-dynamic
+  resources:
+    requests:
+      storage: 50Gi
+```
+
+Without `manage file-family`, provisioning fails with `404 NotAuthorizedOrNotFound` from the File Storage API.
+
+**Write permissions.** The root of a File Storage file system, whether dynamically or statically provisioned, is owned by root with mode `0755`. OpenShift runs pods under the `restricted-v2` SCC with a random UID and GID 0, so those pods can read the volume but get `Permission denied` when writing. Make the root writable before the application uses it, for example with a one-time Job or init container running as root (it needs an SCC such as `anyuid`) that runs `chgrp 0 /data && chmod 2775 /data`, or `chmod 1777` for a shared scratch area. Verified on OpenShift 4.22: a dynamically provisioned volume mounted by `restricted-v2` pods (UID 1000820000, GID 0) could read but not write it.
+
+For statically provisioned file systems, see [statically provisioned FSS](https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/statically-provisioned-fss-using-csi.md).
+
+
 ### Block Volume - Filesystem Mode
 **PersistentVolumeClaim**
 ```yaml
