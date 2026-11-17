@@ -174,7 +174,9 @@ spec:
 
 Without `manage file-family`, provisioning fails with `404 NotAuthorizedOrNotFound` from the File Storage API.
 
-For statically provisioned file systems, see [statically provisioned FSS](https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/statically-provisioned-fss-using-csi.md). The export root is owned by root with mode `0755` by default. OpenShift runs pods with random UIDs, so make the root writable by the pod (for example, change its group or mode from a one-time privileged job), or the pod gets `Permission denied`.
+**Write permissions.** The root of a File Storage file system, whether dynamically or statically provisioned, is owned by root with mode `0755`. OpenShift runs pods under the `restricted-v2` SCC with a random UID and GID 0, so those pods can read the volume but get `Permission denied` when writing. Make the root writable before the application uses it, for example with a one-time Job or init container running as root (it needs an SCC such as `anyuid`) that runs `chgrp 0 /data && chmod 2775 /data`, or `chmod 1777` for a shared scratch area. Verified on OpenShift 4.22: a dynamically provisioned volume mounted by `restricted-v2` pods (UID 1000820000, GID 0) could read but not write it.
+
+For statically provisioned file systems, see [statically provisioned FSS](https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/statically-provisioned-fss-using-csi.md).
 
 
 ### Block Volume - Filesystem Mode
